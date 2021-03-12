@@ -1,0 +1,12 @@
+# configurations for layout similarity matching
+MODEL:
+  K: 3 # number of neighbors in KNN
+  box_sim_type: 3 # 1 for iou or 2 for dist 3 for boarder dist, 0 to disable
+  iou_type: 'diou' # IoU type
+  weight_box_sim: 0.25 #TODO: change weight parameter
+
+THRESHOLD:
+  topo_neigh_ts: 0.75 # threshold for deciding two neighbors are matched
+  topo_box_ts: 0.5 # threshold for deciding two boxes are matched
+  iou_box_ts: 0.5 # threshold for deciding two boxes are matched in IoU
+  dist_box_ts: 0.85 # threshold for deciding two boxes are matched in boarder_distance
