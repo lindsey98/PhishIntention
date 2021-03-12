@@ -1,0 +1,8 @@
+torch>=1.1.0
+torchvision
+numpy
+torchvision
+pillow
+torchsummary
+scikit-learn
+
