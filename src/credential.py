@@ -1,6 +1,8 @@
 from .credential_classifier.bit_pytorch.models import FCMaxPoolV2, KNOWN_MODELS
-from .credential_classifier.bit_pytorch.grid_divider import read_img_reverse, coord2pixel_reverse
+from .credential_classifier.bit_pytorch.grid_divider import read_img_reverse, coord2pixel_reverse, topo2pixel
 from .layout_matcher.heuristic import layout_heuristic
+from .layout_matcher.topology import knn_matrix
+from .layout_matcher.misc import preprocess
 import torch
 import torch.nn.functional as F
 from PIL import Image
@@ -20,8 +22,12 @@ def credential_config(checkpoint, model_type='mixed'):
         model = KNOWN_MODELS['BiT-M-R50x1'](head_size=2)
     elif model_type == 'layout':
         model = KNOWN_MODELS['FCMaxV2'](head_size=2)
-    else:
+    elif model_type == 'mixed':
         model = KNOWN_MODELS['BiT-M-R50x1V2'](head_size=2)
+    elif model_type == 'topo':
+        model = KNOWN_MODELS['BiT-M-R50x1V3'](head_size=2)
+    else:
+        raise NotImplementedError
         
     checkpoint = torch.load(checkpoint, map_location="cpu")
     checkpoint = checkpoint['model'] if 'model' in checkpoint.keys() else checkpoint
@@ -37,6 +43,48 @@ def credential_config(checkpoint, model_type='mixed'):
     model.to(device)
     model.eval()
     return model
+
+
+def credential_classifier_topo(img:str, coords, types, model):
+    # process it into grid_array
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    image = Image.open(img).convert('RGB')
+    
+    # transform to tensor
+    transformation = transform.Compose([transform.Resize((256, 256)), 
+                                        transform.ToTensor()])
+    image_T = transformation(image)
+    
+    # append class channels
+    # class grid tensor is of shape 5xHxW
+    grid_tensor = coord2pixel_reverse(img_path=img,
+                              coords=coords, 
+                              types=types)
+
+    image_T = torch.cat((image_T.double(), grid_tensor), dim=0)
+    assert image_T.shape == (8, 256, 256) # ensure correct shape
+    
+    # get topological tensor
+    compos = coords[types != 4] # remove block
+    resize_compos = preprocess(image.size[:2][::-1], coords.numpy()) # Rescale all coords to be [0, 100], used to compute KNN matrix
+    if len(compos) > 0:
+        box_matrix, _ = knn_matrix(compos=resize_compos, k=3, norm_method='log') # layout extraction -- KNN matrix computation
+        box_matrix = box_matrix.reshape(box_matrix.shape[0], -1) # reshape to be Nx(KxZ)
+
+        topo_tensor = topo2pixel(img_path=img, 
+                                 coords=compos, 
+                                 knn_matrix=box_matrix).double()
+    else:
+        topo_tensor = torch.zeros((12, 256, 256)).double() # no component
+
+
+    # inference
+    with torch.no_grad():
+        pred_orig = model(image_T[None,...].to(device, dtype=torch.float), topo_tensor[None, ...].to(device, dtype=torch.float))
+        assert pred_orig.shape[-1] == 2 ## assert correct shape
+        pred = F.softmax(pred_orig, dim=-1).argmax(dim=-1).item() # 'credential': 0, 'noncredential': 1
+        
+    return pred
 
 def credential_classifier_mixed(img:str, coords, types, model):
     # process it into grid_array
