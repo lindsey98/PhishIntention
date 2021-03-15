@@ -11,7 +11,7 @@ from detectron2.data import transforms as T
 from detectron2.data.datasets import register_coco_instances
 
 # Define dataset paths
-data_dir = Path("/home/l/liny/ruofan/phishintention/datasets/login_finder_dataset/")
+data_dir = Path("/home/l/liny/ruofan/PhishIntention/datasets/login_finder_dataset/")
 
 train_data_dir = data_dir / "train_imgs"
 val_data_dir = data_dir / "val_imgs"

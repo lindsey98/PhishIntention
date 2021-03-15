@@ -29,6 +29,6 @@ TEST:
   # The period (in terms of steps) to evaluate the model during training.
   # Set to 0 to disable.
   EVAL_PERIOD: 2000
-OUTPUT_DIR: "./output/lr0.001_v1" # Specify output directory
+OUTPUT_DIR: "./output/lr0.001_nocheat" # Specify output directory
 
 

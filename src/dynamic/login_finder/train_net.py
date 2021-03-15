@@ -35,7 +35,7 @@ from detectron2.modeling import GeneralizedRCNNWithTTA
 
 from detectron2_1.datasets import LoginMapper
 import os
-os.environ["CUDA_VISIBLE_DEVICES"]="3"
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
 
 # Implement evaluation here
