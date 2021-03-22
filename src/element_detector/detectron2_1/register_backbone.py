@@ -177,6 +177,195 @@ class BasicStemQuantize(CNNBlockBase):
     
     
     
+
+class BasicBlockQuantize(CNNBlockBase):
+    """
+    The basic residual block for ResNet-18 and ResNet-34 defined in :paper:`ResNet`,
+    with two 3x3 conv layers and a projection shortcut if needed.
+    """
+
+    def __init__(self, in_channels, out_channels, *, stride=1, norm="BN"):
+        """
+        Args:
+            in_channels (int): Number of input channels.
+            out_channels (int): Number of output channels.
+            stride (int): Stride for the first conv.
+            norm (str or callable): normalization for all conv layers.
+                See :func:`layers.get_norm` for supported format.
+        """
+        super().__init__(in_channels, out_channels, stride)
+
+        if in_channels != out_channels:
+            self.shortcut = Conv2d(
+                in_channels,
+                out_channels,
+                kernel_size=1,
+                stride=stride,
+                bias=False,
+                norm=get_norm(norm, out_channels),
+            )
+        else:
+            self.shortcut = None
+
+        self.conv1 = Conv2d(
+            in_channels,
+            out_channels,
+            kernel_size=3,
+            stride=stride,
+            padding=1,
+            bias=False,
+            norm=get_norm(norm, out_channels),
+        )
+
+        self.conv2 = Conv2d(
+            out_channels,
+            out_channels,
+            kernel_size=3,
+            stride=1,
+            padding=1,
+            bias=False,
+            norm=get_norm(norm, out_channels),
+        )
+
+        for layer in [self.conv1, self.conv2, self.shortcut]:
+            if layer is not None:  # shortcut can be None
+                weight_init.c2_msra_fill(layer)
+
+    def forward(self, x):
+        QReLu = QuantizeRelu() # steprelu
+        out = self.conv1(x)
+        out = QReLu(out)
+        out = self.conv2(out)
+
+        if self.shortcut is not None:
+            shortcut = self.shortcut(x)
+        else:
+            shortcut = x
+
+        out += shortcut
+        out = QReLu(out)
+        return out
+
+    
+    
+class DeformBottleneckBlockQuantize(CNNBlockBase):
+    """
+    Similar to :class:`BottleneckBlock`, but with :paper:`deformable conv <deformconv>`
+    in the 3x3 convolution.
+    """
+
+    def __init__(
+        self,
+        in_channels,
+        out_channels,
+        *,
+        bottleneck_channels,
+        stride=1,
+        num_groups=1,
+        norm="BN",
+        stride_in_1x1=False,
+        dilation=1,
+        deform_modulated=False,
+        deform_num_groups=1,
+    ):
+        super().__init__(in_channels, out_channels, stride)
+        self.deform_modulated = deform_modulated
+
+        if in_channels != out_channels:
+            self.shortcut = Conv2d(
+                in_channels,
+                out_channels,
+                kernel_size=1,
+                stride=stride,
+                bias=False,
+                norm=get_norm(norm, out_channels),
+            )
+        else:
+            self.shortcut = None
+
+        stride_1x1, stride_3x3 = (stride, 1) if stride_in_1x1 else (1, stride)
+
+        self.conv1 = Conv2d(
+            in_channels,
+            bottleneck_channels,
+            kernel_size=1,
+            stride=stride_1x1,
+            bias=False,
+            norm=get_norm(norm, bottleneck_channels),
+        )
+
+        if deform_modulated:
+            deform_conv_op = ModulatedDeformConv
+            # offset channels are 2 or 3 (if with modulated) * kernel_size * kernel_size
+            offset_channels = 27
+        else:
+            deform_conv_op = DeformConv
+            offset_channels = 18
+
+        self.conv2_offset = Conv2d(
+            bottleneck_channels,
+            offset_channels * deform_num_groups,
+            kernel_size=3,
+            stride=stride_3x3,
+            padding=1 * dilation,
+            dilation=dilation,
+        )
+        self.conv2 = deform_conv_op(
+            bottleneck_channels,
+            bottleneck_channels,
+            kernel_size=3,
+            stride=stride_3x3,
+            padding=1 * dilation,
+            bias=False,
+            groups=num_groups,
+            dilation=dilation,
+            deformable_groups=deform_num_groups,
+            norm=get_norm(norm, bottleneck_channels),
+        )
+
+        self.conv3 = Conv2d(
+            bottleneck_channels,
+            out_channels,
+            kernel_size=1,
+            bias=False,
+            norm=get_norm(norm, out_channels),
+        )
+
+        for layer in [self.conv1, self.conv2, self.conv3, self.shortcut]:
+            if layer is not None:  # shortcut can be None
+                weight_init.c2_msra_fill(layer)
+
+        nn.init.constant_(self.conv2_offset.weight, 0)
+        nn.init.constant_(self.conv2_offset.bias, 0)
+
+    def forward(self, x):
+        QReLu = QuantizeRelu() # steprelu
+        out = self.conv1(x)
+        out = QReLu(out)
+
+        if self.deform_modulated:
+            offset_mask = self.conv2_offset(out)
+            offset_x, offset_y, mask = torch.chunk(offset_mask, 3, dim=1)
+            offset = torch.cat((offset_x, offset_y), dim=1)
+            mask = mask.sigmoid()
+            out = self.conv2(out, offset, mask)
+        else:
+            offset = self.conv2_offset(out)
+            out = self.conv2(out, offset)
+        out = QReLu(out)
+
+        out = self.conv3(out)
+
+        if self.shortcut is not None:
+            shortcut = self.shortcut(x)
+        else:
+            shortcut = x
+
+        out += shortcut
+        out = QReLu(out)
+        return out
+    
+    
 @BACKBONE_REGISTRY.register()
 def build_resnet_backbone_quantize(cfg, input_shape):
     """
@@ -245,14 +434,14 @@ def build_resnet_backbone_quantize(cfg, input_shape):
         }
         # Use BasicBlock for R18 and R34.
         if depth in [18, 34]:
-            stage_kargs["block_class"] = BasicBlock
+            stage_kargs["block_class"] = BasicBlockQuantize
         else:
             stage_kargs["bottleneck_channels"] = bottleneck_channels
             stage_kargs["stride_in_1x1"] = stride_in_1x1
             stage_kargs["dilation"] = dilation
             stage_kargs["num_groups"] = num_groups
             if deform_on_per_stage[idx]:
-                stage_kargs["block_class"] = DeformBottleneckBlock
+                stage_kargs["block_class"] = DeformBottleneckBlockQuantize
                 stage_kargs["deform_modulated"] = deform_modulated
                 stage_kargs["deform_num_groups"] = deform_num_groups
             else:
@@ -288,3 +477,4 @@ def build_resnet_fpn_backbone_quantize(cfg, input_shape: ShapeSpec):
         fuse_type=cfg.MODEL.FPN.FUSE_TYPE,
     )
     return backbone
+

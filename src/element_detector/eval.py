@@ -1,5 +1,6 @@
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
+import argparse
 
 
 def evaluate(gt_coco_path, results_coco_path):
@@ -14,8 +15,20 @@ def evaluate(gt_coco_path, results_coco_path):
     
     
 if __name__ == '__main__':
-    gt_coco_path = '../../datasets/val_coco.json' # here the ground-truth is for the original-sized image
-    results_coco_path =  'output/website_lr0.001/coco_instances_results.json' # here the prediction is for the resized image
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--gt-json",
+        required=True,
+        help="Path to ground-truth bbox",
+    )
+
+    parser.add_argument(
+        "--pred-json",
+        required=True,
+        help="Path to predicted bbox",
+    )
+
+    args = parser.parse_args()
     
-    evaluate(gt_coco_path, results_coco_path)
+    evaluate(args.gt_json, args.pred_json)
 

@@ -61,7 +61,7 @@ class DAGAttacker:
         self.aug = T.ResizeShortestEdge(
             [cfg.INPUT.MIN_SIZE_TEST, cfg.INPUT.MIN_SIZE_TEST], cfg.INPUT.MAX_SIZE_TEST
         )
-        self.input_format = cfg.INPUT.FORMAT
+        self.input_format = self.cfg.INPUT.FORMAT
         assert self.input_format in ["RGB", "BGR"], self.input_format
 
         # Init dataloader on test dataset
@@ -148,10 +148,10 @@ class DAGAttacker:
                 vis_og = v.draw_instance_predictions(instances.to("cpu")).get_image()
 
                 # Save side-by-side
-                # concat = np.concatenate((vis_og, vis_adv), axis=1)
+#                 concat = np.concatenate((vis_og, vis_adv), axis=1)
 
-                # save_path = os.path.join("saved/adv", basename)
-                # cv2.imwrite(save_path, concat[:, :, ::-1])
+#                 save_path = os.path.join(vis_save_dir, f"{i}.jpg")
+#                 cv2.imwrite(save_path, concat[:, :, ::-1])
 
                 save_path = os.path.join(vis_save_dir, f"{i}.jpg")
                 save_adv_path = os.path.join(vis_save_dir, f"{i}_adv.jpg")
@@ -160,10 +160,14 @@ class DAGAttacker:
                 cv2.imwrite(save_adv_path, vis_adv[:, :, ::-1])
                 print(f"Saved visualization to {save_path}")
 
+            # Save predictions as COCO results json format
+#             with open(results_save_path, "w") as f:
+#                 json.dump(coco_instances_results, f)
+                
         # Save predictions as COCO results json format
         with open(results_save_path, "w") as f:
             json.dump(coco_instances_results, f)
-
+            
         return coco_instances_results
 
     def attack_image(self, batched_inputs: List[Dict[str, Any]]) -> torch.Tensor:
@@ -458,7 +462,7 @@ class DAGAttacker:
         """
         with torch.no_grad():  # https://github.com/sphinx-doc/sphinx/issues/4258
             # Apply pre-processing to image.
-            if self.cfg.input_format == "RGB":
+            if self.input_format == "RGB":
                 # whether the model expects BGR inputs or RGB
                 original_image = original_image[:, :, ::-1]
             height, width = original_image.shape[:2]
