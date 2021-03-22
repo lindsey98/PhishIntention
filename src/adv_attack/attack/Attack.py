@@ -82,7 +82,6 @@ class adversarial_attack():
                     target_class = torch.randint(0, self.num_classes, (1,)).to(self.device)
                 print(target_class)
 
- # top2 confidence class
                 perturbed_data = cw(self.model, self.device, data, label, target_class)
                 
             else:
