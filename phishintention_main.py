@@ -50,6 +50,7 @@ def main(url, screenshot_path):
             
         if pred_target is not None:
             # CRP HTML heuristic
+            html_path = screenshot_path.replace("shot.png", "html.txt")
             cre_pred = html_heuristic(html_path)
             if cre_pred == 1: # if HTML heuristic report as nonCRP
                 # CRP classifier
