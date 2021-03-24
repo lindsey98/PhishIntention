@@ -49,8 +49,11 @@ def main(url, screenshot_path):
             break
             
         if pred_target is not None:
-            # CRP classifier + heuristic
-            cre_pred, cred_conf, _  = credential_classifier_mixed_al(img=screenshot_path, coords=pred_boxes, 
+            # CRP HTML heuristic
+            cre_pred = html_heuristic(html_path)
+            if cre_pred == 1: # if HTML heuristic report as nonCRP
+                # CRP classifier
+                cre_pred, cred_conf, _  = credential_classifier_mixed_al(img=screenshot_path, coords=pred_boxes, 
                                                                  types=pred_classes, model=cls_model)
             
             if cre_pred == 1: # non-CRP page
@@ -79,51 +82,6 @@ def main(url, screenshot_path):
                     cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
         
     return phish_category, pred_target, plotvis
-
-    ######################## Step 4: Layout matcher #####################################################################
-#     if pred_target not in ['Amazon', 'Facebook', 'Google', 'Instagram', 'LinkedIn Corporation', 'ms_skype', 'Twitter, Inc.']:
-#         phish_category = 1 # Report as phish
-#         print('Reported target is not from social media brands, no need for layout matcher')
-#         # Visualize
-#         cv2.putText(plotvis, "Target: %s" % pred_target, (int(matched_coord[0] + 20), int(matched_coord[1] + 20)),
-#                     cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
-#         return phish_category, pred_target, plotvis
-
-#     elif pattern_ct >= 2: # layout heuristic adopted from crp heuristic
-#         phish_category = 1 # Report as phish
-#         print('Has a credential-requiring layout, no need for layout matcher')
-#         # Visualize
-#         cv2.putText(plotvis, "Target: %s" % pred_target, (int(matched_coord[0] + 20), int(matched_coord[1] + 20)),
-#                     cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
-#         return phish_category, pred_target, plotvis
-
-#     else: 
-#         #  Layout template matching
-#         layout_cfg, gt_coords_arr, gt_clses, gt_files_arr, gt_shot_size_arr = layout_config(cfg_dir=layout_cfg_dir, 
-#                                                                            ref_dir=layout_ref_dir, 
-#                                                                            matched_brand=pred_target,
-#                                                                            ele_model=ele_model)
-#         # Get the matched template and matched similarity
-#         max_s, max_site = layout_matcher(pred_boxes=pred_boxes, pred_clses=pred_classes, 
-#                                         img=img_path, 
-#                                         gt_coords_arr=gt_coords_arr, gt_clses=gt_clses, 
-#                                         gt_files_arr=gt_files_arr, gt_shot_size_arr=gt_shot_size_arr,
-#                                         cfg=layout_cfg)
-
-#         # Success layout match
-#         if max_s >= layout_ts: 
-#             phish_category = 1 # Report as phish
-#             print('Reported target is from social media brands, layout matcher is successful')
-#             # Visualize
-#             cv2.putText(plotvis, "Target: %s" % pred_target, (int(matched_coord[0] + 20), int(matched_coord[1] + 20)),
-#                     cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
-#             return phish_category, pred_target, plotvis
-
-        # Unsuccessful layout match
-#         else: 
-#             print('Reported target is from social media brands, layout matcher is unsuccessful')
-#             return phish_category, None, plotvis
-
 
 
 
