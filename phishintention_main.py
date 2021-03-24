@@ -115,7 +115,7 @@ if __name__ == "__main__":
                 phish_category, phish_target, plotvis = main(url=url, screenshot_path=screenshot_path)
                 
                 vt_result = "None"
-                if pred_target is not None:
+                if phish_target is not None:
                     try:
                         if vt_scan(url) is not None:
                             positive, total = vt_scan(url)
