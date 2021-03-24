@@ -1,10 +1,12 @@
-
+from seleniumwire import webdriver
 from phishintention_config import *
 import os
 import argparse
 # from gsheets import gwrapper
 # from src.utils import *
 from src.element_detector import vis
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from login_cv import WebTester
 
 def main(url, screenshot_path):
     
@@ -50,8 +52,11 @@ def main(url, screenshot_path):
             
         if pred_target is not None:
             # CRP classifier + heuristic
+            run_dynamic_login
+            '''
             cre_pred, cred_conf, _  = credential_classifier_mixed_al(img=screenshot_path, coords=pred_boxes, 
                                                                  types=pred_classes, model=cls_model)
+            
             
             if cre_pred == 1: # non-CRP page
                 print('Non-CRP, enter dynamic analysis')
@@ -71,7 +76,7 @@ def main(url, screenshot_path):
             else: # already a CRP page
                 print('Already a CRP, continue')
                 break
-        
+            '''
     if pred_target is not None:
         phish_category = 1
         # Visualize
@@ -128,6 +133,45 @@ def main(url, screenshot_path):
 
 
 if __name__ == "__main__":
+    white_lists = {}
+
+    with open('src/util/lang.txt') as langf:
+        for i in langf.readlines():
+            i = i.strip()
+            text = i.split(' ')
+            print(text)
+            white_lists[text[1]] = 'en'
+    print(white_lists)
+    prefs = {
+        "translate": {"enabled": "true"},
+
+        "translate_whitelists": white_lists
+    }
+
+    base_save = 'latest_model/alexa2'
+    if not os.path.exists(base_save):
+        os.mkdir(base_save)
+    options = webdriver.ChromeOptions()
+    # options.add_argument("--start-maximized")
+    capabilities = DesiredCapabilities.CHROME
+    # capabilities["loggingPrefs"] = {"performance": "ALL"}  # chromedriver < ~75
+    capabilities["goog:loggingPrefs"] = {"performance": "ALL"}  # chromedriver 75+
+    # options.add_experimental_option("excludeSwitches", ["disable-popup-blocking"])
+
+    options.add_experimental_option("prefs", prefs)
+    options.add_argument('--ignore-certificate-errors')
+    options.add_argument('--ignore-ssl-errors')
+
+    options.add_argument("--start-maximized")
+    # options.add_argument('--no-sandbox')
+    #   options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--window-size=1920,1080')
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    # options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option('useAutomationExtension', False)
+    options.add_argument(
+        'user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36')
+    webTester = WebTester(options, capabilities)
     os.environ["CUDA_VISIBLE_DEVICES"]="1"
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', "--folder", help='Input folder path to parse', required=True)
