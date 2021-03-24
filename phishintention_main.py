@@ -114,18 +114,20 @@ if __name__ == "__main__":
             else:
                 phish_category, phish_target, plotvis = main(url=url, screenshot_path=screenshot_path)
                 
-                try:
-                    if vt_scan(url) is not None:
-                        positive, total = vt_scan(url)
-                        print("Positive VT scan!")
-                        vt_result = str(positive) + "/" + str(total)
-                    else:
-                        print("Negative VT scan!")
-                        vt_result = "None"
-                
-                except Exception as e:
-                    print('VTScan is not working...')
-                    vt_result = "error"
+                vt_result = "None"
+                if pred_target is not None:
+                    try:
+                        if vt_scan(url) is not None:
+                            positive, total = vt_scan(url)
+                            print("Positive VT scan!")
+                            vt_result = str(positive) + "/" + str(total)
+                        else:
+                            print("Negative VT scan!")
+                            vt_result = "None"
+
+                    except Exception as e:
+                        print('VTScan is not working...')
+                        vt_result = "error"
 
                 with open(args.results, "a+") as f:
                     f.write(url +"\t")
