@@ -24,9 +24,7 @@
 
 - [Instructions]
     - Please run phishintention_main.py to get prediction
-    ```
-      python phishintention_main.py --folder [data folder] --results [xxx.txt]
-        ```
+    ```python phishintention_main.py --folder [data folder] --results [xxx.txt]```
 
 - [Project structure]
     - src
