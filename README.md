@@ -4,6 +4,9 @@
     - This is the repository for phishintention project
     
 - [Framework]
+    
+    <img src="big_pic/pic.jpg" style="width:2000px;height:350px"/>
+    
     ```Input```: a screenshot, ```Output```: Phish/Benign, Phishing target
     - Step 1: Enter <b>Layout detector</b>, get predicted elements
     - Step 2: Enter <b>Siamese</b>, siamese match a phishing target, get phishing target
