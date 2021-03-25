@@ -16,13 +16,13 @@
        - Else <b>CRP classifier(and heuristic)</b> reports its a CRP page
 
     - Step 4: 
-        - If reach a CRP + Siamese report target: ``Return``` Phish, Phishing target
+        - If reach a CRP + Siamese report target: ```Return``` Phish, Phishing target
         - Else: ```Return``` Benign
 
-    - [Instructions]
-        - Please run phishintention_main.py to get prediction
-        ```
-          python phishintention_main.py --folder [data folder] --results [xxx.txt]
+- [Instructions]
+    - Please run phishintention_main.py to get prediction
+    ```
+      python phishintention_main.py --folder [data folder] --results [xxx.txt]
         ```
 
 - [Project structure]
