@@ -81,11 +81,11 @@ def siamese_inference(model, domain_map, logo_feat_list, file_name_list, shot_pa
     :param grayscale: convert image(cropped) to grayscale or not
     :return: predicted target, predicted target's domain
     '''
-
+    
     try:
         img = Image.open(shot_path)
     except OSError:  # if the image cannot be identified, return nothing
-        return None, None
+        return None, None, None
 
     ## get predicted box --> crop from screenshot
     cropped = img.crop((gt_bbox[0], gt_bbox[1], gt_bbox[2], gt_bbox[3]))
@@ -108,7 +108,7 @@ def siamese_inference(model, domain_map, logo_feat_list, file_name_list, shot_pa
     
     ## If the largest similarity exceeds threshold 
     if sim_list[0] >= t_s:  
-        predicted_brand = brand_converter(os.path.split(os.path.dirname(pred_brand_list[0]))[-1])
+        predicted_brand = brand_converter(os.path.basename(os.path.dirname(pred_brand_list[0])))
         predicted_domain = domain_map[predicted_brand]
         final_sim = max(sim_list)
         
@@ -119,12 +119,12 @@ def siamese_inference(model, domain_map, logo_feat_list, file_name_list, shot_pa
         logo_feat = pred_siamese(candidate_logo, model, imshow=False, title=None, grayscale=grayscale)
         final_sim = logo_feat.dot(img_feat)
         if final_sim >= t_s:
-            predicted_brand = brand_converter(os.path.split(os.path.dirname(pred_brand_list[0]))[-1])
+            predicted_brand = brand_converter(os.path.basename(os.path.dirname(pred_brand_list[0])))
             predicted_domain = domain_map[predicted_brand]
 
     ## If no prediction, return None
     if predicted_brand is None:  
-        return None, None
+        return None, None, final_sim
     
     ## If there is a prediction, do aspect ratio check 
     else:
@@ -132,11 +132,11 @@ def siamese_inference(model, domain_map, logo_feat_list, file_name_list, shot_pa
         ratio_logo = candidate_logo.size[0]/candidate_logo.size[1]
         # aspect ratios of matched pair must not deviate by more than factor of 2
         if max(ratio_crop, ratio_logo)/min(ratio_crop, ratio_logo) > 2: 
-            return None, None
+            return None, None, final_sim
 
         # If pass aspect ratio check, report a match
         else:
-            return predicted_brand, predicted_domain
+            return predicted_brand, predicted_domain, final_sim
 
 
 
