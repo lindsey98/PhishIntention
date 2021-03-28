@@ -94,7 +94,8 @@ def siamese_inference(model, domain_map, logo_feat_list, file_name_list, shot_pa
     ## get cosine similarity with every protected logo
     sim_list = logo_feat_list @ img_feat.T # take dot product for every pair of embeddings (Cosine Similarity)
     pred_brand_list = file_name_list
-    
+    #print(pred_brand_list)
+
     assert len(sim_list) == len(pred_brand_list)
 
     ## get top 10 brands
@@ -108,7 +109,8 @@ def siamese_inference(model, domain_map, logo_feat_list, file_name_list, shot_pa
     
     ## If the largest similarity exceeds threshold 
     if sim_list[0] >= t_s:  
-        predicted_brand = brand_converter(pred_brand_list[0].split('/')[-2])
+        predicted_brand = brand_converter(os.path.basename(os.path.dirname(pred_brand_list[0])))
+
         predicted_domain = domain_map[predicted_brand]
         final_sim = max(sim_list)
         
