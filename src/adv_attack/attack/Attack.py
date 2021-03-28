@@ -45,8 +45,9 @@ class adversarial_attack():
 
         # Loop over all examples in test set
         for ct, (data, label) in tqdm(enumerate(self.dataloader)):
-            data, label = data.to(self.device), label.to(self.device)
-
+            data = data.to(self.device, dtype=torch.float) 
+            label = label.to(self.device, dtype=torch.long)
+            
             # Forward pass the data through the model
             output = self.model(data)
             self.model.zero_grad()
@@ -76,7 +77,11 @@ class adversarial_attack():
                 perturbed_data = deepfool(self.model, self.num_classes, data, label, I)
                 
             elif self.method == 'cw':
-                target_class = torch.argsort(output, dim=1)[0][1].item() # top2 confidence class
+                target_class = init_pred
+                while target_class == init_pred:
+                    target_class = torch.randint(0, self.num_classes, (1,)).to(self.device)
+                print(target_class)
+
                 perturbed_data = cw(self.model, self.device, data, label, target_class)
                 
             else:

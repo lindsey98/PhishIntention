@@ -7,8 +7,9 @@ import argparse
 from src.element_detector import vis
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from login_cv import WebTester
-
-def main(url, screenshot_path):
+from login_cv import test_wrapper
+import time
+def main(url, screenshot_path, webTester):
     
     '''
     Get phishing prediction 
@@ -23,16 +24,16 @@ def main(url, screenshot_path):
     while True:
         # 0 for benign, 1 for phish, default is benign
         phish_category = 0 
-
+      #  print("entering phishpedia")
         ####################### Step1: element detector ##############################################
         pred_classes, pred_boxes, pred_scores = element_recognition(img=screenshot_path, model=ele_model)
         plotvis = vis(screenshot_path, pred_boxes, pred_classes)
-        
+      #  print("plot")
         # If no element is reported
         if len(pred_boxes) == 0:
             print('No element is detected, report as benign')
             return phish_category, None, plotvis
-        
+        print('entering siamese')
         ######################## Step2: siamese (logo matcher) ########################################
         pred_target, matched_coord = phishpedia_classifier(pred_classes=pred_classes, pred_boxes=pred_boxes, 
                                         domain_map_path=domain_map_path,
@@ -41,20 +42,29 @@ def main(url, screenshot_path):
                                         url=url,
                                         shot_path=screenshot_path,
                                         ts=siamese_ts) 
-
+    #    print("done")
         if pred_target is None:
             print('Did not match to any brand, report as benign')
             return phish_category, None, plotvis
-
+    #    print(pred_target)
         ######################## Step3: a target is reported, check CRP #################################
         if waive_crp_classifier: # only run dynamic analysis once
             break
             
         if pred_target is not None:
+            dir = os.path.dirname(screenshot_path)
             # CRP classifier + heuristic
-            run_dynamic_login
+            test_wrapper(url, dir, webTester)
+            break
             '''
             cre_pred, cred_conf, _  = credential_classifier_mixed_al(img=screenshot_path, coords=pred_boxes, 
+
+            # CRP HTML heuristic
+            html_path = screenshot_path.replace("shot.png", "html.txt")
+            cre_pred = html_heuristic(html_path)
+            if cre_pred == 1: # if HTML heuristic report as nonCRP
+                # CRP classifier
+                cre_pred, cred_conf, _  = credential_classifier_mixed_al(img=screenshot_path, coords=pred_boxes, 
                                                                  types=pred_classes, model=cls_model)
             
             
@@ -77,6 +87,7 @@ def main(url, screenshot_path):
                 print('Already a CRP, continue')
                 break
             '''
+
     if pred_target is not None:
         phish_category = 1
         # Visualize
@@ -84,51 +95,6 @@ def main(url, screenshot_path):
                     cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
         
     return phish_category, pred_target, plotvis
-
-    ######################## Step 4: Layout matcher #####################################################################
-#     if pred_target not in ['Amazon', 'Facebook', 'Google', 'Instagram', 'LinkedIn Corporation', 'ms_skype', 'Twitter, Inc.']:
-#         phish_category = 1 # Report as phish
-#         print('Reported target is not from social media brands, no need for layout matcher')
-#         # Visualize
-#         cv2.putText(plotvis, "Target: %s" % pred_target, (int(matched_coord[0] + 20), int(matched_coord[1] + 20)),
-#                     cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
-#         return phish_category, pred_target, plotvis
-
-#     elif pattern_ct >= 2: # layout heuristic adopted from crp heuristic
-#         phish_category = 1 # Report as phish
-#         print('Has a credential-requiring layout, no need for layout matcher')
-#         # Visualize
-#         cv2.putText(plotvis, "Target: %s" % pred_target, (int(matched_coord[0] + 20), int(matched_coord[1] + 20)),
-#                     cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
-#         return phish_category, pred_target, plotvis
-
-#     else: 
-#         #  Layout template matching
-#         layout_cfg, gt_coords_arr, gt_clses, gt_files_arr, gt_shot_size_arr = layout_config(cfg_dir=layout_cfg_dir, 
-#                                                                            ref_dir=layout_ref_dir, 
-#                                                                            matched_brand=pred_target,
-#                                                                            ele_model=ele_model)
-#         # Get the matched template and matched similarity
-#         max_s, max_site = layout_matcher(pred_boxes=pred_boxes, pred_clses=pred_classes, 
-#                                         img=img_path, 
-#                                         gt_coords_arr=gt_coords_arr, gt_clses=gt_clses, 
-#                                         gt_files_arr=gt_files_arr, gt_shot_size_arr=gt_shot_size_arr,
-#                                         cfg=layout_cfg)
-
-#         # Success layout match
-#         if max_s >= layout_ts: 
-#             phish_category = 1 # Report as phish
-#             print('Reported target is from social media brands, layout matcher is successful')
-#             # Visualize
-#             cv2.putText(plotvis, "Target: %s" % pred_target, (int(matched_coord[0] + 20), int(matched_coord[1] + 20)),
-#                     cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
-#             return phish_category, pred_target, plotvis
-
-        # Unsuccessful layout match
-#         else: 
-#             print('Reported target is from social media brands, layout matcher is unsuccessful')
-#             return phish_category, None, plotvis
-
 
 
 
@@ -180,51 +146,58 @@ if __name__ == "__main__":
     date = args.folder.split('/')[-1]    
     directory = args.folder 
     results_path = args.results
-    with open(args.results, "w+") as f:
-        f.write("url" +"\t")
-        f.write("phish" +"\t")
-        f.write("prediction" + "\t") # write top1 prediction only
-        f.write("vt_result" +"\n")
-    
+    if not os.path.exists(args.results):
+        with open(args.results, "w+") as f:
+            f.write("url" +"\t")
+            f.write("phish" +"\t")
+            f.write("prediction" + "\t") # write top1 prediction only
+            f.write("vt_result" +"\n")
 
-    for item in os.listdir(directory):
-        try:
-            print(item)
-            full_path = os.path.join(directory, item)
-            
-            screenshot_path = os.path.join(full_path, "shot.png")
-            url = open(os.path.join(full_path, 'info.txt')).read()
-            
-            if not os.path.exists(screenshot_path):
+    done = []
+    while True:
+        for item in os.listdir(directory):
+            if item in done:
                 continue
-            else:
-                phish_category, phish_target, plotvis = main(url=url, screenshot_path=screenshot_path)
-                
-                try:
-                    if vt_scan(url) is not None:
-                        positive, total = vt_scan(url)
-                        print("Positive VT scan!")
-                        vt_result = str(positive) + "/" + str(total)
-                    else:
-                        print("Negative VT scan!")
-                        vt_result = "None"
-                
-                except Exception as e:
-                    print('VTScan is not working...')
-                    vt_result = "error"
 
-                with open(args.results, "a+") as f:
-                    f.write(url +"\t")
-                    f.write(str(phish_category) +"\t")
-                    f.write(str(phish_target) + "\t") # write top1 prediction only
-                    f.write(vt_result +"\n")
-                    
-                cv2.imwrite(os.path.join(full_path, "predict.png"), plotvis)
-                
-        except Exception as e:
-            print(str(e))
+            try:
+                print(item)
+                full_path = os.path.join(directory, item)
+
+                screenshot_path = os.path.join(full_path, "shot.png")
+                url = open(os.path.join(full_path, 'info.txt')).read()
+
+                if not os.path.exists(screenshot_path):
+                    continue
+                else:
+                    phish_category, phish_target, plotvis = main(url=url, screenshot_path=screenshot_path, webTester=webTester)
+
+                    vt_result = "None"
+                    if phish_target is not None:
+                        try:
+                            if vt_scan(url) is not None:
+                                positive, total = vt_scan(url)
+                                print("Positive VT scan!")
+                                vt_result = str(positive) + "/" + str(total)
+                            else:
+                                print("Negative VT scan!")
+                                vt_result = "None"
+
+                        except Exception as e:
+                            print('VTScan is not working...')
+                            vt_result = "error"
+
+                    with open(args.results, "a+") as f:
+                        f.write(url +"\t")
+                        f.write(str(phish_category) +"\t")
+                        f.write(str(phish_target) + "\t") # write top1 prediction only
+                        f.write(vt_result +"\n")
+
+                    cv2.imwrite(os.path.join(full_path, "predict.png"), plotvis)
+                done.append(item)
+            except Exception as e:
+                print(str(e))
           #  raise(e)
-        
+        time.sleep(15)
 #     sheets = gwrapper()
 #     sheets.update_file(results_path, date) 
 
