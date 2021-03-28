@@ -35,14 +35,14 @@ def main(url, screenshot_path, webTester):
             return phish_category, None, plotvis
         print('entering siamese')
         ######################## Step2: siamese (logo matcher) ########################################
-        pred_target, matched_coord = phishpedia_classifier(pred_classes=pred_classes, pred_boxes=pred_boxes, 
+        pred_target, matched_coord, siamese_conf = phishpedia_classifier(pred_classes=pred_classes, pred_boxes=pred_boxes, 
                                         domain_map_path=domain_map_path,
                                         model=pedia_model, 
                                         logo_feat_list=logo_feat_list, file_name_list=file_name_list,
                                         url=url,
                                         shot_path=screenshot_path,
                                         ts=siamese_ts) 
-    #    print("done")
+
         if pred_target is None:
             print('Did not match to any brand, report as benign')
             return phish_category, None, plotvis
@@ -91,14 +91,14 @@ def main(url, screenshot_path, webTester):
     if pred_target is not None:
         phish_category = 1
         # Visualize
-        cv2.putText(plotvis, "Target: %s" % pred_target, (int(matched_coord[0] + 20), int(matched_coord[1] + 20)),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
+        cv2.putText(plotvis, "Target: {} with confidence {:.4f}".format(pred_target, siamese_conf), (int(matched_coord[0] + 20), int(matched_coord[1] + 20)), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
         
-    return phish_category, pred_target, plotvis
+    return phish_category, pred_target, plotvis, siamese_conf
 
 
 
 if __name__ == "__main__":
+
     white_lists = {}
 
     with open('src/util/lang.txt') as langf:
@@ -146,12 +146,14 @@ if __name__ == "__main__":
     date = args.folder.split('/')[-1]    
     directory = args.folder 
     results_path = args.results
+
     if not os.path.exists(args.results):
         with open(args.results, "w+") as f:
             f.write("url" +"\t")
             f.write("phish" +"\t")
             f.write("prediction" + "\t") # write top1 prediction only
             f.write("vt_result" +"\n")
+
 
     done = []
     while True:
@@ -168,8 +170,9 @@ if __name__ == "__main__":
 
                 if not os.path.exists(screenshot_path):
                     continue
+
                 else:
-                    phish_category, phish_target, plotvis = main(url=url, screenshot_path=screenshot_path, webTester=webTester)
+                    phish_category, phish_target, plotvis, siamese_conf = main(url=url, screenshot_path=screenshot_path)
 
                     vt_result = "None"
                     if phish_target is not None:
@@ -190,10 +193,11 @@ if __name__ == "__main__":
                         f.write(url +"\t")
                         f.write(str(phish_category) +"\t")
                         f.write(str(phish_target) + "\t") # write top1 prediction only
+                        f.write(str(siamese_conf) + "\t")
                         f.write(vt_result +"\n")
 
                     cv2.imwrite(os.path.join(full_path, "predict.png"), plotvis)
-                done.append(item)
+
             except Exception as e:
                 print(str(e))
           #  raise(e)
