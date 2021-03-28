@@ -1,4 +1,4 @@
-from .credential_classifier.bit_pytorch.models import FCMaxPoolV2, KNOWN_MODELS
+from .credential_classifier.bit_pytorch.models import KNOWN_MODELS
 from .credential_classifier.bit_pytorch.grid_divider import read_img_reverse, coord2pixel_reverse, topo2pixel
 from .credential_classifier.HTML_heuristic.post_form import *
 
@@ -287,7 +287,7 @@ def credential_classifier_mixed_al(img:str, coords, types, model):
 def html_heuristic(html_path):
     tree = read_html(html_path)
     proc_data = proc_tree(tree)
-    return check_post(proc_data)
+    return check_post(proc_data, version=3)
 
 
 
