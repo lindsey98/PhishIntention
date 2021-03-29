@@ -1,6 +1,5 @@
 from detectron2.engine import DefaultPredictor
 from detectron2.config import get_cfg
-from src.element_detector import vis
 import cv2
 import numpy as np
 import os
@@ -10,7 +9,7 @@ os.environ["CUDA_VISIBLE_DEVICES"]="1"
 class_dict = {0: 'login'}
 inv_class_dict = {v: k for k, v in class_dict.items()}
 
-def login_config(rcnn_weights_path: str, rcnn_cfg_path: str):
+def login_config(rcnn_weights_path: str, rcnn_cfg_path: str, threshold:float):
     '''
     Load login button detector configurations
     :param rcnn_weights_path: path to rcnn weights
@@ -22,7 +21,7 @@ def login_config(rcnn_weights_path: str, rcnn_cfg_path: str):
     cfg = get_cfg()
     cfg.merge_from_file(rcnn_cfg_path)
     cfg.MODEL.WEIGHTS = rcnn_weights_path
-    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.3 # lower this threshold to report more boxes
+    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = threshold # lower this threshold to report more boxes
     
     # initialize model
     model = DefaultPredictor(cfg)
