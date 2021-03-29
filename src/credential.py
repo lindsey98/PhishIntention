@@ -287,7 +287,7 @@ def credential_classifier_mixed_al(img:str, coords, types, model):
 def html_heuristic(html_path):
     tree = read_html(html_path)
     proc_data = proc_tree(tree)
-    return check_post(proc_data, version=3)
+    return check_post(proc_data, version=2)
 
 
 
