@@ -210,6 +210,10 @@ if __name__ == '__main__':
     for url in tqdm(legitimate_urls):
         domain_name = url.split('//')[-1]
         urldir = './datasets/600_legitimate'
+
+        if os.path.exists(os.path.join(urldir, domain_name)):
+            continue
+
         os.makedirs(os.path.join(urldir, domain_name), exist_ok=True)
 
         # get url
@@ -229,7 +233,8 @@ if __name__ == '__main__':
 
         print("getting url")
         page_text = get_page_text(driver).split('\n') # tokenize by \n
-        page_text = page_text.sort(key=len) # sort text according to length
+        page_text.sort(key=len) # sort text according to length
+        print(len(page_text))
 
         # write original url
         old_screenshot_path =os.path.join(urldir, domain_name, 'shot.png')

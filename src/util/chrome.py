@@ -17,7 +17,10 @@ def click_text(text):
     :param text:
     :return:
     '''
-    helium.click(text)
+    try:
+        helium.click(text)
+    except LookupError as e:
+        print(e)
 
 def click_point(x, y):
     '''
