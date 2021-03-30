@@ -9,7 +9,7 @@ os.environ["CUDA_VISIBLE_DEVICES"]="1"
 class_dict = {0: 'login'}
 inv_class_dict = {v: k for k, v in class_dict.items()}
 
-def login_config(rcnn_weights_path: str, rcnn_cfg_path: str, threshold:float):
+def login_config(rcnn_weights_path: str, rcnn_cfg_path: str, threshold=0.05):
     '''
     Load login button detector configurations
     :param rcnn_weights_path: path to rcnn weights
@@ -75,26 +75,19 @@ def login_vis(img_path, pred_boxes, pred_classes):
     return check
 
 if __name__ == '__main__':
-    ct = 0
-    os.makedirs('debug/', exist_ok=True)
-    for path in os.listdir('datasets/for_rf_screenshots'):
-        for file in os.listdir(os.path.join('datasets/for_rf_screenshots', path)):
-            # change this to your image path
-            img_path = os.path.join('datasets/for_rf_screenshots', path, file)
-
-            # load configurations
-            login_cfg, login_model = login_config(rcnn_weights_path = 'src/dynamic/login_finder/output/lr0.001_v1/model_final.pth', 
-                                                rcnn_cfg_path='src/dynamic/login_finder/configs/faster_rcnn_login_lr0.001.yaml')
-            # predict elements
-            pred_classes, pred_boxes, pred_scores = login_recognition(img=img_path, model=login_model)
-            print(len(pred_boxes))
-
-            # visualize elements 
-            check = login_vis(img_path, pred_boxes, pred_classes)
-
-            cv2.imwrite(os.path.join('debug', file), check)
-            
-            ct += 1
-            if ct >= 100:
-                break
     
+    img_path = "../test_sites/alexasetup.club/shot.png"
+    
+    # load configurations ONCE
+    login_cfg, login_model = login_config(rcnn_weights_path='dynamic/login_finder/output/lr0.001_finetune/model_final.pth',                            rcnn_cfg_path='dynamic/login_finder/configs/faster_rcnn_login_lr0.001_finetune.yaml')
+    
+    # predict elements
+    pred_classes, pred_boxes, pred_scores = login_recognition(img=img_path, model=login_model)
+#     print(len(pred_boxes))
+
+    # visualize elements 
+    check = login_vis(img_path, pred_boxes, pred_classes)
+
+    cv2.imwrite('../test_sites/alexasetup.club/debug.png', check)
+
+
