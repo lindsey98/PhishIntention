@@ -6,7 +6,6 @@ import os
 from src.util.chrome import *
 import re
 from src.credential import *
-from phishintention_config import ele_model, cls_model
 from src.element_detector import *
 
 # global dict
@@ -76,47 +75,34 @@ def login_vis(img_path, pred_boxes, pred_classes):
     
     return check
 
-
-if __name__ == '__main__':
-    
-#     img_path = "../test_sites/alexasetup.club/shot.png"
-#
-#     # load configurations ONCE
-#     login_cfg, login_model = login_config(rcnn_weights_path='dynamic/login_finder/output/lr0.001_finetune/model_final.pth',                            rcnn_cfg_path='dynamic/login_finder/configs/faster_rcnn_login_lr0.001_finetune.yaml')
-#
-#     # predict elements
-#     pred_classes, pred_boxes, pred_scores = login_recognition(img=img_path, model=login_model)
-# #     print(len(pred_boxes))
-#
-#     # visualize elements
-#     check = login_vis(img_path, pred_boxes, pred_classes)
-#
-#     cv2.imwrite('../test_sites/alexasetup.club/debug.png', check)
-
-    # get url
-    orig_url = "https://alexasetup.club/"
-    new_screenshot_path = './test_sites/check.png'
-    new_html_path = './test_sites/check.html'
-    new_info_path = './test_sites/check.txt'
-
-    driver.get(orig_url)
-    print("getting url")
-    page_text = get_page_text(driver)
-    page_text = page_text.split('\n')
-
+def keyword_heuristic(driver, orig_url, page_text,
+                      new_screenshot_path, new_html_path, new_info_path):
+    '''
+    Keyword based login finder
+    :param driver: chrome driver
+    :param orig_url: original url
+    :param page_text: html text for original url
+    :param new_screenshot_path: where to save redirected screenshot
+    :param new_html_path: where to save redirected html
+    :param new_info_path: where to save redirected url
+    :return: reach_crp: reach a CRP page or not at the end
+    '''
     ct = 0 # count number of sign-up/login links
     reach_crp = False # reach a CRP page or not
+
     for i in page_text:
+        # looking for keyword
         keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(join now)|(new user)|(my account)',
                                     i.lower())
         if len(keyword_finder) > 0:
             print("found")
-            click_text(i)
+            click_text(i) # click that text
+            # save redirected url
             current_url = driver.current_url
             driver.save_screenshot(new_screenshot_path)
             writetxt(new_html_path, driver.page_source)
             writetxt(new_info_path, str(current_url))
-            ct += 1
+            ct += 1 # count +1
 
             # Call CRP classifier
             # CRP HTML heuristic
@@ -128,12 +114,105 @@ if __name__ == '__main__':
                                                                      types=pred_classes, model=cls_model)
             if cre_pred == 0: # this is an CRP
                 reach_crp = True
-                break
-            # Back to the original site
+                break # stop when reach an CRP already
+            # Back to the original site if CRP not found
             driver.get(orig_url)
 
         # Only check Top 3
         if ct >= 3:
             break
 
-    driver.close()
+    return reach_crp
+
+def cv_heuristic(driver, orig_url, old_screenshot_path,
+                 new_screenshot_path, new_html_path, new_info_path):
+    '''
+    CV based login finder
+    :param driver: chrome driver
+    :param orig_url: original URL
+    :param old_screenshot_path: original screenshot path
+    :return:
+    '''
+    # CV-based login finder
+    # predict elements
+    _, pred_boxes, _ = login_recognition(img=old_screenshot_path, model=login_model)
+    # # visualize elements
+    # check = login_vis(img_path, pred_boxes, pred_classes)
+    reach_crp = False
+    # if no prediction at all
+    if len(pred_boxes) == 0:
+        return reach_crp
+
+    for bbox in pred_boxes.detach().cpu().numpy()[: min(3, len(pred_boxes))]: # only for top3 boxes
+        x1, y1, x2, y2 = bbox
+        center = ((x1 + x2) / 2, (y1 + y2) / 2)
+        click_point(center[0], center[1])  # redirect to that page
+
+        # save redirected url
+        current_url = driver.current_url
+        driver.save_screenshot(new_screenshot_path)
+        writetxt(new_html_path, driver.page_source)
+        writetxt(new_info_path, str(current_url))
+
+        # Call CRP classifier
+        # CRP HTML heuristic
+        cre_pred = html_heuristic(new_html_path)
+        # Credential classifier module
+        if cre_pred == 1:  # if HTML heuristic report as nonCRP
+            pred_classes_crp, pred_boxes_crp, _ = element_recognition(img=new_screenshot_path, model=ele_model)
+            cre_pred, cred_conf, _ = credential_classifier_mixed_al(img=new_screenshot_path, coords=pred_boxes_crp,
+                                                                    types=pred_classes_crp, model=cls_model)
+
+        if cre_pred == 0: # this is an CRP
+            reach_crp = True
+            break # stop when reach an CRP already
+
+        driver.get(orig_url)  # go back to original url
+
+    return reach_crp
+
+if __name__ == '__main__':
+
+    ############################ Temporal scripts ################################################################################################################
+    # element recognition model
+    ele_cfg, ele_model = element_config(rcnn_weights_path = './src/element_detector/output/website_lr0.001/model_final.pth',
+                                        rcnn_cfg_path='./src/element_detector/configs/faster_rcnn_web.yaml')
+
+    # CRP classifier -- mixed version
+    cls_model = credential_config(checkpoint='./src/credential_classifier/output/hybrid/hybrid_lr0.005/BiT-M-R50x1V2_0.005.pth.tar',
+                                  model_type='mixed')
+    ##############################################################################################################################################################
+
+    # load configurations ONCE
+    login_cfg, login_model = login_config(rcnn_weights_path='./src/dynamic/login_finder/output/lr0.001_finetune/model_final.pth',
+                                          rcnn_cfg_path='./src/dynamic/login_finder/configs/faster_rcnn_login_lr0.001_finetune.yaml')
+
+    # get url
+    orig_url = "https://www.alibaba.com"
+    new_screenshot_path = './test_sites/check.png'
+    new_html_path = './test_sites/check.html'
+    new_info_path = './test_sites/check.txt'
+
+    driver.get(orig_url)
+    print("getting url")
+    page_text = get_page_text(driver).split('\n') # tokenize by \n
+
+    # write original url
+    os.makedirs('./test_sites/alibaba.com', exist_ok=True)
+    old_screenshot_path = os.path.join('./test_sites/alibaba.com', 'shot.png')
+    driver.save_screenshot(old_screenshot_path)
+    writetxt(old_screenshot_path.replace('shot.png', 'html.txt'), driver.page_source)
+    writetxt(old_screenshot_path.replace('shot.png', 'info.txt'), str(orig_url))
+
+    #FIXME: check CRP for original URL first
+    reach_crp = False
+    reach_crp = keyword_heuristic(driver=driver, orig_url=orig_url, page_text=page_text,
+                      new_screenshot_path=new_screenshot_path, new_html_path=new_html_path, new_info_path=new_info_path)
+    if not reach_crp:
+        reach_crp = cv_heuristic(driver=driver, orig_url=orig_url, old_screenshot_path=old_screenshot_path,
+                                 new_screenshot_path=new_screenshot_path, new_html_path=new_html_path, new_info_path=new_info_path)
+
+        print(reach_crp)
+
+
+    driver.quit()

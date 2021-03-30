@@ -19,6 +19,15 @@ def click_text(text):
     '''
     helium.click(text)
 
+def click_point(x, y):
+    '''
+    click on coordinate (x,y)
+    :param x:
+    :param y:
+    :return:
+    '''
+    helium.click(helium.Point(x, y))
+
 # write in txt
 def writetxt(txtpath, contents):
     with open(txtpath, 'w', encoding='utf-8') as fw:
@@ -44,8 +53,6 @@ def initialize_chrome_settings(lang_txt:str):
     }
 
     options = webdriver.ChromeOptions()
-    capabilities = DesiredCapabilities.CHROME
-    capabilities["goog:loggingPrefs"] = {"performance": "ALL"}  # chromedriver 75+
 
     options.add_experimental_option("prefs", prefs)
     options.add_argument('--ignore-certificate-errors')
@@ -58,8 +65,9 @@ def initialize_chrome_settings(lang_txt:str):
     options.add_experimental_option('useAutomationExtension', False)
     options.add_argument(
         'user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36')
+    options.set_capability('unhandledPromptBehavior', 'dismiss')
 
-    return options
+    return  options
 
 
 
@@ -67,6 +75,7 @@ def initialize_chrome_settings(lang_txt:str):
 options = initialize_chrome_settings(lang_txt='src/util/lang.txt')
 capabilities = DesiredCapabilities.CHROME
 capabilities["goog:loggingPrefs"] = {"performance": "ALL"}  # chromedriver 75+
+capabilities["unexpectedAlertBehaviour"] = "dismiss"  # handle alert
 
 driver = webdriver.Chrome(ChromeDriverManager().install(), desired_capabilities=capabilities,
                           chrome_options=options)
