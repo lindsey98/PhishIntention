@@ -7,6 +7,9 @@ from src.util.chrome import *
 import re
 from src.credential import *
 from src.element_detector import *
+import time
+import pandas as pd
+from tqdm import tqdm
 
 # global dict
 class_dict = {0: 'login'}
@@ -116,7 +119,14 @@ def keyword_heuristic(driver, orig_url, page_text,
                 reach_crp = True
                 break # stop when reach an CRP already
             # Back to the original site if CRP not found
-            driver.get(orig_url)
+            try:
+                driver.get(orig_url)
+                alert_msg = driver.switch_to.alert.text
+                driver.switch_to.alert.dismiss()
+                time.sleep(1)
+            except Exception as e:
+                print(str(e))
+                print("no alert")
 
         # Only check Top 3
         if ct >= 3:
@@ -167,7 +177,14 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
             reach_crp = True
             break # stop when reach an CRP already
 
-        driver.get(orig_url)  # go back to original url
+        try:
+            driver.get(orig_url)  # go back to original url
+            alert_msg = driver.switch_to.alert.text
+            driver.switch_to.alert.dismiss()
+            time.sleep(1)
+        except Exception as e:
+            print(str(e))
+            print("no alert")
 
     return reach_crp
 
@@ -187,32 +204,48 @@ if __name__ == '__main__':
     login_cfg, login_model = login_config(rcnn_weights_path='./src/dynamic/login_finder/output/lr0.001_finetune/model_final.pth',
                                           rcnn_cfg_path='./src/dynamic/login_finder/configs/faster_rcnn_login_lr0.001_finetune.yaml')
 
-    # get url
-    orig_url = "https://www.alibaba.com"
-    new_screenshot_path = './test_sites/check.png'
-    new_html_path = './test_sites/check.html'
-    new_info_path = './test_sites/check.txt'
+    # 600 URLs
+    legitimate_urls = list(pd.read_csv('./datasets/alexa.csv', header=None).iloc[:, 0])
 
-    driver.get(orig_url)
-    print("getting url")
-    page_text = get_page_text(driver).split('\n') # tokenize by \n
+    for url in tqdm(legitimate_urls):
+        domain_name = url.split('//')[-1]
+        urldir = './datasets/600_legitimate'
+        os.makedirs(os.path.join(urldir, domain_name), exist_ok=True)
 
-    # write original url
-    os.makedirs('./test_sites/alibaba.com', exist_ok=True)
-    old_screenshot_path = os.path.join('./test_sites/alibaba.com', 'shot.png')
-    driver.save_screenshot(old_screenshot_path)
-    writetxt(old_screenshot_path.replace('shot.png', 'html.txt'), driver.page_source)
-    writetxt(old_screenshot_path.replace('shot.png', 'info.txt'), str(orig_url))
+        # get url
+        orig_url = url
+        new_screenshot_path = os.path.join(urldir, domain_name, 'new_shot.png')
+        new_html_path = new_screenshot_path.replace('new_shot.png', 'new_html.txt')
+        new_info_path = new_screenshot_path.replace('new_shot.png', 'new_info.txt')
 
-    #FIXME: check CRP for original URL first
-    reach_crp = False
-    reach_crp = keyword_heuristic(driver=driver, orig_url=orig_url, page_text=page_text,
-                      new_screenshot_path=new_screenshot_path, new_html_path=new_html_path, new_info_path=new_info_path)
-    if not reach_crp:
-        reach_crp = cv_heuristic(driver=driver, orig_url=orig_url, old_screenshot_path=old_screenshot_path,
-                                 new_screenshot_path=new_screenshot_path, new_html_path=new_html_path, new_info_path=new_info_path)
+        try:
+            driver.get(orig_url)
+            alert_msg = driver.switch_to.alert.text
+            driver.switch_to.alert.dismiss()
+            time.sleep(1)
+        except Exception as e:
+            print(str(e))
+            print("no alert")
 
-        print(reach_crp)
+        print("getting url")
+        page_text = get_page_text(driver).split('\n') # tokenize by \n
+        page_text = page_text.sort(key=len) # sort text according to length
 
+        # write original url
+        old_screenshot_path =os.path.join(urldir, domain_name, 'shot.png')
+        driver.save_screenshot(old_screenshot_path)
+        writetxt(old_screenshot_path.replace('shot.png', 'html.txt'), driver.page_source)
+        writetxt(old_screenshot_path.replace('shot.png', 'info.txt'), str(orig_url))
+
+        #FIXME: check CRP for original URL first
+        reach_crp = False
+        reach_crp = keyword_heuristic(driver=driver, orig_url=orig_url, page_text=page_text,
+                                      new_screenshot_path=new_screenshot_path, new_html_path=new_html_path, new_info_path=new_info_path)
+        print('After HTML keyword finder:', reach_crp)
+
+        if not reach_crp:
+            reach_crp = cv_heuristic(driver=driver, orig_url=orig_url, old_screenshot_path=old_screenshot_path,
+                                     new_screenshot_path=new_screenshot_path, new_html_path=new_html_path, new_info_path=new_info_path)
+            print('After CV finder', reach_crp)
 
     driver.quit()

@@ -57,7 +57,7 @@ def initialize_chrome_settings(lang_txt:str):
     options.add_experimental_option("prefs", prefs)
     options.add_argument('--ignore-certificate-errors')
     options.add_argument('--ignore-ssl-errors')
-    # options.add_argument("--headless") # diable browser
+    options.add_argument("--headless") # diable browser
 
     options.add_argument("--start-maximized")
     options.add_argument('--window-size=1920,1080') # screenshot size
