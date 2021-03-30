@@ -20,11 +20,12 @@ def evaluate_html_classifier(datadir, mode, write_txt, classifier_type):
         phish_category = 0 # 0 for benign, 1 for phish
         pred_target = None # predicted target, default is None
 
-        img_path = os.path.join(data_dir, folder, 'shot.png')
+        img_path = os.path.join(datadir, folder, 'shot.png')
+        html_path = os.path.join(datadir, folder, 'html.txt')
         if mode != 'phish':
-            url = open(os.path.join(data_dir, folder, 'info.txt'), encoding = "ISO-8859-1").read()
+            url = open(os.path.join(datadir, folder, 'info.txt'), encoding = "ISO-8859-1").read()
         else:
-            url = eval(open(os.path.join(data_dir, folder, 'info.txt'), encoding = "ISO-8859-1").read())['url']
+            url = eval(open(os.path.join(datadir, folder, 'info.txt'), encoding = "ISO-8859-1").read())['url']
 
         # Element recognition module
         start_time = time.time()
@@ -114,11 +115,11 @@ def evaluate_rule_classifier_rule_matcher(datadir, mode, write_txt, classifier_t
         phish_category = 0 # 0 for benign, 1 for phish
         pred_target = None # predicted target, default is None
 
-        img_path = os.path.join(data_dir, folder, 'shot.png')
+        img_path = os.path.join(datadir, folder, 'shot.png')
         if mode != 'phish':
-            url = open(os.path.join(data_dir, folder, 'info.txt'), encoding = "ISO-8859-1").read()
+            url = open(os.path.join(datadir, folder, 'info.txt'), encoding = "ISO-8859-1").read()
         else:
-            url = eval(open(os.path.join(data_dir, folder, 'info.txt'), encoding = "ISO-8859-1").read())['url']
+            url = eval(open(os.path.join(datadir, folder, 'info.txt'), encoding = "ISO-8859-1").read())['url']
 
         # Element recognition module
         start_time = time.time()
@@ -235,11 +236,11 @@ def evaluate_rule_classifier_matcher(datadir, mode, write_txt, classifier_type):
         phish_category = 0 # 0 for benign, 1 for phish
         pred_target = None # predicted target, default is None
 
-        img_path = os.path.join(data_dir, folder, 'shot.png')
+        img_path = os.path.join(datadir, folder, 'shot.png')
         if mode != 'phish':
-            url = open(os.path.join(data_dir, folder, 'info.txt'), encoding = "ISO-8859-1").read()
+            url = open(os.path.join(datadir, folder, 'info.txt'), encoding = "ISO-8859-1").read()
         else:
-            url = eval(open(os.path.join(data_dir, folder, 'info.txt'), encoding = "ISO-8859-1").read())['url']
+            url = eval(open(os.path.join(datadir, folder, 'info.txt'), encoding = "ISO-8859-1").read())['url']
 
         # Element recognition module
         start_time = time.time()
@@ -355,11 +356,11 @@ def evaluate_classifier_matcher(datadir, mode, write_txt, classifier_type):
         phish_category = 0 # 0 for benign, 1 for phish
         pred_target = None # predicted target, default is None
 
-        img_path = os.path.join(data_dir, folder, 'shot.png')
+        img_path = os.path.join(datadir, folder, 'shot.png')
         if mode != 'phish':
-            url = open(os.path.join(data_dir, folder, 'info.txt'), encoding = "ISO-8859-1").read()
+            url = open(os.path.join(datadir, folder, 'info.txt'), encoding = "ISO-8859-1").read()
         else:
-            url = eval(open(os.path.join(data_dir, folder, 'info.txt'), encoding = "ISO-8859-1").read())['url']
+            url = eval(open(os.path.join(datadir, folder, 'info.txt'), encoding = "ISO-8859-1").read())['url']
 
         # Element recognition module
         start_time = time.time()
@@ -471,11 +472,11 @@ def evaluate_classifier(datadir, mode, write_txt, classifier_type):
         phish_category = 0 # 0 for benign, 1 for phish
         pred_target = None # predicted target, default is None
 
-        img_path = os.path.join(data_dir, folder, 'shot.png')
+        img_path = os.path.join(datadir, folder, 'shot.png')
         if mode != 'phish':
-            url = open(os.path.join(data_dir, folder, 'info.txt'), encoding = "ISO-8859-1").read()
+            url = open(os.path.join(datadir, folder, 'info.txt'), encoding = "ISO-8859-1").read()
         else:
-            url = eval(open(os.path.join(data_dir, folder, 'info.txt'), encoding = "ISO-8859-1").read())['url']
+            url = eval(open(os.path.join(datadir, folder, 'info.txt'), encoding = "ISO-8859-1").read())['url']
 
         # Element recognition module
         start_time = time.time()
@@ -560,11 +561,11 @@ def evaluate_baseline(datadir, mode, write_txt):
         phish_category = 0 # 0 for benign, 1 for phish
         pred_target = None # predicted target, default is None
 
-        img_path = os.path.join(data_dir, folder, 'shot.png')
+        img_path = os.path.join(datadir, folder, 'shot.png')
         if mode != 'phish':
-            url = open(os.path.join(data_dir, folder, 'info.txt'), encoding = "ISO-8859-1").read()
+            url = open(os.path.join(datadir, folder, 'info.txt'), encoding = "ISO-8859-1").read()
         else:
-            url = eval(open(os.path.join(data_dir, folder, 'info.txt'), encoding = "ISO-8859-1").read())['url']
+            url = eval(open(os.path.join(datadir, folder, 'info.txt'), encoding = "ISO-8859-1").read())['url']
 
         # Element recognition module
         start_time = time.time()
