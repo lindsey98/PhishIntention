@@ -3,7 +3,11 @@ from detectron2.config import get_cfg
 import cv2
 import numpy as np
 import os
-os.environ["CUDA_VISIBLE_DEVICES"]="1"
+from src.util.chrome import *
+import re
+from src.credential import *
+from phishintention_config import ele_model, cls_model
+from src.element_detector import *
 
 # global dict
 class_dict = {0: 'login'}
@@ -49,8 +53,6 @@ def login_recognition(img, model):
 
     return pred_classes, pred_boxes, pred_scores
 
-
-    
 def login_vis(img_path, pred_boxes, pred_classes):
     '''
     Visualize rcnn predictions
@@ -74,20 +76,64 @@ def login_vis(img_path, pred_boxes, pred_classes):
     
     return check
 
+
 if __name__ == '__main__':
     
-    img_path = "../test_sites/alexasetup.club/shot.png"
-    
-    # load configurations ONCE
-    login_cfg, login_model = login_config(rcnn_weights_path='dynamic/login_finder/output/lr0.001_finetune/model_final.pth',                            rcnn_cfg_path='dynamic/login_finder/configs/faster_rcnn_login_lr0.001_finetune.yaml')
-    
-    # predict elements
-    pred_classes, pred_boxes, pred_scores = login_recognition(img=img_path, model=login_model)
-#     print(len(pred_boxes))
+#     img_path = "../test_sites/alexasetup.club/shot.png"
+#
+#     # load configurations ONCE
+#     login_cfg, login_model = login_config(rcnn_weights_path='dynamic/login_finder/output/lr0.001_finetune/model_final.pth',                            rcnn_cfg_path='dynamic/login_finder/configs/faster_rcnn_login_lr0.001_finetune.yaml')
+#
+#     # predict elements
+#     pred_classes, pred_boxes, pred_scores = login_recognition(img=img_path, model=login_model)
+# #     print(len(pred_boxes))
+#
+#     # visualize elements
+#     check = login_vis(img_path, pred_boxes, pred_classes)
+#
+#     cv2.imwrite('../test_sites/alexasetup.club/debug.png', check)
 
-    # visualize elements 
-    check = login_vis(img_path, pred_boxes, pred_classes)
+    # get url
+    orig_url = "https://alexasetup.club/"
+    new_screenshot_path = './test_sites/check.png'
+    new_html_path = './test_sites/check.html'
+    new_info_path = './test_sites/check.txt'
 
-    cv2.imwrite('../test_sites/alexasetup.club/debug.png', check)
+    driver.get(orig_url)
+    print("getting url")
+    page_text = get_page_text(driver)
+    page_text = page_text.split('\n')
 
+    ct = 0 # count number of sign-up/login links
+    reach_crp = False # reach a CRP page or not
+    for i in page_text:
+        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(join now)|(new user)|(my account)',
+                                    i.lower())
+        if len(keyword_finder) > 0:
+            print("found")
+            click_text(i)
+            current_url = driver.current_url
+            driver.save_screenshot(new_screenshot_path)
+            writetxt(new_html_path, driver.page_source)
+            writetxt(new_info_path, str(current_url))
+            ct += 1
 
+            # Call CRP classifier
+            # CRP HTML heuristic
+            cre_pred = html_heuristic(new_html_path)
+            # Credential classifier module
+            if cre_pred == 1: # if HTML heuristic report as nonCRP
+                pred_classes, pred_boxes, pred_scores = element_recognition(img=new_screenshot_path, model=ele_model)
+                cre_pred, cred_conf, _  = credential_classifier_mixed_al(img=new_screenshot_path, coords=pred_boxes,
+                                                                     types=pred_classes, model=cls_model)
+            if cre_pred == 0: # this is an CRP
+                reach_crp = True
+                break
+            # Back to the original site
+            driver.get(orig_url)
+
+        # Only check Top 3
+        if ct >= 3:
+            break
+
+    driver.close()
