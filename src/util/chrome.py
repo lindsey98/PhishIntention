@@ -2,6 +2,7 @@ import helium
 from seleniumwire import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.common.exceptions import NoSuchElementException
 
 def get_page_text(driver):
     '''
@@ -9,7 +10,12 @@ def get_page_text(driver):
     :param driver:
     :return:
     '''
-    return driver.find_element_by_tag_name('body').text
+    try:
+        body = driver.find_element_by_tag_name('body').text
+    except NoSuchElementException as e:
+        print(e)
+        body = driver.page_source
+    return body
 
 def click_text(text):
     '''
@@ -19,6 +25,8 @@ def click_text(text):
     '''
     try:
         helium.click(text)
+    except TimeoutError as e:
+        print(e)
     except LookupError as e:
         print(e)
 
@@ -29,7 +37,12 @@ def click_point(x, y):
     :param y:
     :return:
     '''
-    helium.click(helium.Point(x, y))
+    try:
+        helium.click(helium.Point(x, y))
+    except TimeoutError as e:
+        print(e)
+    except LookupError as e:
+        print(e)
 
 # write in txt
 def writetxt(txtpath, contents):

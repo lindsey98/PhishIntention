@@ -10,6 +10,7 @@ from src.element_detector import *
 import time
 import pandas as pd
 from tqdm import tqdm
+from selenium.common.exceptions import TimeoutException
 
 # global dict
 class_dict = {0: 'login'}
@@ -124,6 +125,9 @@ def keyword_heuristic(driver, orig_url, page_text,
                 alert_msg = driver.switch_to.alert.text
                 driver.switch_to.alert.dismiss()
                 time.sleep(1)
+            except TimeoutException as e:
+                print(str(e))
+                continue
             except Exception as e:
                 print(str(e))
                 print("no alert")
@@ -182,6 +186,9 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
             alert_msg = driver.switch_to.alert.text
             driver.switch_to.alert.dismiss()
             time.sleep(1)
+        except TimeoutException as e:
+            print(str(e))
+            continue
         except Exception as e:
             print(str(e))
             print("no alert")
@@ -227,6 +234,9 @@ if __name__ == '__main__':
             alert_msg = driver.switch_to.alert.text
             driver.switch_to.alert.dismiss()
             time.sleep(1)
+        except TimeoutException as e:
+            print(str(e))
+            continue
         except Exception as e:
             print(str(e))
             print("no alert")
