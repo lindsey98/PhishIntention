@@ -19,7 +19,7 @@ pedia_model, logo_feat_list, file_name_list = phishpedia_config(num_classes=277,
                                                 weights_path='src/phishpedia/resnetv2_rgb_new.pth.tar',
                                                 targetlist_path='src/phishpedia/expand_targetlist/')
 
-siamese_ts = 0.9 # threshold is 0.9 in phish-discovery
+siamese_ts = 0.85 # TODO: threshold is 0.9 in phish-discovery?
 
 # brand-domain dictionary
 domain_map_path = 'src/phishpedia/domain_map.pkl'
