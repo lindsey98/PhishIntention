@@ -78,7 +78,6 @@ capabilities = DesiredCapabilities.CHROME
 capabilities["goog:loggingPrefs"] = {"performance": "ALL"}  # chromedriver 75+
 capabilities["unexpectedAlertBehaviour"] = "dismiss"  # handle alert
 
-driver = webdriver.Chrome(ChromeDriverManager().install(), desired_capabilities=capabilities,
-                          chrome_options=options)
+driver = webdriver.Chrome(ChromeDriverManager().install(), desired_capabilities=capabilities, chrome_options=options)
 helium.set_driver(driver)
 

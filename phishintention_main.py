@@ -1,16 +1,15 @@
-from seleniumwire import webdriver
+# from seleniumwire import webdriver
 from phishintention_config import *
 import os
 import argparse
-# from gsheets import gwrapper
+from gsheets import gwrapper
 # from src.utils import *
 from src.element_detector import vis
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+# from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 # from login_cv import WebTester
 # from login_cv import test_wrapper
 import time
 
-# def main(url, screenshot_path, webTester):
 def main(url, screenshot_path):
     '''
     Get phishing prediction 

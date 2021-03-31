@@ -12,6 +12,8 @@ import pandas as pd
 from tqdm import tqdm
 from selenium.common.exceptions import TimeoutException
 
+
+
 # global dict
 class_dict = {0: 'login'}
 inv_class_dict = {v: k for k, v in class_dict.items()}
@@ -225,7 +227,7 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
     print("Getting url")
     page_text = get_page_text(driver).split('\n')  # tokenize by \n
     page_text.sort(key=len)  # sort text according to length
-    print(len(page_text))
+    # print(len(page_text))
 
     # HTML heuristic based login finder
     reach_crp = keyword_heuristic(driver=driver, orig_url=orig_url, page_text=page_text,
@@ -244,20 +246,70 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
     # Final URL
     if os.path.exists(new_info_path):
         current_url = open(new_info_path).read()
+        current_ss = new_screenshot_path
         if len(current_url) == 0:
             current_url = orig_url
+            current_ss = screenshot_path
     else:
         current_url = orig_url
-    # Final screenshot
-    if os.path.exists(new_screenshot_path):
-        current_ss = new_screenshot_path
-    else:
         current_ss = screenshot_path
+
     return current_url, current_ss, reach_crp
 
 if __name__ == '__main__':
 
     ############################ Temporal scripts ################################################################################################################
+    from seleniumwire import webdriver
+    from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+    from webdriver_manager.chrome import ChromeDriverManager
+    import helium
+
+    def initialize_chrome_settings(lang_txt: str):
+        '''
+        initialize chrome settings
+        :return:
+        '''
+        # enable translation
+        white_lists = {}
+
+        with open(lang_txt) as langf:
+            for i in langf.readlines():
+                i = i.strip()
+                text = i.split(' ')
+                print(text)
+                white_lists[text[1]] = 'en'
+        prefs = {
+            "translate": {"enabled": "true"},
+            "translate_whitelists": white_lists
+        }
+
+        options = webdriver.ChromeOptions()
+
+        options.add_experimental_option("prefs", prefs)
+        options.add_argument('--ignore-certificate-errors')
+        options.add_argument('--ignore-ssl-errors')
+        options.add_argument("--headless")  # diable browser
+
+        options.add_argument("--start-maximized")
+        options.add_argument('--window-size=1920,1080')  # screenshot size
+        options.add_argument("--disable-blink-features=AutomationControlled")
+        options.add_experimental_option('useAutomationExtension', False)
+        options.add_argument(
+            'user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36')
+        options.set_capability('unhandledPromptBehavior', 'dismiss')
+
+        return options
+
+    # load driver ONCE
+    options = initialize_chrome_settings(lang_txt='./src/util/lang.txt')
+    capabilities = DesiredCapabilities.CHROME
+    capabilities["goog:loggingPrefs"] = {"performance": "ALL"}  # chromedriver 75+
+    capabilities["unexpectedAlertBehaviour"] = "dismiss"  # handle alert
+
+    driver = webdriver.Chrome(ChromeDriverManager().install(), desired_capabilities=capabilities,
+                              chrome_options=options)
+    helium.set_driver(driver)
+
     # element recognition model
     ele_cfg, ele_model = element_config(rcnn_weights_path = './src/element_detector/output/website_lr0.001/model_final.pth',
                                         rcnn_cfg_path='./src/element_detector/configs/faster_rcnn_web.yaml')
@@ -265,6 +317,7 @@ if __name__ == '__main__':
     # CRP classifier -- mixed version
     cls_model = credential_config(checkpoint='./src/credential_classifier/output/hybrid/hybrid_lr0.005/BiT-M-R50x1V2_0.005.pth.tar',
                                   model_type='mixed')
+
     ##############################################################################################################################################################
 
     # load configurations ONCE
@@ -272,20 +325,17 @@ if __name__ == '__main__':
                                           rcnn_cfg_path='./src/dynamic/login_finder/configs/faster_rcnn_login_lr0.001_finetune.yaml')
 
     # 600 URLs
-    legitimate_urls = list(pd.read_csv('./datasets/alexa.csv', header=None).iloc[:, 0])
+    legitimate_folder = './datasets/600_legitimate'
 
-    for url in tqdm(legitimate_urls[::-1]):
-        domain_name = url.split('//')[-1]
-        urldir = './datasets/600_legitimate'
+    for folder in tqdm(os.listdir(legitimate_folder)):
 
-        if os.path.exists(os.path.join(urldir, domain_name)):
-            continue
-
-        os.makedirs(os.path.join(urldir, domain_name), exist_ok=True)
+        old_screenshot_path = os.path.join(legitimate_folder, folder, 'shot.png')
+        old_html_path = old_screenshot_path.replace('shot.png', 'html.txt')
+        old_info_path = old_screenshot_path.replace('shot.png', 'info.txt')
 
         # get url
-        orig_url = url
-        new_screenshot_path = os.path.join(urldir, domain_name, 'new_shot.png')
+        orig_url = open(old_html_path, encoding='utf-8').read()
+        new_screenshot_path = old_screenshot_path.replace('shot.png', 'new_shot.png')
         new_html_path = new_screenshot_path.replace('new_shot.png', 'new_html.txt')
         new_info_path = new_screenshot_path.replace('new_shot.png', 'new_info.txt')
 
@@ -304,13 +354,7 @@ if __name__ == '__main__':
         print("getting url")
         page_text = get_page_text(driver).split('\n') # tokenize by \n
         page_text.sort(key=len) # sort text according to length
-        print(len(page_text))
-
-        # write original url
-        old_screenshot_path =os.path.join(urldir, domain_name, 'shot.png')
-        driver.save_screenshot(old_screenshot_path)
-        writetxt(old_screenshot_path.replace('shot.png', 'html.txt'), driver.page_source)
-        writetxt(old_screenshot_path.replace('shot.png', 'info.txt'), str(orig_url))
+        print('Num token in HTML: ', len(page_text))
 
         #FIXME: check CRP for original URL first
         reach_crp = False
