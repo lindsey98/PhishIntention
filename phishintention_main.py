@@ -2,13 +2,27 @@
 from phishintention_config import *
 import os
 import argparse
-from gsheets import gwrapper
+# from gsheets import gwrapper
 # from src.utils import *
 from src.element_detector import vis
 # from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 # from login_cv import WebTester
 # from login_cv import test_wrapper
 import time
+
+#####################################################################################################################
+# ** Step 1: Enter Layout detector, get predicted elements
+# ** Step 2: Enter Siamese, siamese match a phishing target, get phishing target
+
+# **         If Siamese report no target, Return Benign, None
+# **         Else Siamese report a target, Enter CRP classifier(and HTML heuristic)
+
+# ** Step 3: If CRP classifier(and heuristic) report it is non-CRP, go to step 4: Dynamic analysis, go back to step1
+# **         Else CRP classifier(and heuristic) reports its a CRP page
+
+# ** Step 5: If reach a CRP + Siamese report target: Return Phish, Phishing target
+# ** Else: Return Benign
+#####################################################################################################################
 
 def main(url, screenshot_path):
     '''
@@ -20,15 +34,15 @@ def main(url, screenshot_path):
     '''
     
     waive_crp_classifier = False
-    siamese_conf = None
-    
+
     while True:
         # 0 for benign, 1 for phish, default is benign
         phish_category = 0
         pred_target = None
+        siamese_conf = None
         print("entering phishpedia")
 
-        ####################### Step1: element detector ##############################################
+        ####################### Step1: layout detector ##############################################
         pred_classes, pred_boxes, pred_scores = element_recognition(img=screenshot_path, model=ele_model)
         plotvis = vis(screenshot_path, pred_boxes, pred_classes)
         print("plot")
@@ -81,6 +95,7 @@ def main(url, screenshot_path):
 #
                 waive_crp_classifier = True # only run dynamic analysis ONCE
 
+                # If dynamic analysis did not reach a CRP
                 if successful == False:
                     print('Dynamic analysis cannot find any link redirected to a CRP page, report as benign')
                     return phish_category, None, plotvis, None
@@ -92,7 +107,7 @@ def main(url, screenshot_path):
     ######################## Step5: Return #################################
     if pred_target is not None:
         phish_category = 1
-        # Visualize
+        # Visualize, add annotations
         cv2.putText(plotvis, "Target: {} with confidence {:.4f}".format(pred_target, siamese_conf),
                     (int(matched_coord[0] + 20), int(matched_coord[1] + 20)),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
@@ -143,7 +158,7 @@ if __name__ == "__main__":
     #     'user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36')
     # webTester = WebTester(options, capabilities)
 
-    os.environ["CUDA_VISIBLE_DEVICES"]="1"
+    # os.environ["CUDA_VISIBLE_DEVICES"]="1"
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', "--folder", help='Input folder path to parse', required=True)
     parser.add_argument('-r', "--results", help='Input results file name', required=True)
