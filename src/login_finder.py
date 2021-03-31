@@ -80,7 +80,8 @@ def login_vis(img_path, pred_boxes, pred_classes):
     return check
 
 def keyword_heuristic(driver, orig_url, page_text,
-                      new_screenshot_path, new_html_path, new_info_path):
+                      new_screenshot_path, new_html_path, new_info_path,
+                      ele_model, cls_model):
     '''
     Keyword based login finder
     :param driver: chrome driver
@@ -89,6 +90,8 @@ def keyword_heuristic(driver, orig_url, page_text,
     :param new_screenshot_path: where to save redirected screenshot
     :param new_html_path: where to save redirected html
     :param new_info_path: where to save redirected url
+    :param ele_model: layout detector
+    :param cls_model: CRP classifier
     :return: reach_crp: reach a CRP page or not at the end
     '''
     ct = 0 # count number of sign-up/login links
@@ -140,7 +143,8 @@ def keyword_heuristic(driver, orig_url, page_text,
     return reach_crp
 
 def cv_heuristic(driver, orig_url, old_screenshot_path,
-                 new_screenshot_path, new_html_path, new_info_path):
+                 new_screenshot_path, new_html_path, new_info_path,
+                 login_model, ele_model, cls_model):
     '''
     CV based login finder
     :param driver: chrome driver
@@ -195,6 +199,61 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
             print("no alert")
 
     return reach_crp
+
+
+def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, driver):
+    # get url
+    orig_url = url
+    successful = False # reach CRP or not?
+    # path to save redirected URL
+    new_screenshot_path = screenshot_path.replace('shot.png', 'new_shot.png')
+    new_html_path = new_screenshot_path.replace('new_shot.png', 'new_html.txt')
+    new_info_path = new_screenshot_path.replace('new_shot.png', 'new_info.txt')
+
+    try:
+        driver.get(orig_url)
+        alert_msg = driver.switch_to.alert.text
+        driver.switch_to.alert.dismiss()
+        time.sleep(1)
+    except TimeoutException as e:
+        print(str(e))
+        return url, screenshot_path, successful # load URL unsucessful
+    except Exception as e:
+        print(str(e))
+        print("no alert")
+
+    print("Getting url")
+    page_text = get_page_text(driver).split('\n')  # tokenize by \n
+    page_text.sort(key=len)  # sort text according to length
+    print(len(page_text))
+
+    # HTML heuristic based login finder
+    reach_crp = keyword_heuristic(driver=driver, orig_url=orig_url, page_text=page_text,
+                                  new_screenshot_path=new_screenshot_path, new_html_path=new_html_path,
+                                  new_info_path=new_info_path, ele_model=ele_model, cls_model=cls_model)
+
+    # print('After HTML keyword finder:', reach_crp)
+
+    # CV based login finder
+    if not reach_crp:
+        reach_crp = cv_heuristic(driver=driver, orig_url=orig_url, old_screenshot_path=screenshot_path,
+                                 new_screenshot_path=new_screenshot_path, new_html_path=new_html_path,
+                                 new_info_path=new_info_path, login_model=login_model, ele_model=ele_model, cls_model=cls_model)
+        # print('After CV finder', reach_crp)
+
+    # Final URL
+    if os.path.exists(new_info_path):
+        current_url = open(new_info_path).read()
+        if len(current_url) == 0:
+            current_url = orig_url
+    else:
+        current_url = orig_url
+    # Final screenshot
+    if os.path.exists(new_screenshot_path):
+        current_ss = new_screenshot_path
+    else:
+        current_ss = screenshot_path
+    return current_url, current_ss, reach_crp
 
 if __name__ == '__main__':
 
