@@ -99,7 +99,7 @@ def keyword_heuristic(driver, orig_url, page_text,
     ct = 0 # count number of sign-up/login links
     reach_crp = False # reach a CRP page or not
 
-    for i in page_text:
+    for i in page_text: # iterate over html text
         # looking for keyword
         keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(join now)|(new user)|(my account)',
                                     i.lower())
@@ -133,7 +133,8 @@ def keyword_heuristic(driver, orig_url, page_text,
                 time.sleep(1)
             except TimeoutException as e:
                 print(str(e))
-                continue
+                # continue
+                break # cannot go back somehow
             except Exception as e:
                 print(str(e))
                 print("no alert")
@@ -167,7 +168,7 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
     for bbox in pred_boxes.detach().cpu().numpy()[: min(3, len(pred_boxes))]: # only for top3 boxes
         x1, y1, x2, y2 = bbox
         center = ((x1 + x2) / 2, (y1 + y2) / 2)
-        click_point(center[0], center[1])  # redirect to that page
+        click_point(center[0], center[1])  # click center point of predicted bbox
 
         # save redirected url
         current_url = driver.current_url
@@ -195,7 +196,8 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
             time.sleep(1)
         except TimeoutException as e:
             print(str(e))
-            continue
+            # continue
+            break # cannot go back somehow
         except Exception as e:
             print(str(e))
             print("no alert")
