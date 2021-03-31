@@ -101,6 +101,7 @@ def keyword_heuristic(driver, orig_url, page_text,
         if len(keyword_finder) > 0:
             print("found")
             click_text(i) # click that text
+
             # save redirected url
             current_url = driver.current_url
             driver.save_screenshot(new_screenshot_path)
@@ -262,5 +263,7 @@ if __name__ == '__main__':
             reach_crp = cv_heuristic(driver=driver, orig_url=orig_url, old_screenshot_path=old_screenshot_path,
                                      new_screenshot_path=new_screenshot_path, new_html_path=new_html_path, new_info_path=new_info_path)
             print('After CV finder', reach_crp)
+
+        # clean_up_window(driver)
 
     driver.quit()

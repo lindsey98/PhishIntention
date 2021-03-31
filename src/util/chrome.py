@@ -29,6 +29,8 @@ def click_text(text):
         print(e)
     except LookupError as e:
         print(e)
+    # except Exception as e:
+    #     print(e)
 
 def click_point(x, y):
     '''
@@ -45,6 +47,25 @@ def click_point(x, y):
         print(e)
     except LookupError as e:
         print(e)
+    except AttributeError as e:
+        print(e)
+    # except Exception as e:
+    #     print(x, y)
+    #     print(e)
+
+
+
+def clean_up_window(driver):
+    '''
+    Close chrome tab properly
+    :param driver:
+    :return:
+    '''
+    current_window = driver.current_window_handle
+    for i in driver.window_handles:
+        if i != current_window:
+            driver.switch_to_window(i)
+            driver.close()
 
 # write in txt
 def writetxt(txtpath, contents):

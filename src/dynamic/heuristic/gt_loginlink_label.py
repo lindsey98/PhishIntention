@@ -6,7 +6,7 @@ import os
 import pandas as pd
 import time
 from tqdm import tqdm
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, NoAlertPresentException
 
 legitimate_urls = list(pd.read_csv('./datasets/alexa.csv', header=None).iloc[:, 0])
 write_txt_path = './datasets/gt_loginurl_for600.txt'
@@ -16,8 +16,10 @@ write_txt_path = './datasets/gt_loginurl_for600.txt'
 
 for url in tqdm(legitimate_urls):
     domain_name = url.split('//')[-1]
+
     if domain_name in open(write_txt_path).read():
         continue
+
     if domain_name + '.xml' in os.listdir('D:/ruofan/git_space/phishpedia/benchmark/600_legitimate'):
 
         # get url
@@ -39,16 +41,20 @@ for url in tqdm(legitimate_urls):
         _, gt_coords = read_xml(os.path.join('D:/ruofan/git_space/phishpedia/benchmark/600_legitimate', url.split('//')[-1] + '.xml'))
         for bbox in gt_coords:
             x1, y1, x2, y2 = bbox
+            print(bbox)
             center = ((x1+x2)/2, (y1+y2)/2)
             click_point(center[0], center[1])
-            current_url = driver.current_url
+            try:
+                current_url = driver.current_url
+            except TimeoutException as e:
+                continue
             if current_url != orig_url:
                 with open(write_txt_path, 'a+') as f:
                     f.write(domain_name+'\t'+current_url+'\n')
 
             try:
                 print("getting url")
-                driver.set_page_load_timeout(30)
+                driver.set_page_load_timeout(60)
                 driver.get(orig_url)
                 alert_msg = driver.switch_to.alert.text
                 driver.switch_to.alert.dismiss()
@@ -56,7 +62,6 @@ for url in tqdm(legitimate_urls):
             except TimeoutException as e:
                 print(str(e))
                 continue
-            except Exception as e:
-                print(str(e))
+            except NoAlertPresentException as e:
                 print("no alert")
-
+            # clean_up_window(driver)
