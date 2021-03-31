@@ -2,7 +2,7 @@ import helium
 from seleniumwire import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from webdriver_manager.chrome import ChromeDriverManager
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException, MoveTargetOutOfBoundsException
 
 def get_page_text(driver):
     '''
@@ -25,7 +25,7 @@ def click_text(text):
     '''
     try:
         helium.click(text)
-    except TimeoutError as e:
+    except TimeoutException as e:
         print(e)
     except LookupError as e:
         print(e)
@@ -39,7 +39,9 @@ def click_point(x, y):
     '''
     try:
         helium.click(helium.Point(x, y))
-    except TimeoutError as e:
+    except TimeoutException as e:
+        print(e)
+    except MoveTargetOutOfBoundsException as e:
         print(e)
     except LookupError as e:
         print(e)
