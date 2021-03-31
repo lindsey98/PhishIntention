@@ -214,7 +214,7 @@ if __name__ == '__main__':
     # 600 URLs
     legitimate_urls = list(pd.read_csv('./datasets/alexa.csv', header=None).iloc[:, 0])
 
-    for url in tqdm(legitimate_urls):
+    for url in tqdm(legitimate_urls[::-1]):
         domain_name = url.split('//')[-1]
         urldir = './datasets/600_legitimate'
 
