@@ -245,7 +245,7 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
 
     # Final URL
     if os.path.exists(new_info_path):
-        current_url = open(new_info_path).read()
+        current_url = open(new_info_path, encoding='utf-8').read()
         current_ss = new_screenshot_path
         if len(current_url) == 0:
             current_url = orig_url

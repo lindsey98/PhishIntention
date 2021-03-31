@@ -171,7 +171,7 @@ if __name__ == "__main__":
             full_path = os.path.join(directory, item)
 
             screenshot_path = os.path.join(full_path, "shot.png")
-            url = open(os.path.join(full_path, 'info.txt')).read()
+            url = open(os.path.join(full_path, 'info.txt'), encoding='utf-8').read()
 
             if not os.path.exists(screenshot_path):
                 continue
