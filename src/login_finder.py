@@ -114,20 +114,23 @@ def keyword_heuristic(driver, orig_url, page_text,
                 writetxt(new_html_path, driver.page_source)
                 writetxt(new_info_path, str(current_url))
                 ct += 1 # count +1
-            except TimeoutException as e:
-                continue
 
-            # Call CRP classifier
-            # CRP HTML heuristic
-            cre_pred = html_heuristic(new_html_path)
-            # Credential classifier module
-            if cre_pred == 1: # if HTML heuristic report as nonCRP
-                pred_classes, pred_boxes, pred_scores = element_recognition(img=new_screenshot_path, model=ele_model)
-                cre_pred, cred_conf, _  = credential_classifier_mixed_al(img=new_screenshot_path, coords=pred_boxes,
-                                                                     types=pred_classes, model=cls_model)
-            if cre_pred == 0: # this is an CRP
-                reach_crp = True
-                break # stop when reach an CRP already
+                # Call CRP classifier
+                # CRP HTML heuristic
+                cre_pred = html_heuristic(new_html_path)
+                # Credential classifier module
+                if cre_pred == 1:  # if HTML heuristic report as nonCRP
+                    pred_classes, pred_boxes, pred_scores = element_recognition(img=new_screenshot_path,
+                                                                                model=ele_model)
+                    cre_pred, cred_conf, _ = credential_classifier_mixed_al(img=new_screenshot_path, coords=pred_boxes,
+                                                                            types=pred_classes, model=cls_model)
+                if cre_pred == 0:  # this is an CRP
+                    reach_crp = True
+                    break  # stop when reach an CRP already
+
+            except TimeoutException as e:
+                pass
+
             # Back to the original site if CRP not found
             try:
                 driver.get(orig_url)
@@ -186,21 +189,22 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
             driver.save_screenshot(new_screenshot_path)
             writetxt(new_html_path, driver.page_source)
             writetxt(new_info_path, str(current_url))
+
+            # Call CRP classifier
+            # CRP HTML heuristic
+            cre_pred = html_heuristic(new_html_path)
+            # Credential classifier module
+            if cre_pred == 1:  # if HTML heuristic report as nonCRP
+                pred_classes_crp, pred_boxes_crp, _ = element_recognition(img=new_screenshot_path, model=ele_model)
+                cre_pred, cred_conf, _ = credential_classifier_mixed_al(img=new_screenshot_path, coords=pred_boxes_crp,
+                                                                        types=pred_classes_crp, model=cls_model)
+
+            if cre_pred == 0:  # this is an CRP
+                reach_crp = True
+                break  # stop when reach an CRP already
+
         except TimeoutException as e:
-            continue
-
-        # Call CRP classifier
-        # CRP HTML heuristic
-        cre_pred = html_heuristic(new_html_path)
-        # Credential classifier module
-        if cre_pred == 1:  # if HTML heuristic report as nonCRP
-            pred_classes_crp, pred_boxes_crp, _ = element_recognition(img=new_screenshot_path, model=ele_model)
-            cre_pred, cred_conf, _ = credential_classifier_mixed_al(img=new_screenshot_path, coords=pred_boxes_crp,
-                                                                    types=pred_classes_crp, model=cls_model)
-
-        if cre_pred == 0: # this is an CRP
-            reach_crp = True
-            break # stop when reach an CRP already
+            pass
 
         try:
             driver.get(orig_url)  # go back to original url
