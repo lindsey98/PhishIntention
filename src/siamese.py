@@ -142,8 +142,12 @@ def phishpedia_classifier(pred_classes, pred_boxes,
                                                          shot_path, bbox, t_s=ts, grayscale=False)
             
             # domain matcher to avoid FP
-            if not target_this is None and tldextract.extract(url).domain not in domain_this: 
-                pred_target = target_this 
+            if not target_this is None and tldextract.extract(url).domain not in domain_this:
+                # avoid fp due to godaddy domain parking, ignore webmail provider (ambiguous)
+                if target_this == 'GoDaddy' or target_this == "Webmail Provider":
+                    target_this = None # ignore the prediction
+                    this_conf = None
+                pred_target = target_this
                 matched_coord = coord
                 siamese_conf = this_conf
                 break # break if target is matched
