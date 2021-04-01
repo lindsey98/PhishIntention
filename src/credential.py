@@ -2,9 +2,9 @@ from .credential_classifier.bit_pytorch.models import KNOWN_MODELS
 from .credential_classifier.bit_pytorch.grid_divider import read_img_reverse, coord2pixel_reverse, topo2pixel
 from .credential_classifier.HTML_heuristic.post_form import *
 
-from .layout_matcher.heuristic import layout_heuristic
-from .layout_matcher.topology import knn_matrix
-from .layout_matcher.misc import preprocess
+# from .layout_matcher.heuristic import layout_heuristic
+# from .layout_matcher.topology import knn_matrix
+# from .layout_matcher.misc import preprocess
 
 import torch
 import torch.nn.functional as F
@@ -194,10 +194,8 @@ def credential_classifier_mixed_al(img:str, coords, types, model):
     image = transformation(image)
     
     # append class channels
-    # class grid tensor is of shape 5xHxW
-    grid_tensor = coord2pixel_reverse(img_path=img,
-                              coords=coords, 
-                              types=types)
+    # class grid tensor is of shape 8xHxW
+    grid_tensor = coord2pixel_reverse(img_path=img, coords=coords, types=types)
 
     image = torch.cat((image.double(), grid_tensor), dim=0)
     assert image.shape == (8, 256, 256) # ensure correct shape
@@ -266,21 +264,6 @@ def credential_classifier_mixed_al(img:str, coords, types, model):
         
 #     return pred, conf, pred_features
 
-
-# def credential_overall(img_path, cls_model, pred_boxes, pred_classes):
-
-#     # Credential heuristic module
-#     pattern_ct, len_input = layout_heuristic(pred_boxes, pred_classes)
-#     if len_input == 0:
-#         cre_pred = 1
-#     elif pattern_ct >= 2:
-#         cre_pred = 0
-#     else:
-#         # Credential classifier module
-#         cre_pred, _, _ = credential_classifier_al(img=img_path, coords=pred_boxes, 
-#                                                   types=pred_classes, model=cls_model)
-
-#     return cre_pred
 
 ############################################ For HTML heuristic ##########################################################
 

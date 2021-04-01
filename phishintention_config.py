@@ -1,5 +1,5 @@
 # Global configuration
-from src.layout import *
+# from src.layout import *
 from src.siamese import *
 from src.element_detector import *
 from src.credential import *

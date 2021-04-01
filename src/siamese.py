@@ -11,48 +11,48 @@ from tqdm import tqdm
 import tldextract
 
 
-def loginicon_config(num_classes:int, weights_path:str, targetlist_path:str, grayscale=False):
-    '''
-    Load phishpedia configurations
-    :param num_classes: number of protected brands
-    :param weights_path: siamese weights
-    :param targetlist_path: targetlist folder
-    :param grayscale: convert logo to grayscale or not, default is RGB
-    :return model: siamese model
-    :return logo_feat_list: targetlist embeddings
-    :return file_name_list: targetlist paths
-    '''
-    
-    # Initialize model
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    model = KNOWN_MODELS["BiT-M-R50x1"](head_size=num_classes, zero_head=True)
-
-    # Load weights
-    weights = torch.load(weights_path, map_location='cpu')
-    weights = weights['model'] if 'model' in weights.keys() else weights
-    new_state_dict = OrderedDict()
-    for k, v in weights.items():
-        name = k.split('module.')[1]
-        new_state_dict[name]=v
-        
-    model.load_state_dict(new_state_dict)
-    model.to(device)
-    model.eval()
-
-#     Prediction for targetlists
-    logo_feat_list = []
-    file_name_list = []
-    
-    for logo_path in tqdm(os.listdir(targetlist_path)):
-        if logo_path.startswith('.'): # skip hidden files
-            continue
-        if logo_path.endswith('.png') or logo_path.endswith('.jpeg') or logo_path.endswith('.jpg') or logo_path.endswith('.PNG') or logo_path.endswith('.JPG') or logo_path.endswith('.JPEG'):
-
-            logo_feat_list.append(pred_siamese(img=os.path.join(targetlist_path, logo_path), 
-                                               model=model, grayscale=grayscale))
-            file_name_list.append(str(os.path.join(targetlist_path, logo_path)))
-        
-    return model, np.asarray(logo_feat_list), np.asarray(file_name_list) 
+# def loginicon_config(num_classes:int, weights_path:str, targetlist_path:str, grayscale=False):
+#     '''
+#     Load phishpedia configurations
+#     :param num_classes: number of protected brands
+#     :param weights_path: siamese weights
+#     :param targetlist_path: targetlist folder
+#     :param grayscale: convert logo to grayscale or not, default is RGB
+#     :return model: siamese model
+#     :return logo_feat_list: targetlist embeddings
+#     :return file_name_list: targetlist paths
+#     '''
+#
+#     # Initialize model
+#     device = 'cuda' if torch.cuda.is_available() else 'cpu'
+#     model = KNOWN_MODELS["BiT-M-R50x1"](head_size=num_classes, zero_head=True)
+#
+#     # Load weights
+#     weights = torch.load(weights_path, map_location='cpu')
+#     weights = weights['model'] if 'model' in weights.keys() else weights
+#     new_state_dict = OrderedDict()
+#     for k, v in weights.items():
+#         name = k.split('module.')[1]
+#         new_state_dict[name]=v
+#
+#     model.load_state_dict(new_state_dict)
+#     model.to(device)
+#     model.eval()
+#
+# #     Prediction for targetlists
+#     logo_feat_list = []
+#     file_name_list = []
+#
+#     for logo_path in tqdm(os.listdir(targetlist_path)):
+#         if logo_path.startswith('.'): # skip hidden files
+#             continue
+#         if logo_path.endswith('.png') or logo_path.endswith('.jpeg') or logo_path.endswith('.jpg') or logo_path.endswith('.PNG') or logo_path.endswith('.JPG') or logo_path.endswith('.JPEG'):
+#
+#             logo_feat_list.append(pred_siamese(img=os.path.join(targetlist_path, logo_path),
+#                                                model=model, grayscale=grayscale))
+#             file_name_list.append(str(os.path.join(targetlist_path, logo_path)))
+#
+#     return model, np.asarray(logo_feat_list), np.asarray(file_name_list)
 
 def phishpedia_config(num_classes:int, weights_path:str, targetlist_path:str, grayscale=False):
     '''
@@ -75,8 +75,6 @@ def phishpedia_config(num_classes:int, weights_path:str, targetlist_path:str, gr
     weights = weights['model'] if 'model' in weights.keys() else weights
     new_state_dict = OrderedDict()
     for k, v in weights.items():
-#         if not k.startswith('module'):
-#             break
         name = k.split('module.')[1]
         new_state_dict[name]=v
         
