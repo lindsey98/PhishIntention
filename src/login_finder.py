@@ -264,7 +264,7 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
 
     # print('After HTML keyword finder:', reach_crp)
 
-    # CV based login finder
+    # If html login finder did not find CRP, call CV based login finder
     if not reach_crp:
         # Ensure that it goes back to the original URL
         try:

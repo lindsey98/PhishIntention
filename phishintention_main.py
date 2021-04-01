@@ -40,7 +40,7 @@ def main(url, screenshot_path):
         phish_category = 0
         pred_target = None
         siamese_conf = None
-        print("entering phishpedia")
+        print("Entering phishpedia")
 
         ####################### Step1: layout detector ##############################################
         pred_classes, pred_boxes, pred_scores = element_recognition(img=screenshot_path, model=ele_model)
@@ -50,7 +50,7 @@ def main(url, screenshot_path):
         if len(pred_boxes) == 0:
             print('No element is detected, report as benign')
             return phish_category, pred_target, plotvis, siamese_conf
-        print('entering siamese')
+        print('Entering siamese')
 
         ######################## Step2: Siamese (logo matcher) ########################################
         pred_target, matched_coord, siamese_conf = phishpedia_classifier(pred_classes=pred_classes, pred_boxes=pred_boxes, 
@@ -64,18 +64,13 @@ def main(url, screenshot_path):
         if pred_target is None:
             print('Did not match to any brand, report as benign')
             return phish_category, pred_target, plotvis, siamese_conf
-        print(pred_target)
 
         ######################## Step3: CRP checker (if a target is reported) #################################
+        print('A target is reported by siamese, enter CRP classifier')
         if waive_crp_classifier: # only run dynamic analysis ONCE
             break
             
         if pred_target is not None:
-            # dir = os.path.dirname(screenshot_path)
-            # CRP classifier + heuristic
-            # test_wrapper(url, dir, webTester)
-            # break
-
             # CRP HTML heuristic
             html_path = screenshot_path.replace("shot.png", "html.txt")
             cre_pred = html_heuristic(html_path)
@@ -86,8 +81,7 @@ def main(url, screenshot_path):
 #
 #           ######################## Step4: Dynamic analysis #################################
             if cre_pred == 1:
-                print('Non-CRP, enter dynamic analysis')
-#
+                print('It is a Non-CRP page, enter dynamic analysis')
                 # update url and screenshot path
                 url, screenshot_path, successful = dynamic_analysis(url=url, screenshot_path=screenshot_path,
                                                                     cls_model=cls_model, ele_model=ele_model, login_model=login_model,
@@ -99,6 +93,8 @@ def main(url, screenshot_path):
                 if successful == False:
                     print('Dynamic analysis cannot find any link redirected to a CRP page, report as benign')
                     return phish_category, None, plotvis, None
+                else: # dynamic analysis successfully found a CRP
+                    print('Dynamic analysis found a CRP, go back to layout detector')
 
             else: # already a CRP page
                 print('Already a CRP, continue')
