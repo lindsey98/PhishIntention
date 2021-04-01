@@ -1,9 +1,9 @@
 # PhishIntention
 
-- [PhishIntention]
+## PhishIntention
     - This is the repository for phishintention project
     
-- [Framework]
+### [Framework]
     
     <img src="big_pic/pic.jpg" style="width:2000px;height:350px"/>
     
@@ -27,13 +27,13 @@
         - If reach a CRP + Siamese report target: ```Return Phish, Phishing target``` 
         - Else ```Return Benign, None``` 
 
-- [Instructions]
+### [Instructions]
     - Please run phishintention_main.py to get prediction
     ```
     python phishintention_main.py --folder [data folder] --results [xxx.txt]
     ```
 
-- [Project structure]
+### [Project structure]
     - src
         - credential_classifier: training scrip for CRP classifier
         - layout_matcher: script for layout matcher and layout heuristic
