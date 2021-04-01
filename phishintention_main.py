@@ -172,6 +172,7 @@ if __name__ == "__main__":
             f.write("url" +"\t")
             f.write("phish" +"\t")
             f.write("prediction" + "\t") # write top1 prediction only
+            f.write("siamese_conf" + "\t")
             f.write("vt_result" +"\n")
 
 
