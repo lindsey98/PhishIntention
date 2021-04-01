@@ -1,5 +1,33 @@
 from selenium.common.exceptions import NoSuchElementException, TimeoutException, MoveTargetOutOfBoundsException, StaleElementReferenceException
 import helium
+import time
+import requests
+
+def vt_scan(url_test):
+    retry = 0
+    api_key = "2b93fae94a62662be089e9aa067e672ac242e3276b0f6a1e44e298b4858d4cf8"
+    url = 'https://www.virustotal.com/vtapi/v2/url/report'
+
+    params = {'apikey': api_key, 'resource': url_test, 'scan':1}
+    response = requests.get(url, params=params).json()
+
+    # This means the url wasnt in VT's database, preparing a new scan
+    while("total" not in response and "positives" not in response and retry < 3):
+        print("[*] " + str(retry) + " try. Maximum of 3 tries with 30 seconds interval...")
+        # Intentionally sleeping for 30 seconds before coming back to retrieve results
+        time.sleep(30)
+        response = requests.get(url, params=params).json()
+        retry +=1
+
+    # Getting out of the loop means either tried >= 3 times, or successfully gotten result
+    try:
+        positive = response['positives']
+        total = response['total']
+    except KeyError:
+        positive = None
+        total = None
+
+    return positive, total
 
 def get_page_text(driver):
     '''
