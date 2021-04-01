@@ -82,4 +82,3 @@ driver = webdriver.Chrome(ChromeDriverManager().install(), desired_capabilities=
 driver.set_page_load_timeout(60)
 driver.set_script_timeout(60)
 helium.set_driver(driver)
-
