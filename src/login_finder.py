@@ -57,28 +57,28 @@ def login_recognition(img, model):
 
     return pred_classes, pred_boxes, pred_scores
 
-def login_vis(img_path, pred_boxes, pred_classes):
-    '''
-    Visualize rcnn predictions
-    :param img_path: str
-    :param pred_boxes: torch.Tensor of shape Nx4, bounding box coordinates in (x1, y1, x2, y2)
-    :param pred_classes: torch.Tensor of shape Nx1 0 for logo, 1 for input, 2 for button, 3 for label(text near input), 4 for block
-    :return None
-    '''
-    
-    check = cv2.imread(img_path)
-    if len(pred_boxes) == 0: # no element
-        return check
-    
-    pred_boxes = pred_boxes.numpy() if not isinstance(pred_boxes, np.ndarray) else pred_boxes
-    pred_classes = pred_classes.numpy() if not isinstance(pred_classes, np.ndarray) else pred_classes
-    
-    # draw rectangles
-    for j, box in enumerate(pred_boxes):
-        cv2.rectangle(check, (box[0], box[1]), (box[2], box[3]), (36, 255, 12), 2)
-        cv2.putText(check, class_dict[pred_classes[j].item()], (box[0], box[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-    
-    return check
+# def login_vis(img_path, pred_boxes, pred_classes):
+#     '''
+#     Visualize rcnn predictions
+#     :param img_path: str
+#     :param pred_boxes: torch.Tensor of shape Nx4, bounding box coordinates in (x1, y1, x2, y2)
+#     :param pred_classes: torch.Tensor of shape Nx1 0 for logo, 1 for input, 2 for button, 3 for label(text near input), 4 for block
+#     :return None
+#     '''
+#
+#     check = cv2.imread(img_path)
+#     if len(pred_boxes) == 0: # no element
+#         return check
+#
+#     pred_boxes = pred_boxes.numpy() if not isinstance(pred_boxes, np.ndarray) else pred_boxes
+#     pred_classes = pred_classes.numpy() if not isinstance(pred_classes, np.ndarray) else pred_classes
+#
+#     # draw rectangles
+#     for j, box in enumerate(pred_boxes):
+#         cv2.rectangle(check, (box[0], box[1]), (box[2], box[3]), (36, 255, 12), 2)
+#         cv2.putText(check, class_dict[pred_classes[j].item()], (box[0], box[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+#
+#     return check
 
 def keyword_heuristic(driver, orig_url, page_text,
                       new_screenshot_path, new_html_path, new_info_path,
@@ -266,6 +266,19 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
 
     # CV based login finder
     if not reach_crp:
+        # Ensure that it goes back to the original URL
+        try:
+            driver.get(orig_url)
+            alert_msg = driver.switch_to.alert.text
+            driver.switch_to.alert.dismiss()
+            time.sleep(1)
+        except TimeoutException as e:
+            print(str(e))
+            return url, screenshot_path, successful  # load URL unsucessful
+        except Exception as e:
+            print(str(e))
+            print("no alert")
+
         reach_crp = cv_heuristic(driver=driver, orig_url=orig_url, old_screenshot_path=screenshot_path,
                                  new_screenshot_path=new_screenshot_path, new_html_path=new_html_path,
                                  new_info_path=new_info_path, login_model=login_model, ele_model=ele_model, cls_model=cls_model)

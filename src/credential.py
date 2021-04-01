@@ -31,7 +31,7 @@ def credential_config(checkpoint, model_type='mixed'):
     elif model_type == 'topo':
         model = KNOWN_MODELS['BiT-M-R50x1V3'](head_size=2)
     else:
-        raise NotImplementedError
+        raise ValueError('CRP Model type not supported, please use one of the following [screenshot|layout|mixed|topo]')
         
     checkpoint = torch.load(checkpoint, map_location="cpu")
     checkpoint = checkpoint['model'] if 'model' in checkpoint.keys() else checkpoint

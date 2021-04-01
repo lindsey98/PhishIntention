@@ -11,7 +11,11 @@ def get_page_text(driver):
         body = driver.find_element_by_tag_name('body').text
     except NoSuchElementException as e:
         print(e)
-        body = driver.page_source
+        try:
+            body = driver.page_source
+        except Exception as e:
+            print(e)
+            body = ''
     return body
 
 def click_text(text):
@@ -47,7 +51,7 @@ def click_point(x, y):
     except AttributeError as e:
         print(e)
     except Exception as e:
-        print(x, y)
+        # print(x, y)
         print(e)
 
 
@@ -58,14 +62,23 @@ def clean_up_window(driver):
     :param driver:
     :return:
     '''
-    current_window = driver.current_window_handle
-    for i in driver.window_handles:
-        if i != current_window:
-            driver.switch_to_window(i)
-            driver.close()
+    try:
+        current_window = driver.current_window_handle
+        for i in driver.window_handles:
+            if i != current_window:
+                driver.switch_to_window(i)
+                driver.close()
+    except Exception as e: # unknown exception occurs
+        pass
 
-# write in txt
+
 def writetxt(txtpath, contents):
+    '''
+    write into txt file with encoding utf-8
+    :param txtpath:
+    :param contents:
+    :return:
+    '''
     with open(txtpath, 'w', encoding='utf-8') as fw:
         fw.write(contents)
 
