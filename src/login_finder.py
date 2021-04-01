@@ -86,15 +86,15 @@ def keyword_heuristic(driver, orig_url, page_text,
                       ele_model, cls_model):
     '''
     Keyword based login finder
-    :param driver: chrome driver
-    :param orig_url: original url
-    :param page_text: html text for original url
-    :param new_screenshot_path: where to save redirected screenshot
-    :param new_html_path: where to save redirected html
-    :param new_info_path: where to save redirected url
-    :param ele_model: layout detector
-    :param cls_model: CRP classifier
-    :return: reach_crp: reach a CRP page or not at the end
+   :param driver:
+   :param orig_url:
+   :param page_text:
+   :param new_screenshot_path:
+   :param new_html_path:
+   :param new_info_path:
+   :param ele_model:
+   :param cls_model:
+   :return:
     '''
     ct = 0 # count number of sign-up/login links
     reach_crp = False # reach a CRP page or not
@@ -153,11 +153,18 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
                  login_model, ele_model, cls_model):
     '''
     CV based login finder
-    :param driver: chrome driver
-    :param orig_url: original URL
-    :param old_screenshot_path: original screenshot path
+    :param driver:
+    :param orig_url:
+    :param old_screenshot_path:
+    :param new_screenshot_path:
+    :param new_html_path:
+    :param new_info_path:
+    :param login_model:
+    :param ele_model:
+    :param cls_model:
     :return:
     '''
+
     # CV-based login finder
     # predict elements
     _, pred_boxes, _ = login_recognition(img=old_screenshot_path, model=login_model)
@@ -212,6 +219,16 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
 
 
 def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, driver):
+    '''
+    Dynamic analysis to find CRP
+    :param url:
+    :param screenshot_path:
+    :param login_model:
+    :param ele_model:
+    :param cls_model:
+    :param driver:
+    :return:
+    '''
     # get url
     orig_url = url
     successful = False # reach CRP or not?

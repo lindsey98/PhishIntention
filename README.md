@@ -11,20 +11,21 @@
     - Step 1: Enter <b>Layout detector</b>, get predicted elements
     
     - Step 2: Enter <b>Siamese</b>
-        - If Siamese report no target, ```Return``` Benign, None
+        - If Siamese report no target, ```Return  Benign, None```
         - Else Siamese report a target, Enter step 3 <b>CRP classifier(and HTML heuristic)</b>
            
     - Step 3: <b>CRP classifier(and HTML heuristic)</b>
        - If <b>CRP classifier(and heuristic)</b> reports its a CRP page, go to step 5 <b>Return</b>
-       - Else not a CRP page, go to step 4: <b>Dynamic analysis</b>
+       - ElIf not a CRP page and havent execute <b>Dynamic analysis</b> before, go to step 4: <b>Dynamic analysis</b>
+       - Else not a CRP page but have done <b>Dynamic analysis</b> before, ```Return Benign, None``` 
 
     - Step 4: <b>Dynamic analysis</b>
        - Find login/signup links and click, if reach a CRP page at the end, go back to step 1 <b>Layout detector</b> with updated URL and screenshot
-       - Else cannot reach a CRP page, ```Return``` Benign, None
+       - Else cannot reach a CRP page, ```Return Benign, None``` 
        
     - Step 5: 
-        - If reach a CRP + Siamese report target: ```Return``` Phish, Phishing target
-        - Else ```Return``` Benign, None
+        - If reach a CRP + Siamese report target: ```Return Phish, Phishing target``` 
+        - Else ```Return Benign, None``` 
 
 - [Instructions]
     - Please run phishintention_main.py to get prediction
