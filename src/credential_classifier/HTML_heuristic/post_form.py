@@ -25,7 +25,18 @@ def read_html(html_path):
             done = True
     except Exception as e:
         pass
-        
+
+    # try another encoding
+    if not done:
+        try:
+            with open(html_path, 'r', encoding="utf-8") as f:
+                page = f.read()
+                tree = html.fromstring(page)
+                tree_list = tree
+                done = True
+        except Exception as e:
+            pass
+
     # try another encoding
     if not done:
         try:
@@ -37,17 +48,7 @@ def read_html(html_path):
         except Exception as e:
             pass
     
-    # try another encoding
-    if not done:
-        try:
-            with open(html_path, 'r', encoding="UTF-8") as f:
-                page = f.read()
-                tree = html.fromstring(page)
-                tree_list = tree
-                done = True
-        except Exception as e:
-            pass                
-            
+
     return tree_list
 
 def proc_tree(tree):
@@ -85,8 +86,9 @@ def proc_tree(tree):
 def check_post(x, version=1):
     
     '''
-    check whether html contains postform
-    :param x: Tuple object (len(forms), methods, count_inputs, count_password, count_username)
+    check whether html contains postform/user name input field/ password input field
+    :param x: Tuple object (len(forms):int, methods:List[str|float], count_inputs:List[int], count_password:List[int], count_username:List[int])
+    :return:
     '''
 
     num_form, methods, num_inputs, num_password, num_username = x
@@ -95,21 +97,24 @@ def check_post(x, version=1):
     if len(methods) == 0:
         have_postform = 0
     else:
-        have_postform = len([y for y in [x for x in methods if x is not None] if y.lower() == 'post']) > 0
+        have_postform = (len([y for y in [x for x in methods if x is not None] if y.lower() == 'post']) > 0)
+
     if len(num_password) == 0:
         have_password = 0
     else:
-        have_password = np.sum(num_password) > 0
+        have_password = (np.sum(num_password) > 0)
+
     if len(num_username) == 0:
         have_username = 0
     else:
-        have_username = np.sum(num_username) > 0
-    
+        have_username = (np.sum(num_username) > 0)
+
+    # CRP = 0, nonCRP = 1
     if version == 1:
-        return int(not (have_postform))
+        return 0 if (have_postform) else 1
     elif version == 2:
-        return int(not (have_password | have_username))
+        return 0 if (have_password | have_username) else 1
     elif version == 3:
-        return int(not (have_postform | (have_password | have_username)))
+        return 0 if (have_postform | have_password | have_username) else 1
 
 
