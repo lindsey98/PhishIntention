@@ -108,11 +108,14 @@ def keyword_heuristic(driver, orig_url, page_text,
             click_text(i) # click that text
 
             # save redirected url
-            current_url = driver.current_url
-            driver.save_screenshot(new_screenshot_path)
-            writetxt(new_html_path, driver.page_source)
-            writetxt(new_info_path, str(current_url))
-            ct += 1 # count +1
+            try:
+                current_url = driver.current_url
+                driver.save_screenshot(new_screenshot_path)
+                writetxt(new_html_path, driver.page_source)
+                writetxt(new_info_path, str(current_url))
+                ct += 1 # count +1
+            except TimeoutException as e:
+                continue
 
             # Call CRP classifier
             # CRP HTML heuristic
@@ -171,10 +174,13 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
         click_point(center[0], center[1])  # click center point of predicted bbox
 
         # save redirected url
-        current_url = driver.current_url
-        driver.save_screenshot(new_screenshot_path)
-        writetxt(new_html_path, driver.page_source)
-        writetxt(new_info_path, str(current_url))
+        try:
+            current_url = driver.current_url
+            driver.save_screenshot(new_screenshot_path)
+            writetxt(new_html_path, driver.page_source)
+            writetxt(new_info_path, str(current_url))
+        except TimeoutException as e:
+            continue
 
         # Call CRP classifier
         # CRP HTML heuristic
