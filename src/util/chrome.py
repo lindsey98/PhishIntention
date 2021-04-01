@@ -1,4 +1,4 @@
-from selenium.common.exceptions import NoSuchElementException, TimeoutException, MoveTargetOutOfBoundsException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException, MoveTargetOutOfBoundsException, StaleElementReferenceException
 import helium
 
 def get_page_text(driver):
@@ -26,8 +26,8 @@ def click_text(text):
         print(e)
     except LookupError as e:
         print(e)
-    # except Exception as e:
-    #     print(e)
+    except Exception as e:
+        print(e)
 
 def click_point(x, y):
     '''
@@ -46,9 +46,9 @@ def click_point(x, y):
         print(e)
     except AttributeError as e:
         print(e)
-    # except Exception as e:
-    #     print(x, y)
-    #     print(e)
+    except Exception as e:
+        print(x, y)
+        print(e)
 
 
 
