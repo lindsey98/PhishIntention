@@ -79,5 +79,6 @@ capabilities["goog:loggingPrefs"] = {"performance": "ALL"}  # chromedriver 75+
 capabilities["unexpectedAlertBehaviour"] = "dismiss"  # handle alert
 
 driver = webdriver.Chrome(ChromeDriverManager().install(), desired_capabilities=capabilities, chrome_options=options)
+driver.set_page_load_timeout(60)
 helium.set_driver(driver)
 

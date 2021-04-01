@@ -13,7 +13,6 @@ from tqdm import tqdm
 from selenium.common.exceptions import TimeoutException
 
 
-
 # global dict
 class_dict = {0: 'login'}
 inv_class_dict = {v: k for k, v in class_dict.items()}
