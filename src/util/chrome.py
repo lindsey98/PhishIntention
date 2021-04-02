@@ -92,6 +92,7 @@ def click_text(text):
     '''
     try:
         helium.click(text)
+        time.sleep(5)
     except TimeoutException as e:
         print(e)
     except LookupError as e:
@@ -108,6 +109,7 @@ def click_point(x, y):
     '''
     try:
         helium.click(helium.Point(x, y))
+        time.sleep(5)
     except TimeoutException as e:
         print(e)
     except MoveTargetOutOfBoundsException as e:
