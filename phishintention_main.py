@@ -134,23 +134,21 @@ if __name__ == "__main__":
     directory = args.folder 
     results_path = args.results
 
-    # if not os.path.exists(args.results):
-    with open(args.results, "w+") as f:
-        f.write("folder" + "\t")
-        f.write("url" +"\t")
-        f.write("phish" +"\t")
-        f.write("prediction" + "\t") # write top1 prediction only
-        f.write("siamese_conf" + "\t")
-        f.write("vt_result" +"\t")
-        f.write("runtime" + "\n")
+    if not os.path.exists(args.results):
+        with open(args.results, "w+") as f:
+            f.write("folder" + "\t")
+            f.write("url" +"\t")
+            f.write("phish" +"\t")
+            f.write("prediction" + "\t") # write top1 prediction only
+            f.write("siamese_conf" + "\t")
+            f.write("vt_result" +"\t")
+            f.write("runtime" + "\n")
 
 
-    done = []
-    # while True:
-    for item in os.listdir(directory):
+    for item in tqdm(os.listdir(directory)):
         start_time = time.time()
 
-        if item in done:
+        if item in open(args.results).read():
             continue
 
         try:
