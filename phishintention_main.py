@@ -123,18 +123,21 @@ if __name__ == "__main__":
     directory = args.folder 
     results_path = args.results
 
-    if not os.path.exists(args.results):
-        with open(args.results, "w+") as f:
-            f.write("url" +"\t")
-            f.write("phish" +"\t")
-            f.write("prediction" + "\t") # write top1 prediction only
-            f.write("siamese_conf" + "\t")
-            f.write("vt_result" +"\n")
+    # if not os.path.exists(args.results):
+    with open(args.results, "w+") as f:
+        f.write("folder" + "\t")
+        f.write("url" +"\t")
+        f.write("phish" +"\t")
+        f.write("prediction" + "\t") # write top1 prediction only
+        f.write("siamese_conf" + "\t")
+        f.write("vt_result" +"\t")
+        f.write("runtime" + "\n")
 
 
     done = []
     # while True:
     for item in os.listdir(directory):
+        start_time = time.time()
         if item in done:
             continue
 
@@ -167,18 +170,20 @@ if __name__ == "__main__":
                         vt_result = "error"
 
                 with open(args.results, "a+") as f:
+                    f.write(item + "\t")
                     f.write(url +"\t")
                     f.write(str(phish_category) +"\t")
                     f.write(str(phish_target) + "\t") # write top1 prediction only
                     f.write(str(siamese_conf) + "\t")
-                    f.write(vt_result +"\n")
+                    f.write(vt_result +"\t")
+                    f.write(str(round(time.time() - start_time, 4)) + "\n")
 
                 cv2.imwrite(os.path.join(full_path, "predict.png"), plotvis)
 
         except Exception as e:
             print(str(e))
       #  raise(e)
-    time.sleep(15)
+    time.sleep(2)
 
     driver.quit()
 
