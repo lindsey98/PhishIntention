@@ -2,6 +2,44 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException,
 import helium
 import time
 import requests
+from seleniumwire import webdriver
+
+
+def initialize_chrome_settings(lang_txt:str):
+    '''
+    initialize chrome settings
+    :return:
+    '''
+    # enable translation
+    white_lists = {}
+
+    with open(lang_txt) as langf:
+        for i in langf.readlines():
+            i = i.strip()
+            text = i.split(' ')
+            print(text)
+            white_lists[text[1]] = 'en'
+    prefs = {
+        "translate": {"enabled": "true"},
+        "translate_whitelists": white_lists
+    }
+
+    options = webdriver.ChromeOptions()
+
+    options.add_experimental_option("prefs", prefs)
+    options.add_argument('--ignore-certificate-errors') # ignore errors
+    options.add_argument('--ignore-ssl-errors')
+    options.add_argument("--headless") # disable browser
+
+    options.add_argument("--start-maximized")
+    options.add_argument('--window-size=1920,1080') # fix screenshot size
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_experimental_option('useAutomationExtension', False)
+    options.add_argument(
+        'user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36')
+    options.set_capability('unhandledPromptBehavior', 'dismiss') # dismiss
+
+    return  options
 
 def vt_scan(url_test):
     retry = 0
