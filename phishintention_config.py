@@ -72,13 +72,4 @@ siamese_ts = 0.87 # FIXME: threshold is 0.87 in phish-discovery?
 # brand-domain dictionary
 domain_map_path = './src/phishpedia/domain_map.pkl'
 
-# load driver ONCE
-options = initialize_chrome_settings(lang_txt='./src/util/lang.txt')
-capabilities = DesiredCapabilities.CHROME
-capabilities["goog:loggingPrefs"] = {"performance": "ALL"}  # chromedriver 75+
-capabilities["unexpectedAlertBehaviour"] = "dismiss"  # handle alert
 
-driver = webdriver.Chrome(ChromeDriverManager().install(), desired_capabilities=capabilities, chrome_options=options)
-driver.set_page_load_timeout(60)
-driver.set_script_timeout(60)
-helium.set_driver(driver)

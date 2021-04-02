@@ -1,13 +1,7 @@
-# from seleniumwire import webdriver
 from phishintention_config import *
 import os
 import argparse
-# from gsheets import gwrapper
-# from src.utils import *
 from src.element_detector import vis
-# from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-# from login_cv import WebTester
-# from login_cv import test_wrapper
 import time
 
 #####################################################################################################################
@@ -23,6 +17,20 @@ import time
 # ** Step 5: If reach a CRP + Siamese report target: Return Phish, Phishing target
 # ** Else: Return Benign
 #####################################################################################################################
+def driver_loader():
+    # load driver ONCE
+    options = initialize_chrome_settings(lang_txt='./src/util/lang.txt')
+    capabilities = DesiredCapabilities.CHROME
+    capabilities["goog:loggingPrefs"] = {"performance": "ALL"}  # chromedriver 75+
+    capabilities["unexpectedAlertBehaviour"] = "dismiss"  # handle alert
+
+    driver = webdriver.Chrome(ChromeDriverManager().install(), desired_capabilities=capabilities,
+                              chrome_options=options)
+    driver.set_page_load_timeout(60)  # set timeout to avoid wasting time
+    driver.set_script_timeout(60)  # set timeout to avoid wasting time
+    helium.set_driver(driver)
+    return driver
+
 
 def main(url, screenshot_path):
     '''
@@ -83,9 +91,12 @@ def main(url, screenshot_path):
             if cre_pred == 1:
                 print('It is a Non-CRP page, enter dynamic analysis')
                 # update url and screenshot path
+                # load chromedriver
+                driver = driver_loader()
                 url, screenshot_path, successful = dynamic_analysis(url=url, screenshot_path=screenshot_path,
                                                                     cls_model=cls_model, ele_model=ele_model, login_model=login_model,
                                                                     driver=driver)
+                driver.quit() # quit driver
 #
                 waive_crp_classifier = True # only run dynamic analysis ONCE
 
@@ -138,6 +149,7 @@ if __name__ == "__main__":
     # while True:
     for item in os.listdir(directory):
         start_time = time.time()
+
         if item in done:
             continue
 
@@ -182,8 +194,9 @@ if __name__ == "__main__":
 
         except Exception as e:
             print(str(e))
+
       #  raise(e)
     time.sleep(2)
 
-    driver.quit()
+
 
