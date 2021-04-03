@@ -7,6 +7,45 @@ from selenium.common.exceptions import TimeoutException, NoAlertPresentException
 import json
 from src.login_finder import login_config, login_recognition
 
+def temporal_driver(lang_txt:str):
+    '''
+    initialize chrome settings
+    :return:
+    '''
+    # enable translation
+    white_lists = {}
+
+    with open(lang_txt) as langf:
+        for i in langf.readlines():
+            i = i.strip()
+            text = i.split(' ')
+            print(text)
+            white_lists[text[1]] = 'en'
+    prefs = {
+        "translate": {"enabled": "true"},
+        "translate_whitelists": white_lists
+    }
+
+    options = webdriver.ChromeOptions()
+
+    options.add_experimental_option("prefs", prefs)
+    options.add_argument('--ignore-certificate-errors') # ignore errors
+    options.add_argument('--ignore-ssl-errors')
+    # options.add_argument("--headless") # disable browser (have some issues: https://github.com/mherrmann/selenium-python-helium/issues/47)
+    options.add_argument('--no-proxy-server')
+    options.add_argument("--proxy-server='direct://'")
+    options.add_argument("--proxy-bypass-list=*")
+
+    options.add_argument("--start-maximized")
+    options.add_argument('--window-size=1920,1080') # fix screenshot size
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_experimental_option('useAutomationExtension', False)
+    options.add_argument(
+        'user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36')
+    options.set_capability('unhandledPromptBehavior', 'dismiss') # dismiss
+
+    return  options
+
 def keyword_heuristic_debug(driver, orig_url, page_text):
     '''
     Keyword based login finder
@@ -117,9 +156,7 @@ if __name__ == '__main__':
     from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
     from webdriver_manager.chrome import ChromeDriverManager
     import helium
-    from phishintention_main import driver_loader
 
-    driver = driver_loader()
     login_cfg, login_model = login_config(rcnn_weights_path='./src/dynamic/login_finder/output/lr0.001_finetune/model_final.pth',
                                           rcnn_cfg_path='./src/dynamic/login_finder/configs/faster_rcnn_login_lr0.001_finetune.yaml')
 
@@ -129,6 +166,8 @@ if __name__ == '__main__':
     with open('./datasets/600_legitimate_detectedURL.json', 'rt', encoding='utf-8') as handle:
         urldict = json.load( handle)
     print(urldict)
+    # debug_folder = './datasets/debug'
+    # os.makedirs(debug_folder, exist_ok=True)
 
     for folder in tqdm(os.listdir(legitimate_folder)):
 
@@ -149,6 +188,18 @@ if __name__ == '__main__':
         if domain_name in urldict.keys():
             if len(urldict[domain_name]) > 0:
                 continue
+
+        # load driver
+        options = temporal_driver(lang_txt='./src/util/lang.txt')
+        capabilities = DesiredCapabilities.CHROME
+        capabilities["goog:loggingPrefs"] = {"performance": "ALL"}  # chromedriver 75+
+        capabilities["unexpectedAlertBehaviour"] = "dismiss"  # handle alert
+
+        driver = webdriver.Chrome(ChromeDriverManager().install(), desired_capabilities=capabilities,
+                                  chrome_options=options)
+        driver.set_page_load_timeout(60)  # set timeout to avoid wasting time
+        driver.set_script_timeout(60)  # set timeout to avoid wasting time
+        helium.set_driver(driver)
 
         try:
             driver.get(orig_url)
@@ -171,6 +222,9 @@ if __name__ == '__main__':
         page_text = get_page_text(driver).split('\n')  # tokenize by \n
         page_text.sort(key=len)  # sort text according to length
         print('Num token in HTML: ', len(page_text))
+
+        # debug screenshot
+        # driver.save_screenshot(os.path.join(debug_folder, folder+'.png'))
 
         # FIXME: check CRP for original URL first
         top3_urls_html = keyword_heuristic_debug(driver=driver, orig_url=orig_url, page_text=page_text)
@@ -202,4 +256,4 @@ if __name__ == '__main__':
         with open('./datasets/600_legitimate_detectedURL.json', 'wt', encoding='utf-8') as handle:
             json.dump(urldict, handle)
 
-    driver.quit()
+        driver.quit()

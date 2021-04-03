@@ -29,7 +29,7 @@ def initialize_chrome_settings(lang_txt:str):
     options.add_experimental_option("prefs", prefs)
     options.add_argument('--ignore-certificate-errors') # ignore errors
     options.add_argument('--ignore-ssl-errors')
-    # options.add_argument("--headless") # disable browser (have some issues: https://github.com/mherrmann/selenium-python-helium/issues/47)
+    # options.add_argument("--headless") # FIXME: do not disable browser (have some issues: https://github.com/mherrmann/selenium-python-helium/issues/47)
     options.add_argument('--no-proxy-server')
     options.add_argument("--proxy-server='direct://'")
     options.add_argument("--proxy-bypass-list=*")

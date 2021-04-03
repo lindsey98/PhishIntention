@@ -92,6 +92,8 @@ def siamese_inference(model, domain_map, logo_feat_list, file_name_list, shot_pa
     img_feat = pred_siamese(cropped, model, imshow=False, title='Original rcnn box', grayscale=grayscale)
 
     ## get cosine similarity with every protected logo
+    # print(logo_feat_list.shape)
+    # print(img_feat.shape)
     sim_list = logo_feat_list @ img_feat.T # take dot product for every pair of embeddings (Cosine Similarity)
     pred_brand_list = file_name_list
     #print(pred_brand_list)
