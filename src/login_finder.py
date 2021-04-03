@@ -78,7 +78,7 @@ def keyword_heuristic(driver, orig_url, page_text,
 
     for i in page_text: # iterate over html text
         # looking for keyword
-        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign.*up)|(sign in)|(submit)|(register)|(create.*account)|(join now)|(new user)|(my account)',
+        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign.*up)|(sign in)|(submit)|(register)|(create.*account)|(join now)|(new user)|(my account)|(entrance)|(come in)',
                                     i.lower())
         if len(keyword_finder) > 0:
             print("found")
