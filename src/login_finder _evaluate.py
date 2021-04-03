@@ -1,5 +1,3 @@
-import cv2
-import numpy as np
 import os
 from src.util.chrome import *
 import re
@@ -41,6 +39,11 @@ def keyword_heuristic_debug(driver, orig_url, page_text):
 
             try:
                 driver.get(orig_url)
+                time.sleep(5)
+                if helium.Button("accept").exists():
+                    helium.click(helium.Button("accept"))
+                elif helium.Button("I accept").exists():
+                    helium.click(helium.Button("I accept"))
                 alert_msg = driver.switch_to.alert.text
                 driver.switch_to.alert.dismiss()
                 time.sleep(1)
@@ -90,6 +93,11 @@ def cv_heuristic_debug(driver, orig_url, old_screenshot_path):
 
         try:
             driver.get(orig_url)  # go back to original url
+            time.sleep(5)
+            if helium.Button("accept").exists():
+                helium.click(helium.Button("accept"))
+            elif helium.Button("I accept").exists():
+                helium.click(helium.Button("I accept"))
             alert_msg = driver.switch_to.alert.text
             driver.switch_to.alert.dismiss()
             time.sleep(1)
@@ -109,54 +117,9 @@ if __name__ == '__main__':
     from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
     from webdriver_manager.chrome import ChromeDriverManager
     import helium
+    from phishintention_main import driver_loader
 
-    def initialize_chrome_settings(lang_txt: str):
-        '''
-        initialize chrome settings
-        :return:
-        '''
-        # enable translation
-        white_lists = {}
-
-        with open(lang_txt) as langf:
-            for i in langf.readlines():
-                i = i.strip()
-                text = i.split(' ')
-                print(text)
-                white_lists[text[1]] = 'en'
-        prefs = {
-            "translate": {"enabled": "true"},
-            "translate_whitelists": white_lists
-        }
-
-        options = webdriver.ChromeOptions()
-
-        options.add_experimental_option("prefs", prefs)
-        options.add_argument('--ignore-certificate-errors')
-        options.add_argument('--ignore-ssl-errors')
-        options.add_argument("--headless")  # diable browser
-
-        options.add_argument("--start-maximized")
-        options.add_argument('--window-size=1920,1080')  # screenshot size
-        options.add_argument("--disable-blink-features=AutomationControlled")
-        options.add_experimental_option('useAutomationExtension', False)
-        options.add_argument(
-            'user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36')
-        options.set_capability('unhandledPromptBehavior', 'dismiss')
-
-        return options
-
-
-    # load driver ONCE
-    options = initialize_chrome_settings(lang_txt='./src/util/lang.txt')
-    capabilities = DesiredCapabilities.CHROME
-    capabilities["goog:loggingPrefs"] = {"performance": "ALL"}  # chromedriver 75+
-    capabilities["unexpectedAlertBehaviour"] = "dismiss"  # handle alert
-
-    driver = webdriver.Chrome(ChromeDriverManager().install(), desired_capabilities=capabilities,
-                              chrome_options=options)
-    helium.set_driver(driver)
-
+    driver = driver_loader()
     login_cfg, login_model = login_config(rcnn_weights_path='./src/dynamic/login_finder/output/lr0.001_finetune/model_final.pth',
                                           rcnn_cfg_path='./src/dynamic/login_finder/configs/faster_rcnn_login_lr0.001_finetune.yaml')
 
@@ -176,6 +139,10 @@ if __name__ == '__main__':
         # get url
         if not os.path.exists(old_info_path):
             continue
+
+        if folder not in open('./datasets/fail_login_finder.txt').read():
+            continue
+
         orig_url = open(old_info_path, encoding='utf-8').read()
         print(orig_url)
         domain_name = orig_url.split('//')[-1]
@@ -185,6 +152,11 @@ if __name__ == '__main__':
 
         try:
             driver.get(orig_url)
+            time.sleep(5)
+            if helium.Button("accept").exists():
+                helium.click(helium.Button("accept"))
+            elif helium.Button("I accept").exists():
+                helium.click(helium.Button("I accept"))
             alert_msg = driver.switch_to.alert.text
             driver.switch_to.alert.dismiss()
             time.sleep(1)
@@ -206,6 +178,11 @@ if __name__ == '__main__':
 
         try:
             driver.get(orig_url)
+            time.sleep(5)
+            if helium.Button("accept").exists():
+                helium.click(helium.Button("accept"))
+            elif helium.Button("I accept").exists():
+                helium.click(helium.Button("I accept"))
             alert_msg = driver.switch_to.alert.text
             driver.switch_to.alert.dismiss()
             time.sleep(1)

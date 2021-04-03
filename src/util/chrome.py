@@ -30,6 +30,7 @@ def initialize_chrome_settings(lang_txt:str):
     options.add_argument('--ignore-certificate-errors') # ignore errors
     options.add_argument('--ignore-ssl-errors')
     options.add_argument("--headless") # disable browser
+    options.add_argument("--disable-notifications")
 
     options.add_argument("--start-maximized")
     options.add_argument('--window-size=1920,1080') # fix screenshot size
@@ -91,8 +92,11 @@ def click_text(text):
     :return:
     '''
     try:
+        helium.highlight(text)
+        time.sleep(5)
         helium.click(text)
         time.sleep(5)
+
     except TimeoutException as e:
         print(e)
     except LookupError as e:
@@ -108,8 +112,10 @@ def click_point(x, y):
     :return:
     '''
     try:
+        # helium.highlight(helium.Point(x, y))
         helium.click(helium.Point(x, y))
         time.sleep(5)
+
     except TimeoutException as e:
         print(e)
     except MoveTargetOutOfBoundsException as e:

@@ -78,7 +78,7 @@ def keyword_heuristic(driver, orig_url, page_text,
 
     for i in page_text: # iterate over html text
         # looking for keyword
-        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(join now)|(new user)|(my account)',
+        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign.*up)|(sign in)|(submit)|(register)|(create.*account)|(join now)|(new user)|(my account)',
                                     i.lower())
         if len(keyword_finder) > 0:
             print("found")
@@ -112,6 +112,10 @@ def keyword_heuristic(driver, orig_url, page_text,
             try:
                 driver.get(orig_url)
                 time.sleep(5)
+                if helium.Button("accept").exists():
+                    helium.click(helium.Button("accept"))
+                elif helium.Button("I accept").exists():
+                    helium.click(helium.Button("I accept"))
                 alert_msg = driver.switch_to.alert.text
                 driver.switch_to.alert.dismiss()
                 time.sleep(1)
@@ -187,6 +191,10 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
         try:
             driver.get(orig_url)  # go back to original url
             time.sleep(5)
+            if helium.Button("accept").exists():
+                helium.click(helium.Button("accept"))
+            elif helium.Button("I accept").exists():
+                helium.click(helium.Button("I accept"))
             alert_msg = driver.switch_to.alert.text
             driver.switch_to.alert.dismiss()
             time.sleep(1)
@@ -223,6 +231,10 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
     try:
         driver.get(orig_url)
         time.sleep(5)
+        if helium.Button("accept").exists():
+            helium.click(helium.Button("accept"))
+        elif helium.Button("I accept").exists():
+            helium.click(helium.Button("I accept"))
         alert_msg = driver.switch_to.alert.text
         driver.switch_to.alert.dismiss()
         time.sleep(1)
@@ -251,6 +263,10 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
         try:
             driver.get(orig_url)
             time.sleep(5)
+            if helium.Button("accept").exists():
+                helium.click(helium.Button("accept"))
+            elif helium.Button("I accept").exists():
+                helium.click(helium.Button("I accept"))
             alert_msg = driver.switch_to.alert.text
             driver.switch_to.alert.dismiss()
             time.sleep(1)
@@ -278,118 +294,3 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
         current_ss = screenshot_path
 
     return current_url, current_ss, reach_crp
-
-# if __name__ == '__main__':
-#
-#     ############################ Temporal scripts ################################################################################################################
-#     from seleniumwire import webdriver
-#     from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-#     from webdriver_manager.chrome import ChromeDriverManager
-#     import helium
-#
-#     def initialize_chrome_settings(lang_txt: str):
-#         '''
-#         initialize chrome settings
-#         :return:
-#         '''
-#         # enable translation
-#         white_lists = {}
-#
-#         with open(lang_txt) as langf:
-#             for i in langf.readlines():
-#                 i = i.strip()
-#                 text = i.split(' ')
-#                 print(text)
-#                 white_lists[text[1]] = 'en'
-#         prefs = {
-#             "translate": {"enabled": "true"},
-#             "translate_whitelists": white_lists
-#         }
-#
-#         options = webdriver.ChromeOptions()
-#
-#         options.add_experimental_option("prefs", prefs)
-#         options.add_argument('--ignore-certificate-errors')
-#         options.add_argument('--ignore-ssl-errors')
-#         options.add_argument("--headless")  # diable browser
-#
-#         options.add_argument("--start-maximized")
-#         options.add_argument('--window-size=1920,1080')  # screenshot size
-#         options.add_argument("--disable-blink-features=AutomationControlled")
-#         options.add_experimental_option('useAutomationExtension', False)
-#         options.add_argument(
-#             'user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36')
-#         options.set_capability('unhandledPromptBehavior', 'dismiss')
-#
-#         return options
-#
-#     # load driver ONCE
-#     options = initialize_chrome_settings(lang_txt='./src/util/lang.txt')
-#     capabilities = DesiredCapabilities.CHROME
-#     capabilities["goog:loggingPrefs"] = {"performance": "ALL"}  # chromedriver 75+
-#     capabilities["unexpectedAlertBehaviour"] = "dismiss"  # handle alert
-#
-#     driver = webdriver.Chrome(ChromeDriverManager().install(), desired_capabilities=capabilities,
-#                               chrome_options=options)
-#     helium.set_driver(driver)
-#
-#     # element recognition model
-#     ele_cfg, ele_model = element_config(rcnn_weights_path = './src/element_detector/output/website_lr0.001/model_final.pth',
-#                                         rcnn_cfg_path='./src/element_detector/configs/faster_rcnn_web.yaml')
-#
-#     # CRP classifier -- mixed version
-#     cls_model = credential_config(checkpoint='./src/credential_classifier/output/hybrid/hybrid_lr0.005/BiT-M-R50x1V2_0.005.pth.tar',
-#                                   model_type='mixed')
-#
-#     ##############################################################################################################################################################
-#
-#     # load configurations ONCE
-#     login_cfg, login_model = login_config(rcnn_weights_path='./src/dynamic/login_finder/output/lr0.001_finetune/model_final.pth',
-#                                           rcnn_cfg_path='./src/dynamic/login_finder/configs/faster_rcnn_login_lr0.001_finetune.yaml')
-#
-#     # 600 URLs
-#     legitimate_folder = './datasets/600_legitimate'
-#
-#     for folder in tqdm(os.listdir(legitimate_folder)):
-#
-#         old_screenshot_path = os.path.join(legitimate_folder, folder, 'shot.png')
-#         old_html_path = old_screenshot_path.replace('shot.png', 'html.txt')
-#         old_info_path = old_screenshot_path.replace('shot.png', 'info.txt')
-#
-#         # get url
-#         orig_url = open(old_html_path, encoding='utf-8').read()
-#         new_screenshot_path = old_screenshot_path.replace('shot.png', 'new_shot.png')
-#         new_html_path = new_screenshot_path.replace('new_shot.png', 'new_html.txt')
-#         new_info_path = new_screenshot_path.replace('new_shot.png', 'new_info.txt')
-#
-#         try:
-#             driver.get(orig_url)
-#             alert_msg = driver.switch_to.alert.text
-#             driver.switch_to.alert.dismiss()
-#             time.sleep(1)
-#         except TimeoutException as e:
-#             print(str(e))
-#             continue
-#         except Exception as e:
-#             print(str(e))
-#             print("no alert")
-#
-#         print("getting url")
-#         page_text = get_page_text(driver).split('\n') # tokenize by \n
-#         page_text.sort(key=len) # sort text according to length
-#         print('Num token in HTML: ', len(page_text))
-#
-#         #FIXME: check CRP for original URL first
-#         reach_crp = False
-#         reach_crp = keyword_heuristic(driver=driver, orig_url=orig_url, page_text=page_text,
-#                                       new_screenshot_path=new_screenshot_path, new_html_path=new_html_path, new_info_path=new_info_path)
-#         print('After HTML keyword finder:', reach_crp)
-#
-#         if not reach_crp:
-#             reach_crp = cv_heuristic(driver=driver, orig_url=orig_url, old_screenshot_path=old_screenshot_path,
-#                                      new_screenshot_path=new_screenshot_path, new_html_path=new_html_path, new_info_path=new_info_path)
-#             print('After CV finder', reach_crp)
-#
-#         # clean_up_window(driver)
-#
-#     driver.quit()
