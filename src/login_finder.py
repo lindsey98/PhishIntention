@@ -78,7 +78,7 @@ def keyword_heuristic(driver, orig_url, page_text,
 
     for i in page_text: # iterate over html text
         # looking for keyword
-        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign.*up)|(sign in)|(submit)|(register)|(create.*account)|(join now)|(new user)|(my account)|(entrance)|(come in)|(登入)|(登录)|(登錄)|(注册)|(Anmeldung)|(iniciar sesión)|(identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(войти)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(giriş)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar)|(giriş yap)|(เข้าสู่ระบบ)|(สมัครสมาชิก)|(Přihlásit)',
+        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(join now)|(new user)|(my account)|(come in)|(登入)|(登录)|(登錄)|(注册)|(Anmeldung)|(iniciar sesión)|(s\'identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(войти)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(girişi)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar)|(giriş)|(เข้าสู่ระบบ)|(สมัครสมาชิก)|(Přihlásit)',
                                         i, re.IGNORECASE)
         if len(keyword_finder) > 0:
             print("found")
@@ -120,6 +120,8 @@ def keyword_heuristic(driver, orig_url, page_text,
                     helium.click(helium.Button("accept"))
                 elif helium.Button("I accept").exists():
                     helium.click(helium.Button("I accept"))
+                elif helium.Button("close").exists():
+                    helium.click(helium.Button("close"))
                 alert_msg = driver.switch_to.alert.text
                 driver.switch_to.alert.dismiss()
                 time.sleep(1)
@@ -199,6 +201,8 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
                 helium.click(helium.Button("accept"))
             elif helium.Button("I accept").exists():
                 helium.click(helium.Button("I accept"))
+            elif helium.Button("close").exists():
+                helium.click(helium.Button("close"))
             alert_msg = driver.switch_to.alert.text
             driver.switch_to.alert.dismiss()
             time.sleep(1)
@@ -234,14 +238,28 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
 
     try:
         driver.get(orig_url)
+        time.sleep(5) # FIXME: wait longer the first time it loads
+        if helium.Button("accept").exists():
+            helium.click(helium.Button("accept"))
+        elif helium.Button("I accept").exists():
+            helium.click(helium.Button("I accept"))
+        elif helium.Button("close").exists():
+            helium.click(helium.Button("close"))
+
+        # FIXME: if translate is not working
+        driver.get(orig_url)
         time.sleep(5)
         if helium.Button("accept").exists():
             helium.click(helium.Button("accept"))
         elif helium.Button("I accept").exists():
             helium.click(helium.Button("I accept"))
+        elif helium.Button("close").exists():
+            helium.click(helium.Button("close"))
         alert_msg = driver.switch_to.alert.text
         driver.switch_to.alert.dismiss()
         time.sleep(1)
+
+
     except TimeoutException as e:
         print(str(e))
         return url, screenshot_path, successful # load URL unsucessful
@@ -271,6 +289,8 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
                 helium.click(helium.Button("accept"))
             elif helium.Button("I accept").exists():
                 helium.click(helium.Button("I accept"))
+            elif helium.Button("close").exists():
+                helium.click(helium.Button("close"))
             alert_msg = driver.switch_to.alert.text
             driver.switch_to.alert.dismiss()
             time.sleep(1)

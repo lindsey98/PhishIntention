@@ -62,13 +62,13 @@ def keyword_heuristic_debug(driver, orig_url, page_text):
 
     for i in page_text:
         # looking for keyword
-        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(join now)|(new user)|(my account)|(entrance)|(come in)|(登入)|(登录)|(登錄)|(注册)|(Anmeldung)|(iniciar sesión)|(identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(войти)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(girişi)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar)|(giriş yap)|(เข้าสู่ระบบ)|(สมัครสมาชิก)|(Přihlási)',
+        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(join now)|(new user)|(my account)|(come in)|(登入)|(登录)|(登錄)|(注册)|(Anmeldung)|(iniciar sesión)|(s\'identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(войти)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(girişi)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar)|(giriş)|(เข้าสู่ระบบ)|(สมัครสมาชิก)|(Přihlásit)',
                                     i, re.IGNORECASE)
         if len(keyword_finder) > 0:
             print("found")
             found_kw = [x for x in keyword_finder[0] if len(x) > 0][0]
             # print(found_kw)
-            if len(i) <= 10: # it is not a bulk of text
+            if len(i) <= 10: # it is not a bulk of text, click the text
                 click_text(i)
             else:
                 click_text(found_kw)
@@ -88,6 +88,8 @@ def keyword_heuristic_debug(driver, orig_url, page_text):
                     helium.click(helium.Button("accept"))
                 elif helium.Button("I accept").exists():
                     helium.click(helium.Button("I accept"))
+                elif helium.Button("close").exists():
+                    helium.click(helium.Button("close"))
                 alert_msg = driver.switch_to.alert.text
                 driver.switch_to.alert.dismiss()
                 time.sleep(1)
@@ -141,6 +143,8 @@ def cv_heuristic_debug(driver, orig_url, old_screenshot_path):
                 helium.click(helium.Button("accept"))
             elif helium.Button("I accept").exists():
                 helium.click(helium.Button("I accept"))
+            elif helium.Button("close").exists():
+                helium.click(helium.Button("close"))
             alert_msg = driver.switch_to.alert.text
             driver.switch_to.alert.dismiss()
             time.sleep(1)
@@ -179,19 +183,20 @@ if __name__ == '__main__':
         old_html_path = old_screenshot_path.replace('shot.png', 'html.txt')
         old_info_path = old_screenshot_path.replace('shot.png', 'info.txt')
 
-        # get url
+        # if not crawled properly
         if not os.path.exists(old_info_path):
             continue
 
+        # only recollect failed cases
         if folder not in open('./datasets/fail_login_finder.txt').read():
             continue
 
         orig_url = open(old_info_path, encoding='utf-8').read()
         print(orig_url)
         domain_name = orig_url.split('//')[-1]
-        if domain_name in urldict.keys():
-            if len(urldict[domain_name]) > 0:
-                continue
+        # if domain_name in urldict.keys():
+        #     if len(urldict[domain_name]) > 0:
+        #         continue
 
         # load driver
         options = temporal_driver(lang_txt='./src/util/lang.txt')
@@ -207,11 +212,23 @@ if __name__ == '__main__':
 
         try:
             driver.get(orig_url)
+            time.sleep(5)  # FIXME: wait longer the first time it loads
+            if helium.Button("accept").exists():
+                helium.click(helium.Button("accept"))
+            elif helium.Button("I accept").exists():
+                helium.click(helium.Button("I accept"))
+            elif helium.Button("close").exists():
+                helium.click(helium.Button("close"))
+
+            # FIXME: if translate is not working
+            driver.get(orig_url)
             time.sleep(5)
             if helium.Button("accept").exists():
                 helium.click(helium.Button("accept"))
             elif helium.Button("I accept").exists():
                 helium.click(helium.Button("I accept"))
+            elif helium.Button("close").exists():
+                helium.click(helium.Button("close"))
             alert_msg = driver.switch_to.alert.text
             driver.switch_to.alert.dismiss()
             time.sleep(1)
@@ -241,6 +258,8 @@ if __name__ == '__main__':
                 helium.click(helium.Button("accept"))
             elif helium.Button("I accept").exists():
                 helium.click(helium.Button("I accept"))
+            elif helium.Button("close").exists():
+                helium.click(helium.Button("close"))
             alert_msg = driver.switch_to.alert.text
             driver.switch_to.alert.dismiss()
             time.sleep(1)

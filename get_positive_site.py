@@ -20,7 +20,7 @@ def save_pos_site(result_txt, source_folder, target_folder):
 
 if __name__ == '__main__':
     # for phishpedia
-    save_pos_site('./2021-04-02_pedia.txt', 'E:\\screenshots_rf\\2021-04-02', './datasets/PhishDiscovery/Phishpedia/2021-04-02')
+    save_pos_site('./2021-04-03_pedia.txt', 'E:\\screenshots_rf\\2021-04-03', './datasets/PhishDiscovery/Phishpedia/2021-04-03')
 
     # for phishintention
-    # save_pos_site('./2021-04-02.txt', 'E:\\screenshots_rf\\2021-04-02', './datasets/PhishDiscovery/PhishIntention/2021-04-02')
+    # save_pos_site('./2021-04-03.txt', 'E:\\screenshots_rf\\2021-04-03', './datasets/PhishDiscovery/PhishIntention/2021-04-03')
