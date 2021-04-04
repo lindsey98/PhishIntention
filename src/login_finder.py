@@ -246,7 +246,7 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
         print("no alert")
 
     print("Getting url")
-    page_text = get_page_text(driver).split('\n')  # tokenize by \n
+    page_text = get_page_text(driver).split()  # tokenize by space or \n
     page_text.sort(key=len)  # sort text according to length
     # print(len(page_text))
 

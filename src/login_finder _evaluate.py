@@ -217,7 +217,7 @@ if __name__ == '__main__':
             print("no alert")
 
         print("getting url")
-        page_text = get_page_text(driver).split('\n')  # tokenize by \n
+        page_text = get_page_text(driver).split()  # tokenize by \n or space
         page_text.sort(key=len)  # sort text according to length
         print('Num token in HTML: ', len(page_text))
 
