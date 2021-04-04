@@ -62,7 +62,7 @@ def keyword_heuristic_debug(driver, orig_url, page_text):
 
     for i in page_text:
         # looking for keyword
-        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(join now)|(new user)|(my account)',
+        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(join now)|(new user)|(my account)|(entrance)|(come in)|(登入)|(登录)|(登錄)|(注册)|(Anmeldung)|(iniciar sesión)|(identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(Войти)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(girişi)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar)|(giriş yap)|(เข้าสู่ระบบ)|(สมัครสมาชิก)|(Přihlási)',
                                     i.lower())
         if len(keyword_finder) > 0:
             print("found")
@@ -217,7 +217,7 @@ if __name__ == '__main__':
             print("no alert")
 
         print("getting url")
-        page_text = get_page_text(driver).split('\n')  # tokenize by \n
+        page_text = get_page_text(driver).split()  # tokenize by \n or space
         page_text.sort(key=len)  # sort text according to length
         print('Num token in HTML: ', len(page_text))
 

@@ -78,7 +78,7 @@ def keyword_heuristic(driver, orig_url, page_text,
 
     for i in page_text: # iterate over html text
         # looking for keyword
-        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign.*up)|(sign in)|(submit)|(register)|(create.*account)|(join now)|(new user)|(my account)|(entrance)|(come in)|(登入)|(登录)|(登錄)|(注册)|(Anmeldung)|(iniciar sesión)|(identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(ВОЙТИ)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(girişi)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar)|(giriş yap)|(เข้าสู่ระบบ)|(สมัครสมาชิก)',
+        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign.*up)|(sign in)|(submit)|(register)|(create.*account)|(join now)|(new user)|(my account)|(entrance)|(come in)|(登入)|(登录)|(登錄)|(注册)|(Anmeldung)|(iniciar sesión)|(identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(Войти)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(giriş)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar)|(giriş yap)|(เข้าสู่ระบบ)|(สมัครสมาชิก)|(Přihlásit)',
                                     i.lower())
         if len(keyword_finder) > 0:
             print("found")
@@ -246,7 +246,7 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
         print("no alert")
 
     print("Getting url")
-    page_text = get_page_text(driver).split('\n')  # tokenize by \n
+    page_text = get_page_text(driver).split()  # tokenize by space or \n
     page_text.sort(key=len)  # sort text according to length
     # print(len(page_text))
 
