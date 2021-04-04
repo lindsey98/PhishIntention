@@ -78,7 +78,7 @@ def keyword_heuristic(driver, orig_url, page_text,
 
     for i in page_text: # iterate over html text
         # looking for keyword
-        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign.*up)|(sign in)|(submit)|(register)|(create.*account)|(join now)|(new user)|(my account)|(entrance)|(come in)',
+        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign.*up)|(sign in)|(submit)|(register)|(create.*account)|(join now)|(new user)|(my account)|(entrance)|(come in)|(登入)|(登录)|(登錄)|(注册)|(Anmeldung)|(iniciar sesión)|(identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(ВОЙТИ)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(girişi)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar)|(giriş yap)|(เข้าสู่ระบบ)|(สมัครสมาชิก)',
                                     i.lower())
         if len(keyword_finder) > 0:
             print("found")
