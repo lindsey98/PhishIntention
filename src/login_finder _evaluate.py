@@ -70,8 +70,7 @@ def keyword_heuristic_debug(driver, orig_url, page_text):
             # save redirected url
             try:
                 current_url = driver.current_url
-                if current_url != orig_url:
-                    top3_urls.append(current_url)
+                top3_urls.append(current_url)
                 ct += 1 # count +1
             except TimeoutException as e:
                 pass
@@ -125,8 +124,7 @@ def cv_heuristic_debug(driver, orig_url, old_screenshot_path):
         # save redirected url
         try:
             current_url = driver.current_url
-            if current_url != orig_url:
-                top3_urls.append(current_url)
+            top3_urls.append(current_url)
         except TimeoutException as e:
             pass
 
