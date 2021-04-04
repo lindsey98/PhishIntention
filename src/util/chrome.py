@@ -98,6 +98,10 @@ def click_text(text):
         time.sleep(5)
         helium.click(text)
         time.sleep(5)
+        if helium.Button("accept").exists():
+            helium.click(helium.Button("accept"))
+        elif helium.Button("I accept").exists():
+            helium.click(helium.Button("I accept"))
 
     except TimeoutException as e:
         print(e)
@@ -117,6 +121,10 @@ def click_point(x, y):
         # helium.highlight(helium.Point(x, y))
         helium.click(helium.Point(x, y))
         time.sleep(5)
+        if helium.Button("accept").exists():
+            helium.click(helium.Button("accept"))
+        elif helium.Button("I accept").exists():
+            helium.click(helium.Button("I accept"))
 
     except TimeoutException as e:
         print(e)
