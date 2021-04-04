@@ -66,8 +66,13 @@ def keyword_heuristic_debug(driver, orig_url, page_text):
                                     i, re.IGNORECASE)
         if len(keyword_finder) > 0:
             print("found")
-            found_kw = keyword_finder[0][0]
-            click_text(found_kw)
+            found_kw = [x for x in keyword_finder[0] if len(x) > 0][0]
+            # print(found_kw)
+            if len(i) <= 10: # it is not a bulk of text
+                click_text(i)
+            else:
+                click_text(found_kw)
+
             # save redirected url
             try:
                 current_url = driver.current_url

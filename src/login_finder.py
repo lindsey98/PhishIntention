@@ -82,8 +82,11 @@ def keyword_heuristic(driver, orig_url, page_text,
                                         i, re.IGNORECASE)
         if len(keyword_finder) > 0:
             print("found")
-            found_kw = keyword_finder[0][0]
-            click_text(found_kw)
+            found_kw = [x for x in keyword_finder[0] if len(x) > 0][0]
+            if len(i) <= 10: # it is not a bulk of text
+                click_text(i)
+            else:
+                click_text(found_kw)
 
             # save redirected url
             try:
@@ -248,7 +251,7 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
 
     print("Getting url")
     page_text = get_page_text(driver).split('\n')  # tokenize by space or \n
-    page_text.sort(key=len)  # sort text according to length
+    # page_text.sort(key=len)  # sort text according to length
     # print(len(page_text))
 
     # HTML heuristic based login finder
