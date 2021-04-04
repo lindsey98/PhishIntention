@@ -42,6 +42,7 @@ def main(url, screenshot_path):
     '''
     
     waive_crp_classifier = False
+    dynamic = False
 
     while True:
         # 0 for benign, 1 for phish, default is benign
@@ -57,7 +58,7 @@ def main(url, screenshot_path):
         # If no element is reported
         if len(pred_boxes) == 0:
             print('No element is detected, report as benign')
-            return phish_category, pred_target, plotvis, siamese_conf
+            return phish_category, pred_target, plotvis, siamese_conf, dynamic
         print('Entering siamese')
 
         ######################## Step2: Siamese (logo matcher) ########################################
@@ -71,7 +72,7 @@ def main(url, screenshot_path):
 
         if pred_target is None:
             print('Did not match to any brand, report as benign')
-            return phish_category, pred_target, plotvis, siamese_conf
+            return phish_category, pred_target, plotvis, siamese_conf, dynamic
 
         ######################## Step3: CRP checker (if a target is reported) #################################
         print('A target is reported by siamese, enter CRP classifier')
@@ -103,8 +104,9 @@ def main(url, screenshot_path):
                 # If dynamic analysis did not reach a CRP
                 if successful == False:
                     print('Dynamic analysis cannot find any link redirected to a CRP page, report as benign')
-                    return phish_category, None, plotvis, None
+                    return phish_category, None, plotvis, None, dynamic
                 else: # dynamic analysis successfully found a CRP
+                    dynamic = True
                     print('Dynamic analysis found a CRP, go back to layout detector')
 
             else: # already a CRP page
@@ -119,7 +121,7 @@ def main(url, screenshot_path):
                     (int(matched_coord[0] + 20), int(matched_coord[1] + 20)),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
         
-    return phish_category, pred_target, plotvis, siamese_conf
+    return phish_category, pred_target, plotvis, siamese_conf, dynamic
 
 
 
@@ -142,6 +144,7 @@ if __name__ == "__main__":
             f.write("prediction" + "\t") # write top1 prediction only
             f.write("siamese_conf" + "\t")
             f.write("vt_result" +"\t")
+            f.write("dynamic" + "\t")
             f.write("runtime" + "\n")
 
 
@@ -162,7 +165,7 @@ if __name__ == "__main__":
                 continue
 
             else:
-                phish_category, phish_target, plotvis, siamese_conf = main(url=url, screenshot_path=screenshot_path)
+                phish_category, phish_target, plotvis, siamese_conf, dynamic = main(url=url, screenshot_path=screenshot_path)
 
                 vt_result = "None"
                 if phish_target is not None:
@@ -186,6 +189,7 @@ if __name__ == "__main__":
                     f.write(str(phish_target) + "\t") # write top1 prediction only
                     f.write(str(siamese_conf) + "\t")
                     f.write(vt_result +"\t")
+                    f.write(str(dynamic) + "\t")
                     f.write(str(round(time.time() - start_time, 4)) + "\n")
 
                 cv2.imwrite(os.path.join(full_path, "predict.png"), plotvis)
