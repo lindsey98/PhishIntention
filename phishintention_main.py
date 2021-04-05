@@ -43,6 +43,10 @@ def main(url, screenshot_path):
     
     waive_crp_classifier = False
     dynamic = False
+    ele_detector_time = 0
+    siamese_time = 0
+    crp_time = 0
+    dynamic_time = 0
 
     while True:
         # 0 for benign, 1 for phish, default is benign
@@ -52,27 +56,31 @@ def main(url, screenshot_path):
         print("Entering phishpedia")
 
         ####################### Step1: layout detector ##############################################
+        start_time = time.time()
         pred_classes, pred_boxes, pred_scores = element_recognition(img=screenshot_path, model=ele_model)
+        ele_detector_time = time.time() - start_time
         plotvis = vis(screenshot_path, pred_boxes, pred_classes)
         print("plot")
         # If no element is reported
         if len(pred_boxes) == 0:
             print('No element is detected, report as benign')
-            return phish_category, pred_target, plotvis, siamese_conf, dynamic
+            return phish_category, pred_target, plotvis, siamese_conf, dynamic, str(ele_detector_time)+'|'+str(siamese_time)+'|'+str(crp_time)+'|'+str(dynamic_time)
         print('Entering siamese')
 
         ######################## Step2: Siamese (logo matcher) ########################################
+        start_time = time.time()
         pred_target, matched_coord, siamese_conf = phishpedia_classifier(pred_classes=pred_classes, pred_boxes=pred_boxes, 
                                         domain_map_path=domain_map_path,
                                         model=pedia_model, 
                                         logo_feat_list=logo_feat_list, file_name_list=file_name_list,
                                         url=url,
                                         shot_path=screenshot_path,
-                                        ts=siamese_ts) 
+                                        ts=siamese_ts)
+        siamese_time = time.time() - start_time
 
         if pred_target is None:
             print('Did not match to any brand, report as benign')
-            return phish_category, pred_target, plotvis, siamese_conf, dynamic
+            return phish_category, pred_target, plotvis, siamese_conf, dynamic, str(ele_detector_time)+'|'+str(siamese_time)+'|'+str(crp_time)+'|'+str(dynamic_time)
 
         ######################## Step3: CRP checker (if a target is reported) #################################
         print('A target is reported by siamese, enter CRP classifier')
@@ -82,11 +90,13 @@ def main(url, screenshot_path):
         if pred_target is not None:
             # CRP HTML heuristic
             html_path = screenshot_path.replace("shot.png", "html.txt")
+            start_time = time.time()
             cre_pred = html_heuristic(html_path)
             if cre_pred == 1: # if HTML heuristic report as nonCRP
                 # CRP classifier
                 cre_pred, cred_conf, _  = credential_classifier_mixed_al(img=screenshot_path, coords=pred_boxes,
                                                                          types=pred_classes, model=cls_model)
+            crp_time = time.time() - start_time
 #
 #           ######################## Step4: Dynamic analysis #################################
             if cre_pred == 1:
@@ -94,9 +104,11 @@ def main(url, screenshot_path):
                 # update url and screenshot path
                 # load chromedriver
                 driver = driver_loader()
+                start_time = time.time()
                 url, screenshot_path, successful = dynamic_analysis(url=url, screenshot_path=screenshot_path,
                                                                     cls_model=cls_model, ele_model=ele_model, login_model=login_model,
                                                                     driver=driver)
+                dynamic_time = time.time() - start_time
                 driver.quit() # quit driver
 #
                 waive_crp_classifier = True # only run dynamic analysis ONCE
@@ -104,7 +116,7 @@ def main(url, screenshot_path):
                 # If dynamic analysis did not reach a CRP
                 if successful == False:
                     print('Dynamic analysis cannot find any link redirected to a CRP page, report as benign')
-                    return phish_category, None, plotvis, None, dynamic
+                    return phish_category, None, plotvis, None, dynamic, str(ele_detector_time)+'|'+str(siamese_time)+'|'+str(crp_time)+'|'+str(dynamic_time)
                 else: # dynamic analysis successfully found a CRP
                     dynamic = True
                     print('Dynamic analysis found a CRP, go back to layout detector')
@@ -121,7 +133,7 @@ def main(url, screenshot_path):
                     (int(matched_coord[0] + 20), int(matched_coord[1] + 20)),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
         
-    return phish_category, pred_target, plotvis, siamese_conf, dynamic
+    return phish_category, pred_target, plotvis, siamese_conf, dynamic, str(ele_detector_time)+'|'+str(siamese_time)+'|'+str(crp_time)+'|'+str(dynamic_time)
 
 
 
@@ -145,11 +157,10 @@ if __name__ == "__main__":
             f.write("siamese_conf" + "\t")
             f.write("vt_result" +"\t")
             f.write("dynamic" + "\t")
-            f.write("runtime" + "\n")
+            f.write("runtime (layout detector|siamese|crp classifier|login finder)" + "\n")
 
 
     for item in tqdm(os.listdir(directory)):
-        start_time = time.time()
 
         if item in open(args.results).read():
             continue
@@ -165,7 +176,7 @@ if __name__ == "__main__":
                 continue
 
             else:
-                phish_category, phish_target, plotvis, siamese_conf, dynamic = main(url=url, screenshot_path=screenshot_path)
+                phish_category, phish_target, plotvis, siamese_conf, dynamic, time_breakdown = main(url=url, screenshot_path=screenshot_path)
 
                 vt_result = "None"
                 if phish_target is not None:
@@ -190,7 +201,7 @@ if __name__ == "__main__":
                     f.write(str(siamese_conf) + "\t")
                     f.write(vt_result +"\t")
                     f.write(str(dynamic) + "\t")
-                    f.write(str(round(time.time() - start_time, 4)) + "\n")
+                    f.write(time_breakdown + "\n")
 
                 cv2.imwrite(os.path.join(full_path, "predict.png"), plotvis)
 

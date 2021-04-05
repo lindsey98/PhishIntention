@@ -62,13 +62,13 @@ def keyword_heuristic_debug(driver, orig_url, page_text):
 
     for i in page_text:
         # looking for keyword
-        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(join now)|(new user)|(my account)|(come in)|(登入)|(登录)|(登錄)|(注册)|(Anmeldung)|(iniciar sesión)|(s\'identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(войти)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(girişi)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar)|(giriş)|(เข้าสู่ระบบ)|(สมัครสมาชิก)|(Přihlásit)',
+        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(join now)|(new user)|(my account)|(come in)|(check in)|(personal area)|(登入)|(登录)|(登錄)|(注册)|(Anmeldung)|(iniciar sesión)|(s\'identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(войти)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(girişi)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar)|(giriş)|(เข้าสู่ระบบ)|(สมัครสมาชิก)|(Přihlásit)',
                                     i, re.IGNORECASE)
         if len(keyword_finder) > 0:
             print("found")
             found_kw = [x for x in keyword_finder[0] if len(x) > 0][0]
             # print(found_kw)
-            if len(i) <= 10: # it is not a bulk of text, click the text
+            if len(i) <= 20: # it is not a bulk of text, click the text
                 click_text(i)
             else:
                 click_text(found_kw)
@@ -177,7 +177,9 @@ if __name__ == '__main__':
     # debug_folder = './datasets/debug'
     # os.makedirs(debug_folder, exist_ok=True)
 
-    for folder in tqdm(os.listdir(legitimate_folder)):
+    for kk, folder in tqdm(enumerate(os.listdir(legitimate_folder))):
+        # if kk < 992:
+        #     continue
 
         old_screenshot_path = os.path.join(legitimate_folder, folder, 'shot.png')
         old_html_path = old_screenshot_path.replace('shot.png', 'html.txt')
@@ -189,6 +191,8 @@ if __name__ == '__main__':
 
         # only recollect failed cases
         if folder not in open('./datasets/fail_login_finder.txt').read():
+            continue
+        if folder != 'mindbodyonline.com':
             continue
 
         orig_url = open(old_info_path, encoding='utf-8').read()
