@@ -78,14 +78,16 @@ def keyword_heuristic(driver, orig_url, page_text,
 
     for i in page_text: # iterate over html text
         # looking for keyword
-        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(join now)|(new user)|(my account)|(come in)|(check in)|(personal area)|(登入)|(登录)|(登錄)|(注册)|(Anmeldung)|(iniciar sesión)|(s\'identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(войти)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(girişi)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar)|(giriş)|(เข้าสู่ระบบ)|(สมัครสมาชิก)|(Přihlásit)',
+        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(join now)|(new user)|(my account)|(come in)|(check in)|(personal area)|(登入)|(登录)|(登錄)|(注册)|(Anmeldung)|(iniciar sesión)|(identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(войти)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(girişi)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar)|(giriş)|(เข้าสู่ระบบ)|(สมัครสมาชิก)|(Přihlásit)',
                                         i, re.IGNORECASE)
         if len(keyword_finder) > 0:
-            print("found")
             found_kw = [x for x in keyword_finder[0] if len(x) > 0][0]
-            if len(i) <= 20: # it is not a bulk of text
+            print("found {} in HTML".format(found_kw))
+
+            # If it is not a bulk of text, click on the original text
+            if len(i) <= 20:
                 click_text(i)
-            else:
+            else: # otherwise click on keyword
                 click_text(found_kw)
 
             # save redirected url
@@ -110,12 +112,16 @@ def keyword_heuristic(driver, orig_url, page_text,
                     break  # stop when reach an CRP already
 
             except TimeoutException as e:
+                print(e)
+                pass
+            except Exception as e:
+                print(e)
                 pass
 
             # Back to the original site if CRP not found
             try:
                 driver.get(orig_url)
-                time.sleep(5)
+                time.sleep(1)
                 if helium.Button("accept").exists():
                     helium.click(helium.Button("accept"))
                 elif helium.Button("I accept").exists():
@@ -127,8 +133,7 @@ def keyword_heuristic(driver, orig_url, page_text,
                 time.sleep(1)
             except TimeoutException as e:
                 print(str(e))
-                # continue
-                break # cannot go back somehow
+                break # cannot go back to the original site somehow
             except Exception as e:
                 print(str(e))
                 print("no alert")
@@ -192,11 +197,14 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
                 break  # stop when reach an CRP already
 
         except TimeoutException as e:
+            print(e)
             pass
+        except Exception as e:
+            print(e)
 
         try:
             driver.get(orig_url)  # go back to original url
-            time.sleep(5)
+            time.sleep(1)
             if helium.Button("accept").exists():
                 helium.click(helium.Button("accept"))
             elif helium.Button("I accept").exists():
@@ -246,9 +254,9 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
         elif helium.Button("close").exists():
             helium.click(helium.Button("close"))
 
-        # FIXME: if translate is not working
+        # FIXME: translate is not working the first time visiting a website
         driver.get(orig_url)
-        time.sleep(5)
+        time.sleep(2)
         if helium.Button("accept").exists():
             helium.click(helium.Button("accept"))
         elif helium.Button("I accept").exists():
@@ -277,7 +285,7 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
                                   new_screenshot_path=new_screenshot_path, new_html_path=new_html_path,
                                   new_info_path=new_info_path, ele_model=ele_model, cls_model=cls_model)
 
-    # print('After HTML keyword finder:', reach_crp)
+    print('After HTML keyword finder:', reach_crp)
 
     # If html login finder did not find CRP, call CV based login finder
     if not reach_crp:
@@ -304,7 +312,7 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
         reach_crp = cv_heuristic(driver=driver, orig_url=orig_url, old_screenshot_path=screenshot_path,
                                  new_screenshot_path=new_screenshot_path, new_html_path=new_html_path,
                                  new_info_path=new_info_path, login_model=login_model, ele_model=ele_model, cls_model=cls_model)
-        # print('After CV finder', reach_crp)
+        print('After CV finder', reach_crp)
 
     # Final URL
     if os.path.exists(new_info_path):

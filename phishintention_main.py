@@ -163,7 +163,7 @@ if __name__ == "__main__":
     for item in tqdm(os.listdir(directory)):
 
         if item in open(args.results).read():
-            continue
+            continue # have been predicted
 
         try:
             print(item)

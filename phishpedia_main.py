@@ -88,7 +88,7 @@ if __name__ == "__main__":
     for item in tqdm(os.listdir(directory)):
         start_time = time.time()
 
-        if item in open(results_path).read():
+        if item in open(results_path).read(): # have been predicted
             continue
 
         try:
