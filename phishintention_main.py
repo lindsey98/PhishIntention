@@ -157,7 +157,8 @@ if __name__ == "__main__":
             f.write("siamese_conf" + "\t")
             f.write("vt_result" +"\t")
             f.write("dynamic" + "\t")
-            f.write("runtime (layout detector|siamese|crp classifier|login finder)" + "\n")
+            f.write("runtime (layout detector|siamese|crp classifier|login finder)" + "\t")
+            f.write("total_runtime" + "\n")
 
 
     for item in tqdm(os.listdir(directory)):
@@ -168,7 +169,6 @@ if __name__ == "__main__":
         try:
             print(item)
             full_path = os.path.join(directory, item)
-
             screenshot_path = os.path.join(full_path, "shot.png")
             url = open(os.path.join(full_path, 'info.txt'), encoding='utf-8').read()
 
@@ -176,7 +176,10 @@ if __name__ == "__main__":
                 continue
 
             else:
-                phish_category, phish_target, plotvis, siamese_conf, dynamic, time_breakdown = main(url=url, screenshot_path=screenshot_path)
+                start_time = time.time()
+                phish_category, phish_target, plotvis, siamese_conf, dynamic, time_breakdown = main(url=url,
+                                                                                                    screenshot_path=screenshot_path)
+                end_time = time.time()
 
                 vt_result = "None"
                 if phish_target is not None:
@@ -201,7 +204,8 @@ if __name__ == "__main__":
                     f.write(str(siamese_conf) + "\t")
                     f.write(vt_result +"\t")
                     f.write(str(dynamic) + "\t")
-                    f.write(time_breakdown + "\n")
+                    f.write(time_breakdown + "\t")
+                    f.write(str(end_time - start_time) + "\n")
 
                 cv2.imwrite(os.path.join(full_path, "predict.png"), plotvis)
 

@@ -57,7 +57,6 @@ def login_recognition(img, model):
 
     return pred_classes, pred_boxes, pred_scores
 
-
 def keyword_heuristic(driver, orig_url, page_text,
                       new_screenshot_path, new_html_path, new_info_path,
                       ele_model, cls_model):
@@ -84,7 +83,7 @@ def keyword_heuristic(driver, orig_url, page_text,
             found_kw = [x for x in keyword_finder[0] if len(x) > 0][0]
             print("found {} in HTML".format(found_kw))
 
-            # If it is not a bulk of text, click on the original text
+            # FIXME: If it is not a bulk of text, click on the original text, e.g. Please login signup ...
             if len(i) <= 20:
                 click_text(i)
             else: # otherwise click on keyword
@@ -118,10 +117,10 @@ def keyword_heuristic(driver, orig_url, page_text,
                 print(e)
                 pass
 
-            # Back to the original site if CRP not found
+            # FIXME: Back to the original site if CRP not found
             try:
                 driver.get(orig_url)
-                time.sleep(1)
+                time.sleep(2)
                 if helium.Button("accept").exists():
                     helium.click(helium.Button("accept"))
                 elif helium.Button("I accept").exists():
@@ -130,7 +129,6 @@ def keyword_heuristic(driver, orig_url, page_text,
                     helium.click(helium.Button("close"))
                 alert_msg = driver.switch_to.alert.text
                 driver.switch_to.alert.dismiss()
-                time.sleep(1)
             except TimeoutException as e:
                 print(str(e))
                 break # cannot go back to the original site somehow
@@ -202,9 +200,10 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
         except Exception as e:
             print(e)
 
+        # FIXME: Back to the original site if CRP not found
         try:
             driver.get(orig_url)  # go back to original url
-            time.sleep(1)
+            time.sleep(2)
             if helium.Button("accept").exists():
                 helium.click(helium.Button("accept"))
             elif helium.Button("I accept").exists():
@@ -213,7 +212,6 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
                 helium.click(helium.Button("close"))
             alert_msg = driver.switch_to.alert.text
             driver.switch_to.alert.dismiss()
-            time.sleep(1)
         except TimeoutException as e:
             print(str(e))
             # continue
@@ -246,7 +244,7 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
 
     try:
         driver.get(orig_url)
-        time.sleep(5) # FIXME: wait longer the first time it loads
+        time.sleep(2) # FIXME: wait longer the first time it loads?
         if helium.Button("accept").exists():
             helium.click(helium.Button("accept"))
         elif helium.Button("I accept").exists():
@@ -254,7 +252,7 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
         elif helium.Button("close").exists():
             helium.click(helium.Button("close"))
 
-        # FIXME: translate is not working the first time visiting a website
+        # FIXME: google translate is not working the first time visiting a website
         driver.get(orig_url)
         time.sleep(2)
         if helium.Button("accept").exists():
@@ -265,8 +263,6 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
             helium.click(helium.Button("close"))
         alert_msg = driver.switch_to.alert.text
         driver.switch_to.alert.dismiss()
-        time.sleep(1)
-
 
     except TimeoutException as e:
         print(str(e))
@@ -289,10 +285,10 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
 
     # If html login finder did not find CRP, call CV based login finder
     if not reach_crp:
-        # Ensure that it goes back to the original URL
+        # FIXME: Ensure that it goes back to the original URL
         try:
             driver.get(orig_url)
-            time.sleep(5)
+            time.sleep(2)
             if helium.Button("accept").exists():
                 helium.click(helium.Button("accept"))
             elif helium.Button("I accept").exists():
@@ -301,7 +297,6 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
                 helium.click(helium.Button("close"))
             alert_msg = driver.switch_to.alert.text
             driver.switch_to.alert.dismiss()
-            time.sleep(1)
         except TimeoutException as e:
             print(str(e))
             return url, screenshot_path, successful  # load URL unsucessful

@@ -39,22 +39,20 @@ def get_runtime(result_txt):
     print(breakdown_df.median())
     print(breakdown_df.min())
     print(breakdown_df.max())
-
-
     # print(breakdown_df)
 
 if __name__ == '__main__':
-    date = '2021-04-04'
+    date = '2021-04-05'
     # for phishpedia
-    # save_pos_site('./{}_pedia.txt'.format(date), 'E:\\screenshots_rf\\{}'.format(date),
-    #               './datasets/PhishDiscovery/Phishpedia/{}'.format(date))
+    save_pos_site('./{}_pedia.txt'.format(date), 'E:\\screenshots_rf\\{}'.format(date),
+                  './datasets/PhishDiscovery/Phishpedia/{}'.format(date))
 
     # for phishintention
-    # save_pos_site('./{}.txt'.format(date), 'E:\\screenshots_rf\\{}'.format(date),
-    #               './datasets/PhishDiscovery/PhishIntention/{}'.format(date))
+    save_pos_site('./{}.txt'.format(date), 'E:\\screenshots_rf\\{}'.format(date),
+                  './datasets/PhishDiscovery/PhishIntention/{}'.format(date))
 
     # get phishpedia - phishintention
-    # get_diff('./datasets/PhishDiscovery/Phishpedia/{}'.format(date), './datasets/PhishDiscovery/PhishIntention/{}'.format(date),
-    #          './datasets/PhishDiscovery/pedia_intention_diff/{}'.format(date))
+    get_diff('./datasets/PhishDiscovery/Phishpedia/{}'.format(date), './datasets/PhishDiscovery/PhishIntention/{}'.format(date),
+             './datasets/PhishDiscovery/pedia_intention_diff/{}'.format(date))
 
     get_runtime('./{}.txt'.format(date))
