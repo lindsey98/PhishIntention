@@ -119,9 +119,15 @@ def keyword_heuristic(driver, orig_url, page_text,
                 pass
 
             # FIXME: Back to the original site if CRP not found
-            driver, success = visit_url(orig_url, driver)
-            if not success:
-                break # FIXME: cannot go back to the original site somehow
+            try:
+                if current_url != orig_url:
+                    driver, success = visit_url(orig_url, driver)
+                    if not success:
+                        break  # FIXME: cannot go back to the original site somehow
+            except NameError as e:
+                driver, success = visit_url(orig_url, driver)
+                if not success:
+                    break  # FIXME: cannot go back to the original site somehow
 
         # Only check Top 3
         if ct >= 3:
@@ -189,9 +195,15 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
             print(e)
 
         # FIXME: Back to the original site if CRP not found
-        driver, success = visit_url(orig_url, driver)
-        if not success:
-            break  # FIXME: cannot go back to the original site somehow
+        try:
+            if current_url != orig_url:
+                driver, success = visit_url(orig_url, driver)
+                if not success:
+                    break  # FIXME: cannot go back to the original site somehow
+        except NameError as e:
+            driver, success = visit_url(orig_url, driver)
+            if not success:
+                break  # FIXME: cannot go back to the original site somehow
 
     return reach_crp
 
