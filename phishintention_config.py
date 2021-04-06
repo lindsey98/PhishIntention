@@ -9,6 +9,21 @@ import helium
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from webdriver_manager.chrome import ChromeDriverManager
 
+def driver_loader():
+    # load driver ONCE
+    options = initialize_chrome_settings(lang_txt='./src/util/lang.txt')
+    capabilities = DesiredCapabilities.CHROME
+    capabilities["goog:loggingPrefs"] = {"performance": "ALL"}  # chromedriver 75+
+    capabilities["unexpectedAlertBehaviour"] = "dismiss"  # handle alert
+    capabilities["pageLoadStrategy"] = "eager"  # eager mode #FIXME: set eager mode, may load partial webpage
+
+    driver = webdriver.Chrome(ChromeDriverManager().install(), desired_capabilities=capabilities,
+                              chrome_options=options)
+    driver.set_page_load_timeout(60)  # set timeout to avoid wasting time
+    driver.set_script_timeout(60)  # set timeout to avoid wasting time
+    helium.set_driver(driver)
+    return driver
+
 # element recognition model
 ele_cfg, ele_model = element_config(rcnn_weights_path = './src/element_detector/output/website_lr0.001/model_final.pth',
                                     rcnn_cfg_path='./src/element_detector/configs/faster_rcnn_web.yaml')
@@ -26,10 +41,13 @@ print('Load protected logo list')
 pedia_model, logo_feat_list, file_name_list = phishpedia_config(num_classes=277, 
                                                 weights_path='./src/phishpedia/resnetv2_rgb_new.pth.tar',
                                                 targetlist_path='./src/phishpedia/expand_targetlist/')
+print('Finish loading protected logo list')
 
 siamese_ts = 0.87 # FIXME: threshold is 0.87 in phish-discovery?
 
 # brand-domain dictionary
 domain_map_path = './src/phishpedia/domain_map.pkl'
 
-
+# load driver ONCE!
+driver = driver_loader()
+print('Finish loading webdriver')

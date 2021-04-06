@@ -71,6 +71,13 @@ def vt_scan(url_test):
     return positive, total
 
 def visit_url(url, driver):
+    '''
+    Visit URL
+    :param url:
+    :param driver:
+    :return: driver
+    :return successful/unsuccessful: True/False
+    '''
     try:
         driver.get(url)
         time.sleep(2)
@@ -78,11 +85,9 @@ def visit_url(url, driver):
         alert_msg = driver.switch_to.alert.text
         driver.switch_to.alert.dismiss()
         return driver, True
-
     except TimeoutException as e:
         print(str(e))
         return driver, False # FIXME: TIMEOUT Error
-
     except Exception as e:
         print(str(e))
         print("no alert")
@@ -96,7 +101,7 @@ def get_page_text(driver):
     '''
     try:
         body = driver.find_element_by_tag_name('body').text
-    except NoSuchElementException as e:
+    except NoSuchElementException as e: # if no body tag, just get all text
         print(e)
         try:
             body = driver.page_source
@@ -107,17 +112,17 @@ def get_page_text(driver):
 
 def click_popup():
     '''
-    Click unexpected popup (accpet terms condditions etc.)
+    Click unexpected popup (accpet terms condditions, close alerts etc.)
     :return:
     '''
-    if helium.Button("accept").exists():
-        helium.click(helium.Button("accept"))
-    elif helium.Button("I accept").exists():
-        helium.click(helium.Button("I accept"))
-    elif helium.Button("close").exists():
+    if helium.Button("close").exists():
         helium.click(helium.Button("close"))
     elif helium.Button("Close").exists():
         helium.click(helium.Button("Close"))
+    elif helium.Button("accept").exists():
+        helium.click(helium.Button("accept"))
+    elif helium.Button("I accept").exists():
+        helium.click(helium.Button("I accept"))
     elif helium.Button("OK").exists():
         helium.click(helium.Button("OK"))
 
@@ -129,14 +134,10 @@ def click_text(text):
     '''
     try:
         helium.highlight(text)
-        time.sleep(5)
+        time.sleep(2)
         helium.click(text)
-        time.sleep(5)
-        if helium.Button("accept").exists():
-            helium.click(helium.Button("accept"))
-        elif helium.Button("I accept").exists():
-            helium.click(helium.Button("I accept"))
-
+        time.sleep(2)
+        click_popup()
     except TimeoutException as e:
         print(e)
     except LookupError as e:
@@ -154,12 +155,8 @@ def click_point(x, y):
     try:
         # helium.highlight(helium.Point(x, y))
         helium.click(helium.Point(x, y))
-        time.sleep(5)
-        if helium.Button("accept").exists():
-            helium.click(helium.Button("accept"))
-        elif helium.Button("I accept").exists():
-            helium.click(helium.Button("I accept"))
-
+        time.sleep(2)
+        click_popup()
     except TimeoutException as e:
         print(e)
     except MoveTargetOutOfBoundsException as e:
@@ -180,15 +177,20 @@ def clean_up_window(driver):
     :param driver:
     :return:
     '''
-    try:
-        current_window = driver.current_window_handle
-        for i in driver.window_handles:
+    current_window = driver.current_window_handle
+    for i in driver.window_handles:
+        try:
             if i != current_window:
                 driver.switch_to_window(i)
                 driver.close()
-    except Exception as e: # unknown exception occurs
+        except Exception as e: # unknown exception occurs
+            print(e)
+            pass
+    try:
+        driver.switch_to_window(current_window)
+    except Exception as e:
         print(e)
-        pass
+        print('Cannot switch back to the current window')
 
 
 def writetxt(txtpath, contents):

@@ -21,6 +21,8 @@ def save_pos_site(result_txt, source_folder, target_folder):
                         os.path.join(target_folder, folder))
         except FileExistsError:
             continue
+        except FileNotFoundError:
+            continue
 
 def get_diff(bigger_folder, smaller_folder, target_folder):
     os.makedirs(target_folder, exist_ok=True)
@@ -30,6 +32,8 @@ def get_diff(bigger_folder, smaller_folder, target_folder):
                 shutil.copytree(os.path.join(bigger_folder, folder),
                                 os.path.join(target_folder, folder))
             except FileExistsError:
+                continue
+            except FileNotFoundError:
                 continue
 
 def get_runtime(result_txt):
@@ -55,17 +59,17 @@ def get_total_runtime(result_txt):
 
 
 if __name__ == '__main__':
-    date = '2021-04-06'
+    date = '2021-04-05'
     # for phishpedia
-    save_pos_site('./{}_pedia.txt'.format(date), 'E:\\screenshots_rf\\{}'.format(date),
+    save_pos_site('./{}_pedia.txt'.format(date), 'Z:\\screenshots_rf\\{}'.format(date),
                   './datasets/PhishDiscovery/Phishpedia/{}'.format(date))
 
     # for phishintention
-    save_pos_site('./{}.txt'.format(date), 'E:\\screenshots_rf\\{}'.format(date),
+    save_pos_site('./{}.txt'.format(date), 'Z:\\screenshots_rf\\{}'.format(date),
                   './datasets/PhishDiscovery/PhishIntention/{}'.format(date))
 
     # get phishpedia - phishintention
     get_diff('./datasets/PhishDiscovery/Phishpedia/{}'.format(date), './datasets/PhishDiscovery/PhishIntention/{}'.format(date),
              './datasets/PhishDiscovery/pedia_intention_diff/{}'.format(date))
 
-    get_total_runtime('./{}.txt'.format(date))
+    # get_total_runtime('./{}.txt'.format(date))

@@ -18,19 +18,6 @@ import time
 # ** Else: Return Benign
 #####################################################################################################################
 
-def driver_loader():
-    # load driver ONCE
-    options = initialize_chrome_settings(lang_txt='./src/util/lang.txt')
-    capabilities = DesiredCapabilities.CHROME
-    capabilities["goog:loggingPrefs"] = {"performance": "ALL"}  # chromedriver 75+
-    capabilities["unexpectedAlertBehaviour"] = "dismiss"  # handle alert
-
-    driver = webdriver.Chrome(ChromeDriverManager().install(), desired_capabilities=capabilities,
-                              chrome_options=options)
-    driver.set_page_load_timeout(60)  # set timeout to avoid wasting time
-    driver.set_script_timeout(60)  # set timeout to avoid wasting time
-    helium.set_driver(driver)
-    return driver
 
 
 def main(url, screenshot_path):
@@ -48,6 +35,7 @@ def main(url, screenshot_path):
     siamese_time = 0
     crp_time = 0
     dynamic_time = 0
+    process_time = 0
 
     while True:
         # 0 for benign, 1 for phish, default is benign
@@ -62,26 +50,25 @@ def main(url, screenshot_path):
         ele_detector_time = time.time() - start_time
         plotvis = vis(screenshot_path, pred_boxes, pred_classes)
         print("plot")
+
         # If no element is reported
         if len(pred_boxes) == 0:
             print('No element is detected, report as benign')
-            return phish_category, pred_target, plotvis, siamese_conf, dynamic, str(ele_detector_time)+'|'+str(siamese_time)+'|'+str(crp_time)+'|'+str(dynamic_time)
+            return phish_category, pred_target, plotvis, siamese_conf, dynamic, str(ele_detector_time)+'|'+str(siamese_time)+'|'+str(crp_time)+'|'+str(dynamic_time)+'|'+str(process_time)
         print('Entering siamese')
 
         ######################## Step2: Siamese (logo matcher) ########################################
         start_time = time.time()
         pred_target, matched_coord, siamese_conf = phishpedia_classifier(pred_classes=pred_classes, pred_boxes=pred_boxes, 
-                                        domain_map_path=domain_map_path,
-                                        model=pedia_model, 
+                                        domain_map_path=domain_map_path, model=pedia_model,
                                         logo_feat_list=logo_feat_list, file_name_list=file_name_list,
-                                        url=url,
-                                        shot_path=screenshot_path,
+                                        url=url, shot_path=screenshot_path,
                                         ts=siamese_ts)
         siamese_time = time.time() - start_time
 
         if pred_target is None:
             print('Did not match to any brand, report as benign')
-            return phish_category, pred_target, plotvis, siamese_conf, dynamic, str(ele_detector_time)+'|'+str(siamese_time)+'|'+str(crp_time)+'|'+str(dynamic_time)
+            return phish_category, pred_target, plotvis, siamese_conf, dynamic, str(ele_detector_time)+'|'+str(siamese_time)+'|'+str(crp_time)+'|'+str(dynamic_time)+'|'+str(process_time)
 
         ######################## Step3: CRP checker (if a target is reported) #################################
         print('A target is reported by siamese, enter CRP classifier')
@@ -104,20 +91,18 @@ def main(url, screenshot_path):
                 print('It is a Non-CRP page, enter dynamic analysis')
                 # update url and screenshot path
                 # load chromedriver
-                driver = driver_loader()
                 start_time = time.time()
-                url, screenshot_path, successful = dynamic_analysis(url=url, screenshot_path=screenshot_path,
+                url, screenshot_path, successful, process_time = dynamic_analysis(url=url, screenshot_path=screenshot_path,
                                                                     cls_model=cls_model, ele_model=ele_model, login_model=login_model,
                                                                     driver=driver)
                 dynamic_time = time.time() - start_time
-                driver.quit() # quit driver
 #
                 waive_crp_classifier = True # only run dynamic analysis ONCE
 
                 # If dynamic analysis did not reach a CRP
                 if successful == False:
                     print('Dynamic analysis cannot find any link redirected to a CRP page, report as benign')
-                    return phish_category, None, plotvis, None, dynamic, str(ele_detector_time)+'|'+str(siamese_time)+'|'+str(crp_time)+'|'+str(dynamic_time)
+                    return phish_category, None, plotvis, None, dynamic, str(ele_detector_time)+'|'+str(siamese_time)+'|'+str(crp_time)+'|'+str(dynamic_time)+'|'+str(process_time)
                 else: # dynamic analysis successfully found a CRP
                     dynamic = True
                     print('Dynamic analysis found a CRP, go back to layout detector')
@@ -134,7 +119,7 @@ def main(url, screenshot_path):
                     (int(matched_coord[0] + 20), int(matched_coord[1] + 20)),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
         
-    return phish_category, pred_target, plotvis, siamese_conf, dynamic, str(ele_detector_time)+'|'+str(siamese_time)+'|'+str(crp_time)+'|'+str(dynamic_time)
+    return phish_category, pred_target, plotvis, siamese_conf, dynamic, str(ele_detector_time)+'|'+str(siamese_time)+'|'+str(crp_time)+'|'+str(dynamic_time)+'|'+str(process_time)
 
 
 
@@ -158,7 +143,7 @@ if __name__ == "__main__":
             f.write("siamese_conf" + "\t")
             f.write("vt_result" +"\t")
             f.write("dynamic" + "\t")
-            f.write("runtime (layout detector|siamese|crp classifier|login finder)" + "\t")
+            f.write("runtime (layout detector|siamese|crp classifier|login finder total|login finder process)" + "\t")
             f.write("total_runtime" + "\n")
 
 
@@ -178,8 +163,7 @@ if __name__ == "__main__":
 
             else:
                 start_time = time.time()
-                phish_category, phish_target, plotvis, siamese_conf, dynamic, time_breakdown = main(url=url,
-                                                                                                    screenshot_path=screenshot_path)
+                phish_category, phish_target, plotvis, siamese_conf, dynamic, time_breakdown = main(url=url, screenshot_path=screenshot_path)
                 end_time = time.time()
 
                 vt_result = "None"
@@ -214,6 +198,7 @@ if __name__ == "__main__":
             print(str(e))
 
       #  raise(e)
+    driver.quit()
     time.sleep(2)
 
 

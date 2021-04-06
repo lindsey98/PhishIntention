@@ -84,7 +84,6 @@ def vis(img_path, pred_boxes, pred_classes):
         cv2.putText(check, class_dict[pred_classes[j].item()], (box[0], box[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
     
     return check
-#     cv2.imwrite(img_path.split('.png')[0]+'_vis.png', check)
 
 if __name__ == '__main__':
     # change this to your image path

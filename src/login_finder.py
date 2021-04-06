@@ -11,6 +11,7 @@ import time
 import pandas as pd
 from tqdm import tqdm
 from selenium.common.exceptions import TimeoutException
+# from src.element_detector import vis
 
 
 # global dict
@@ -147,9 +148,10 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
 
     # CV-based login finder
     # predict elements
-    _, pred_boxes, _ = login_recognition(img=old_screenshot_path, model=login_model)
+    pred_classes, pred_boxes, _ = login_recognition(img=old_screenshot_path, model=login_model)
     # # visualize elements
-    # check = login_vis(img_path, pred_boxes, pred_classes)
+    # check = vis(old_screenshot_path, pred_boxes, pred_classes)
+    # cv2.imshow(check)
     reach_crp = False
     # if no prediction at all
     if len(pred_boxes) == 0:
@@ -205,6 +207,7 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
     :param driver:
     :return:
     '''
+
     # get url
     orig_url = url
     successful = False # reach CRP or not?
@@ -213,16 +216,16 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
     new_html_path = new_screenshot_path.replace('new_shot.png', 'new_html.txt')
     new_info_path = new_screenshot_path.replace('new_shot.png', 'new_info.txt')
 
-    driver, success = visit_url(orig_url, driver)
+    # driver, success = visit_url(orig_url, driver)
     driver, success = visit_url(orig_url, driver) #FIXME: load twice because google translate not working the first time we visit a website
 
-    if not success:
-        return url, screenshot_path, successful  # load URL unsucessful
+    start_time = time.time()
+    if not success: # load URL unsucessful
+        clean_up_window(driver) # clean up the windows
+        return url, screenshot_path, successful, time.time() - start_time
 
     print("Getting url")
-    page_text = get_page_text(driver).split('\n')  # tokenize by space or \n
-    # page_text.sort(key=len)  # sort text according to length
-    # print(len(page_text))
+    page_text = get_page_text(driver).split('\n')  # tokenize by \n
 
     # HTML heuristic based login finder
     reach_crp = keyword_heuristic(driver=driver, orig_url=orig_url, page_text=page_text,
@@ -236,7 +239,8 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
         # FIXME: Ensure that it goes back to the original URL
         driver, success = visit_url(orig_url, driver)
         if not success:
-            return url, screenshot_path, successful  # load URL unsucessful
+            clean_up_window(driver) # clean up the windows
+            return url, screenshot_path, successful, time.time() - start_time  # load URL unsucessful
 
         reach_crp = cv_heuristic(driver=driver, orig_url=orig_url, old_screenshot_path=screenshot_path,
                                  new_screenshot_path=new_screenshot_path, new_html_path=new_html_path,
@@ -245,7 +249,7 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
 
     # Final URL
     if os.path.exists(new_info_path):
-        current_url = open(new_info_path, encoding='utf-8').read()
+        current_url = open(new_info_path, encoding='ISO-8859-1').read()
         current_ss = new_screenshot_path
         if len(current_url) == 0: # if current URL is empty
             current_url = orig_url # return original url and screenshot_path
@@ -254,4 +258,5 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
         current_url = orig_url
         current_ss = screenshot_path
 
-    return current_url, current_ss, reach_crp
+    clean_up_window(driver) # clean up the windows
+    return current_url, current_ss, reach_crp, time.time() - start_time
