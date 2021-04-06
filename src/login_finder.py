@@ -119,15 +119,9 @@ def keyword_heuristic(driver, orig_url, page_text,
                 pass
 
             # FIXME: Back to the original site if CRP not found
-            try:
-                if current_url != orig_url:
-                    driver, success = visit_url(orig_url, driver)
-                    if not success:
-                        break  # FIXME: cannot go back to the original site somehow
-            except NameError as e:
-                driver, success = visit_url(orig_url, driver)
-                if not success:
-                    break  # FIXME: cannot go back to the original site somehow
+            driver, success = visit_url(orig_url, driver)
+            if not success:
+                break # FIXME: cannot go back to the original site somehow
 
         # Only check Top 3
         if ct >= 3:
@@ -195,15 +189,9 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
             print(e)
 
         # FIXME: Back to the original site if CRP not found
-        try:
-            if current_url != orig_url:
-                driver, success = visit_url(orig_url, driver)
-                if not success:
-                    break  # FIXME: cannot go back to the original site somehow
-        except NameError as e:
-            driver, success = visit_url(orig_url, driver)
-            if not success:
-                break  # FIXME: cannot go back to the original site somehow
+        driver, success = visit_url(orig_url, driver)
+        if not success:
+            break  # FIXME: cannot go back to the original site somehow
 
     return reach_crp
 
@@ -248,6 +236,7 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
 
     # If HTML login finder did not find CRP, call CV-based login finder
     if not reach_crp:
+        clean_up_window(driver)
         # FIXME: Ensure that it goes back to the original URL
         driver, success = visit_url(orig_url, driver)
         if not success:
