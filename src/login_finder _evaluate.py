@@ -82,7 +82,7 @@ def keyword_heuristic_debug(driver, orig_url, page_text):
             except TimeoutException as e:
                 pass
 
-            driver, success = visit_url(orig_url, driver)
+            success = visit_url(orig_url, driver)
 
         # Only check Top 3
         if ct >= 3:
@@ -128,7 +128,7 @@ def cv_heuristic_debug(driver, orig_url, old_screenshot_path):
         except TimeoutException as e:
             pass
 
-        driver, success = visit_url(orig_url, driver)
+        success = visit_url(orig_url, driver)
 
     return top3_urls
 
@@ -191,7 +191,7 @@ if __name__ == '__main__':
         #         continue
 
         start_time = time.time()
-        driver, success = visit_url(orig_url, driver)
+        success = visit_url(orig_url, driver)
         print('Finish loading URL twice {:.4f}'.format(time.time() - start_time))
         if not success:
             continue
@@ -215,7 +215,7 @@ if __name__ == '__main__':
 
         # go back to the original site
         start_time = time.time()
-        driver, success = visit_url(orig_url, driver)
+        success = visit_url(orig_url, driver)
         print('Finish loading original URL again {:.4f}'.format(time.time() - start_time))
         if not success:
             continue

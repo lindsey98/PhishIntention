@@ -84,14 +84,14 @@ def visit_url(url, driver):
         click_popup()
         alert_msg = driver.switch_to.alert.text
         driver.switch_to.alert.dismiss()
-        return driver, True
+        return True
     except TimeoutException as e:
         print(str(e))
-        return driver, False # FIXME: TIMEOUT Error
+        return False # FIXME: TIMEOUT Error
     except Exception as e:
         print(str(e))
         print("no alert")
-        return driver, True
+        return True
 
 def get_page_text(driver):
     '''

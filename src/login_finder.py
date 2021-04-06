@@ -119,7 +119,7 @@ def keyword_heuristic(driver, orig_url, page_text,
                 pass
 
             # FIXME: Back to the original site if CRP not found
-            driver, success = visit_url(orig_url, driver)
+            success = visit_url(orig_url, driver)
             if not success:
                 break # FIXME: cannot go back to the original site somehow
 
@@ -189,7 +189,7 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
             print(e)
 
         # FIXME: Back to the original site if CRP not found
-        driver, success = visit_url(orig_url, driver)
+        success = visit_url(orig_url, driver)
         if not success:
             break  # FIXME: cannot go back to the original site somehow
 
@@ -216,8 +216,7 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
     new_html_path = new_screenshot_path.replace('new_shot.png', 'new_html.txt')
     new_info_path = new_screenshot_path.replace('new_shot.png', 'new_info.txt')
 
-    # driver, success = visit_url(orig_url, driver)
-    driver, success = visit_url(orig_url, driver) #FIXME: load twice because google translate not working the first time we visit a website
+    success = visit_url(orig_url, driver) #FIXME: load twice because google translate not working the first time we visit a website
 
     start_time = time.time()
     if not success: # load URL unsucessful
@@ -238,7 +237,7 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
     if not reach_crp:
         clean_up_window(driver)
         # FIXME: Ensure that it goes back to the original URL
-        driver, success = visit_url(orig_url, driver)
+        success = visit_url(orig_url, driver)
         if not success:
             clean_up_window(driver) # clean up the windows
             return url, screenshot_path, successful, time.time() - start_time  # load URL unsucessful
