@@ -81,6 +81,7 @@ def keyword_heuristic(driver, orig_url, page_text,
         keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(join now)|(new user)|(my account)|(come in)|(check in)|(personal area)|(登入)|(登录)|(登錄)|(注册)|(Anmeldung)|(iniciar sesión)|(identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(войти)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(girişi)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar)|(giriş)|(เข้าสู่ระบบ)|(สมัครสมาชิก)|(Přihlásit)',
                                         i, re.IGNORECASE)
         if len(keyword_finder) > 0:
+            ct += 1
             found_kw = [x for x in keyword_finder[0] if len(x) > 0][0]
             print("found {} in HTML".format(found_kw))
 
@@ -119,9 +120,19 @@ def keyword_heuristic(driver, orig_url, page_text,
                 pass
 
             # FIXME: Back to the original site if CRP not found
-            success = visit_url(orig_url, driver)
-            if not success:
-                break # FIXME: cannot go back to the original site somehow
+            try:
+                driver.get(orig_url)
+                time.sleep(2)
+                click_popup()
+                alert_msg = driver.switch_to.alert.text
+                driver.switch_to.alert.dismiss()
+            except TimeoutException as e:
+                print(str(e))
+                break  # FIXME: TIMEOUT Error
+            except Exception as e:
+                print(str(e))
+                print("no alert")
+
 
         # Only check Top 3
         if ct >= 3:
@@ -189,9 +200,18 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
             print(e)
 
         # FIXME: Back to the original site if CRP not found
-        success = visit_url(orig_url, driver)
-        if not success:
-            break  # FIXME: cannot go back to the original site somehow
+        try:
+            driver.get(orig_url)
+            time.sleep(2)
+            click_popup()
+            alert_msg = driver.switch_to.alert.text
+            driver.switch_to.alert.dismiss()
+        except TimeoutException as e:
+            print(str(e))
+            break  # FIXME: TIMEOUT Error
+        except Exception as e:
+            print(str(e))
+            print("no alert")
 
     return reach_crp
 
@@ -216,13 +236,21 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
     new_html_path = new_screenshot_path.replace('new_shot.png', 'new_html.txt')
     new_info_path = new_screenshot_path.replace('new_shot.png', 'new_info.txt')
 
-    success = visit_url(orig_url, driver) #FIXME: load twice because google translate not working the first time we visit a website
+    try:
+        driver.get(orig_url)
+        time.sleep(2)
+        click_popup()
+        alert_msg = driver.switch_to.alert.text
+        driver.switch_to.alert.dismiss()
+    except TimeoutException as e:
+        print(str(e))
+        clean_up_window(driver)  # clean up the windows
+        return url, screenshot_path, successful, 0
+    except Exception as e:
+        print(str(e))
+        print("no alert") #FIXME: load twice because google translate not working the first time we visit a website
 
     start_time = time.time()
-    if not success: # load URL unsucessful
-        clean_up_window(driver) # clean up the windows
-        return url, screenshot_path, successful, time.time() - start_time
-
     print("Getting url")
     page_text = get_page_text(driver).split('\n')  # tokenize by \n
 
@@ -236,11 +264,21 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
     # If HTML login finder did not find CRP, call CV-based login finder
     if not reach_crp:
         clean_up_window(driver)
+
         # FIXME: Ensure that it goes back to the original URL
-        success = visit_url(orig_url, driver)
-        if not success:
-            clean_up_window(driver) # clean up the windows
+        try:
+            driver.get(orig_url)
+            time.sleep(2)
+            click_popup()
+            alert_msg = driver.switch_to.alert.text
+            driver.switch_to.alert.dismiss()
+        except TimeoutException as e:
+            print(str(e))
+            clean_up_window(driver)  # clean up the windows
             return url, screenshot_path, successful, time.time() - start_time  # load URL unsucessful
+        except Exception as e:
+            print(str(e))
+            print("no alert")
 
         reach_crp = cv_heuristic(driver=driver, orig_url=orig_url, old_screenshot_path=screenshot_path,
                                  new_screenshot_path=new_screenshot_path, new_html_path=new_html_path,
