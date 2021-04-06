@@ -118,23 +118,9 @@ def keyword_heuristic(driver, orig_url, page_text,
                 pass
 
             # FIXME: Back to the original site if CRP not found
-            try:
-                driver.get(orig_url)
-                time.sleep(2)
-                if helium.Button("accept").exists():
-                    helium.click(helium.Button("accept"))
-                elif helium.Button("I accept").exists():
-                    helium.click(helium.Button("I accept"))
-                elif helium.Button("close").exists():
-                    helium.click(helium.Button("close"))
-                alert_msg = driver.switch_to.alert.text
-                driver.switch_to.alert.dismiss()
-            except TimeoutException as e:
-                print(str(e))
-                break # cannot go back to the original site somehow
-            except Exception as e:
-                print(str(e))
-                print("no alert")
+            driver, success = visit_url(orig_url, driver)
+            if not success:
+                break # FIXME: cannot go back to the original site somehow
 
         # Only check Top 3
         if ct >= 3:
@@ -172,7 +158,7 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
     for bbox in pred_boxes.detach().cpu().numpy()[: min(3, len(pred_boxes))]: # only for top3 boxes
         x1, y1, x2, y2 = bbox
         center = ((x1 + x2) / 2, (y1 + y2) / 2)
-        click_point(center[0], center[1])  # click center point of predicted bbox
+        click_point(center[0], center[1])  # click center point of predicted bbox for safe
 
         # save redirected url
         try:
@@ -190,7 +176,7 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
                 cre_pred, cred_conf, _ = credential_classifier_mixed_al(img=new_screenshot_path, coords=pred_boxes_crp,
                                                                         types=pred_classes_crp, model=cls_model)
 
-            if cre_pred == 0:  # this is an CRP
+            elif cre_pred == 0:  # this is an CRP already
                 reach_crp = True
                 break  # stop when reach an CRP already
 
@@ -201,24 +187,9 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
             print(e)
 
         # FIXME: Back to the original site if CRP not found
-        try:
-            driver.get(orig_url)  # go back to original url
-            time.sleep(2)
-            if helium.Button("accept").exists():
-                helium.click(helium.Button("accept"))
-            elif helium.Button("I accept").exists():
-                helium.click(helium.Button("I accept"))
-            elif helium.Button("close").exists():
-                helium.click(helium.Button("close"))
-            alert_msg = driver.switch_to.alert.text
-            driver.switch_to.alert.dismiss()
-        except TimeoutException as e:
-            print(str(e))
-            # continue
-            break # cannot go back somehow
-        except Exception as e:
-            print(str(e))
-            print("no alert")
+        driver, success = visit_url(orig_url, driver)
+        if not success:
+            break  # FIXME: cannot go back to the original site somehow
 
     return reach_crp
 
@@ -242,34 +213,11 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
     new_html_path = new_screenshot_path.replace('new_shot.png', 'new_html.txt')
     new_info_path = new_screenshot_path.replace('new_shot.png', 'new_info.txt')
 
-    try:
-        driver.get(orig_url)
-        time.sleep(2) # FIXME: wait longer the first time it loads?
-        if helium.Button("accept").exists():
-            helium.click(helium.Button("accept"))
-        elif helium.Button("I accept").exists():
-            helium.click(helium.Button("I accept"))
-        elif helium.Button("close").exists():
-            helium.click(helium.Button("close"))
+    driver, success = visit_url(orig_url, driver)
+    driver, success = visit_url(orig_url, driver) #FIXME: load twice because google translate not working the first time we visit a website
 
-        # FIXME: google translate is not working the first time visiting a website
-        driver.get(orig_url)
-        time.sleep(2)
-        if helium.Button("accept").exists():
-            helium.click(helium.Button("accept"))
-        elif helium.Button("I accept").exists():
-            helium.click(helium.Button("I accept"))
-        elif helium.Button("close").exists():
-            helium.click(helium.Button("close"))
-        alert_msg = driver.switch_to.alert.text
-        driver.switch_to.alert.dismiss()
-
-    except TimeoutException as e:
-        print(str(e))
-        return url, screenshot_path, successful # load URL unsucessful
-    except Exception as e:
-        print(str(e))
-        print("no alert")
+    if not success:
+        return url, screenshot_path, successful  # load URL unsucessful
 
     print("Getting url")
     page_text = get_page_text(driver).split('\n')  # tokenize by space or \n
@@ -283,26 +231,12 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
 
     print('After HTML keyword finder:', reach_crp)
 
-    # If html login finder did not find CRP, call CV based login finder
+    # If HTML login finder did not find CRP, call CV-based login finder
     if not reach_crp:
         # FIXME: Ensure that it goes back to the original URL
-        try:
-            driver.get(orig_url)
-            time.sleep(2)
-            if helium.Button("accept").exists():
-                helium.click(helium.Button("accept"))
-            elif helium.Button("I accept").exists():
-                helium.click(helium.Button("I accept"))
-            elif helium.Button("close").exists():
-                helium.click(helium.Button("close"))
-            alert_msg = driver.switch_to.alert.text
-            driver.switch_to.alert.dismiss()
-        except TimeoutException as e:
-            print(str(e))
+        driver, success = visit_url(orig_url, driver)
+        if not success:
             return url, screenshot_path, successful  # load URL unsucessful
-        except Exception as e:
-            print(str(e))
-            print("no alert")
 
         reach_crp = cv_heuristic(driver=driver, orig_url=orig_url, old_screenshot_path=screenshot_path,
                                  new_screenshot_path=new_screenshot_path, new_html_path=new_html_path,
@@ -313,10 +247,10 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
     if os.path.exists(new_info_path):
         current_url = open(new_info_path, encoding='utf-8').read()
         current_ss = new_screenshot_path
-        if len(current_url) == 0:
-            current_url = orig_url
+        if len(current_url) == 0: # if current URL is empty
+            current_url = orig_url # return original url and screenshot_path
             current_ss = screenshot_path
-    else:
+    else: # return original url and screenshot_path
         current_url = orig_url
         current_ss = screenshot_path
 

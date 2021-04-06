@@ -17,6 +17,7 @@ import time
 # ** Step 5: If reach a CRP + Siamese report target: Return Phish, Phishing target
 # ** Else: Return Benign
 #####################################################################################################################
+
 def driver_loader():
     # load driver ONCE
     options = initialize_chrome_settings(lang_txt='./src/util/lang.txt')

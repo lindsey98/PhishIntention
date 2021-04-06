@@ -70,6 +70,24 @@ def vt_scan(url_test):
 
     return positive, total
 
+def visit_url(url, driver):
+    try:
+        driver.get(url)
+        time.sleep(2)
+        click_popup()
+        alert_msg = driver.switch_to.alert.text
+        driver.switch_to.alert.dismiss()
+        return driver, True
+
+    except TimeoutException as e:
+        print(str(e))
+        return driver, False # FIXME: TIMEOUT Error
+
+    except Exception as e:
+        print(str(e))
+        print("no alert")
+        return driver, True
+
 def get_page_text(driver):
     '''
     get body text from html
@@ -86,6 +104,22 @@ def get_page_text(driver):
             print(e)
             body = ''
     return body
+
+def click_popup():
+    '''
+    Click unexpected popup (accpet terms condditions etc.)
+    :return:
+    '''
+    if helium.Button("accept").exists():
+        helium.click(helium.Button("accept"))
+    elif helium.Button("I accept").exists():
+        helium.click(helium.Button("I accept"))
+    elif helium.Button("close").exists():
+        helium.click(helium.Button("close"))
+    elif helium.Button("Close").exists():
+        helium.click(helium.Button("Close"))
+    elif helium.Button("OK").exists():
+        helium.click(helium.Button("OK"))
 
 def click_text(text):
     '''
@@ -153,6 +187,7 @@ def clean_up_window(driver):
                 driver.switch_to_window(i)
                 driver.close()
     except Exception as e: # unknown exception occurs
+        print(e)
         pass
 
 
