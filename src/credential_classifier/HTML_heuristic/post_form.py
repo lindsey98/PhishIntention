@@ -75,11 +75,13 @@ def proc_tree(tree):
             inputs = form.xpath('.//input')
             count_inputs.append(len(inputs)) # get number if inputs
             inputs = form.xpath('.//input[@type="password"]') # get number of password fields
-            count_password.append(len(inputs))
-            
+            inputs2 = form.xpath('.//input[@name="password"]')
+            count_password.append(len(inputs) + len(inputs2))
+
             usernames = form.xpath('.//input[@type="username"]') # get number of username fields
-            count_username.append(len(usernames))
-            
+            usernames2 = form.xpath('.//input[@name="username"]') # get number of username fields
+            count_username.append(len(usernames) + len(usernames2))
+
         return len(forms), methods, count_inputs, count_password, count_username
             
         
