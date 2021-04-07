@@ -53,7 +53,7 @@ def element_recognition(img, model):
             img = img_init
     else:
         img = img
-    print(img.shape)
+    # print(img.shape)
 
     pred = model(img)
     pred_i = pred["instances"].to("cpu")

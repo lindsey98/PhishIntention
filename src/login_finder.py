@@ -265,6 +265,19 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
     except Exception as e:
         print(str(e))
         print("no alert") #FIXME: load twice because google translate not working the first time we visit a website
+    try:
+        driver.get(orig_url)
+        time.sleep(2)
+        click_popup()
+        alert_msg = driver.switch_to.alert.text
+        driver.switch_to.alert.dismiss()
+    except TimeoutException as e:
+        print(str(e))
+        clean_up_window(driver)  # clean up the windows
+        return url, screenshot_path, successful, 0
+    except Exception as e:
+        print(str(e))
+        print("no alert") #FIXME: load twice because google translate not working the first time we visit a website
 
     start_time = time.time()
     print("Getting url")
