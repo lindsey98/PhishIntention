@@ -90,13 +90,17 @@ def main(url, screenshot_path):
             if cre_pred == 1:
                 print('It is a Non-CRP page, enter dynamic analysis')
                 # update url and screenshot path
+                # # load driver ONCE!
+                driver = driver_loader()
+                print('Finish loading webdriver')
                 # load chromedriver
                 start_time = time.time()
                 url, screenshot_path, successful, process_time = dynamic_analysis(url=url, screenshot_path=screenshot_path,
                                                                     cls_model=cls_model, ele_model=ele_model, login_model=login_model,
                                                                     driver=driver)
                 dynamic_time = time.time() - start_time
-#
+                driver.quit()
+
                 waive_crp_classifier = True # only run dynamic analysis ONCE
 
                 # If dynamic analysis did not reach a CRP
@@ -146,59 +150,65 @@ if __name__ == "__main__":
             f.write("runtime (layout detector|siamese|crp classifier|login finder total|login finder process)" + "\t")
             f.write("total_runtime" + "\n")
 
+    # # load driver ONCE!
+    # driver = driver_loader()
+    # print('Finish loading webdriver')
 
     for item in tqdm(os.listdir(directory)):
 
         if item in open(args.results).read():
             continue # have been predicted
 
-        try:
-            print(item)
-            full_path = os.path.join(directory, item)
-            screenshot_path = os.path.join(full_path, "shot.png")
-            url = open(os.path.join(full_path, 'info.txt'), encoding='ISO-8859-1').read()
+        # try:
+        print(item)
+        full_path = os.path.join(directory, item)
+        print(full_path)
+        screenshot_path = os.path.join(full_path, "shot.png")
+        print(os.path.exists(screenshot_path))
+        print(screenshot_path)
+        url = open(os.path.join(full_path, 'info.txt'), encoding='ISO-8859-1').read()
 
-            if not os.path.exists(screenshot_path):
-                continue
+        if not os.path.exists(screenshot_path):
+            continue
 
-            else:
-                start_time = time.time()
-                phish_category, phish_target, plotvis, siamese_conf, dynamic, time_breakdown = main(url=url, screenshot_path=screenshot_path)
-                end_time = time.time()
+        else:
+            start_time = time.time()
+            phish_category, phish_target, plotvis, siamese_conf, dynamic, time_breakdown = main(url=url, screenshot_path=screenshot_path)
+            end_time = time.time()
 
-                vt_result = "None"
-                if phish_target is not None:
-                    try:
-                        if vt_scan(url) is not None:
-                            positive, total = vt_scan(url)
-                            print("Positive VT scan!")
-                            vt_result = str(positive) + "/" + str(total)
-                        else:
-                            print("Negative VT scan!")
-                            vt_result = "None"
+            vt_result = "None"
+            if phish_target is not None:
+                try:
+                    if vt_scan(url) is not None:
+                        positive, total = vt_scan(url)
+                        print("Positive VT scan!")
+                        vt_result = str(positive) + "/" + str(total)
+                    else:
+                        print("Negative VT scan!")
+                        vt_result = "None"
 
-                    except Exception as e:
-                        print('VTScan is not working...')
-                        vt_result = "error"
+                except Exception as e:
+                    print('VTScan is not working...')
+                    vt_result = "error"
 
-                with open(args.results, "a+") as f:
-                    f.write(item + "\t")
-                    f.write(url +"\t")
-                    f.write(str(phish_category) +"\t")
-                    f.write(str(phish_target) + "\t") # write top1 prediction only
-                    f.write(str(siamese_conf) + "\t")
-                    f.write(vt_result +"\t")
-                    f.write(str(dynamic) + "\t")
-                    f.write(time_breakdown + "\t")
-                    f.write(str(end_time - start_time) + "\n")
+            with open(args.results, "a+", encoding='utf-8') as f:
+                f.write(item + "\t")
+                f.write(url +"\t")
+                f.write(str(phish_category) +"\t")
+                f.write(str(phish_target) + "\t") # write top1 prediction only
+                f.write(str(siamese_conf) + "\t")
+                f.write(vt_result +"\t")
+                f.write(str(dynamic) + "\t")
+                f.write(time_breakdown + "\t")
+                f.write(str(end_time - start_time) + "\n")
 
-                cv2.imwrite(os.path.join(full_path, "predict.png"), plotvis)
+            cv2.imwrite(os.path.join(full_path.encode('utf-8'), "predict.png"), plotvis)
 
-        except Exception as e:
-            print(str(e))
+        # except Exception as e:
+        #     print(str(e))
 
       #  raise(e)
-    driver.quit()
+    # driver.quit()
     time.sleep(2)
 
 

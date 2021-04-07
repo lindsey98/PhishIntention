@@ -17,7 +17,7 @@ def driver_loader():
     capabilities["unexpectedAlertBehaviour"] = "dismiss"  # handle alert
     capabilities["pageLoadStrategy"] = "eager"  # eager mode #FIXME: set eager mode, may load partial webpage
 
-    driver = webdriver.Chrome(ChromeDriverManager().install(), desired_capabilities=capabilities,
+    driver = webdriver.Chrome(executable_path='C:\\Users\\ruofan\\.wdm\\drivers\\chromedriver\\win32\\89.0.4389.23\\chromedriver.exe', desired_capabilities=capabilities,
                               chrome_options=options)
     driver.set_page_load_timeout(60)  # set timeout to avoid wasting time
     driver.set_script_timeout(60)  # set timeout to avoid wasting time
@@ -38,7 +38,7 @@ login_cfg, login_model = login_config(
 
 # siamese model
 print('Load protected logo list')
-pedia_model, logo_feat_list, file_name_list = phishpedia_config(num_classes=277, 
+pedia_model, logo_feat_list, file_name_list = phishpedia_config(num_classes=277,
                                                 weights_path='./src/phishpedia/resnetv2_rgb_new.pth.tar',
                                                 targetlist_path='./src/phishpedia/expand_targetlist/')
 print('Finish loading protected logo list')
@@ -48,6 +48,3 @@ siamese_ts = 0.87 # FIXME: threshold is 0.87 in phish-discovery?
 # brand-domain dictionary
 domain_map_path = './src/phishpedia/domain_map.pkl'
 
-# load driver ONCE!
-driver = driver_loader()
-print('Finish loading webdriver')

@@ -119,7 +119,7 @@ if __name__ == "__main__":
                         print('VTScan is not working...')
                         vt_result = "error"
 
-                with open(results_path, "a+") as f:
+                with open(results_path, "a+", encoding='utf-8') as f:
                     f.write(item + "\t")
                     f.write(url + "\t")
                     f.write(str(phish_category) + "\t")
@@ -128,7 +128,7 @@ if __name__ == "__main__":
                     f.write(vt_result + "\t")
                     f.write(str(round(time.time() - start_time, 4)) + "\n")
 
-                cv2.imwrite(os.path.join(full_path, "predict.png"), plotvis)
+                cv2.imwrite(os.path.join(full_path.encode('utf-8'), "predict.png"), plotvis)
 
         except Exception as e:
             print(str(e))

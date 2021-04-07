@@ -7,6 +7,15 @@ import numpy as np
 class_dict = {0: 'logo', 1: 'input', 2:'button', 3:'label', 4:'block'}
 inv_class_dict = {v: k for k, v in class_dict.items()}
 
+def cv_imread(filePath):
+    '''
+    When image path contains nonenglish characters, normal cv2.imread will have error
+    :param filePath:
+    :return:
+    '''
+    cv_img = cv2.imdecode(np.fromfile(filePath, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+    return cv_img
+
 def element_config(rcnn_weights_path: str, rcnn_cfg_path: str):
     '''
     Load element detector configurations
@@ -35,10 +44,17 @@ def element_recognition(img, model):
     :return pred_scores: torch.Tensor of shape Nx1, prediction confidence of bounding boxes
     '''
     if not isinstance(img, np.ndarray):
-        img = cv2.imread(img)
+        img_init = cv2.imread(img)
+        if img_init is None:
+            img = cv_imread(img)
+            if img.shape[-1] == 4:
+                img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
+        else:
+            img = img_init
     else:
         img = img
-        
+    print(img.shape)
+
     pred = model(img)
     pred_i = pred["instances"].to("cpu")
     pred_classes = pred_i.pred_classes # Boxes types
