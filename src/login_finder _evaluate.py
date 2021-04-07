@@ -67,6 +67,7 @@ def keyword_heuristic_debug(driver, orig_url, page_text):
         keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(join now)|(new user)|(my account)|(come in)|(check in)|(personal area)|(登入)|(登录)|(登錄)|(注册)|(Anmeldung)|(iniciar sesión)|(s\'identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(войти)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(girişi)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar)|(giriş)สมัครสม|(Přihlásit)',
                                     i, re.IGNORECASE)
         if len(keyword_finder) > 0:
+            ct += 1
             print("found")
             found_kw = [x for x in keyword_finder[0] if len(x) > 0][0]
             print(found_kw)
@@ -74,15 +75,28 @@ def keyword_heuristic_debug(driver, orig_url, page_text):
                 click_text(i)
             else:
                 click_text(found_kw)
+            print('Successfully click')
             # save redirected url
             try:
                 current_url = driver.current_url
                 top3_urls.append(current_url)
                 ct += 1 # count +1
             except TimeoutException as e:
+                print(e)
                 pass
 
-            success = visit_url(orig_url, driver)
+            try:
+                driver.get(orig_url)
+                time.sleep(2)
+                click_popup()
+                alert_msg = driver.switch_to.alert.text
+                driver.switch_to.alert.dismiss()
+            except TimeoutException as e:
+                print(str(e))
+                break
+            except Exception as e:
+                print(str(e))
+                print("no alert")
 
         # Only check Top 3
         if ct >= 3:
@@ -128,12 +142,24 @@ def cv_heuristic_debug(driver, orig_url, old_screenshot_path):
         except TimeoutException as e:
             pass
 
-        success = visit_url(orig_url, driver)
+        try:
+            driver.get(orig_url)
+            time.sleep(2)
+            click_popup()
+            alert_msg = driver.switch_to.alert.text
+            driver.switch_to.alert.dismiss()
+        except TimeoutException as e:
+            print(str(e))
+            break
+        except Exception as e:
+            print(str(e))
+            print("no alert")
 
     return top3_urls
 
 if __name__ == '__main__':
 
+    # FIXME: bad cases: https://7mm.tv very slow, https://www.appfolio.com/ very slow
     ############################ Temporal scripts ################################################################################################################
     from seleniumwire import webdriver
     from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
@@ -149,8 +175,9 @@ if __name__ == '__main__':
 
     driver = webdriver.Chrome(ChromeDriverManager().install(), desired_capabilities=capabilities,
                               chrome_options=options)
-    driver.set_page_load_timeout(60)  # set timeout to avoid wasting time
-    driver.set_script_timeout(60)  # set timeout to avoid wasting time
+    driver.set_page_load_timeout(30)  # set timeout to avoid wasting time
+    driver.set_script_timeout(30)  # set timeout to avoid wasting time
+    driver.implicitly_wait(30)
     helium.set_driver(driver)
     ##################################################################################################################################################################
 
@@ -159,15 +186,15 @@ if __name__ == '__main__':
 
     # 600 URLs
     legitimate_folder = './datasets/600_legitimate'
-    urldict = {}
-    if os.path.exists('./datasets/600_legitimate_detectedURL_eager.json'):
-        with open('./datasets/600_legitimate_detectedURL_eager.json', 'rt', encoding='utf-8') as handle:
-            urldict = json.load(handle)
+    # urldict = {}
+    # if os.path.exists('./datasets/600_legitimate_detectedURL_eager.json'):
+    with open('./datasets/600_legitimate_detectedURL_eager.json', 'rt', encoding='utf-8') as handle:
+        urldict = json.load(handle)
     print(urldict)
 
     for kk, folder in tqdm(enumerate(os.listdir(legitimate_folder))):
-        # if kk < 992:
-        #     continue
+        if kk < 67:
+            continue
 
         old_screenshot_path = os.path.join(legitimate_folder, folder, 'shot.png')
         old_html_path = old_screenshot_path.replace('shot.png', 'html.txt')
@@ -177,24 +204,28 @@ if __name__ == '__main__':
         if not os.path.exists(old_info_path):
             continue
 
-        # only recollect failed cases
-        # if folder not in open('./datasets/fail_login_finder.txt').read():
-        #     continue
-        # if folder != 'mindbodyonline.com':
-        #     continue
-
         orig_url = open(old_info_path, encoding='utf-8').read()
         print(orig_url)
         domain_name = orig_url.split('//')[-1]
-        # if domain_name in urldict.keys():
-        #     if len(urldict[domain_name]) > 0:
-        #         continue
+        if domain_name in urldict.keys():
+            if len(urldict[domain_name]) > 0:
+                continue
 
         start_time = time.time()
-        success = visit_url(orig_url, driver)
-        print('Finish loading URL twice {:.4f}'.format(time.time() - start_time))
-        if not success:
+        try:
+            driver.get(orig_url)
+            time.sleep(2)
+            click_popup()
+            alert_msg = driver.switch_to.alert.text
+            driver.switch_to.alert.dismiss()
+        except TimeoutException as e:
+            print(str(e))
+            clean_up_window(driver)  # clean up the windows
             continue
+        except Exception as e:
+            print(str(e))
+            print("no alert")
+        print('Finish loading URL twice {:.4f}'.format(time.time() - start_time))
 
         print("getting url")
         start_time = time.time()
@@ -213,12 +244,23 @@ if __name__ == '__main__':
         print('Finish HTML login finder {:.4f}'.format(time.time() - start_time))
         print('After HTML finder', top3_urls_html)
 
+        clean_up_window(driver)
         # go back to the original site
         start_time = time.time()
-        success = visit_url(orig_url, driver)
-        print('Finish loading original URL again {:.4f}'.format(time.time() - start_time))
-        if not success:
+        try:
+            driver.get(orig_url)
+            time.sleep(2)
+            click_popup()
+            alert_msg = driver.switch_to.alert.text
+            driver.switch_to.alert.dismiss()
+        except TimeoutException as e:
+            print(str(e))
+            clean_up_window(driver)  # clean up the windows
             continue
+        except Exception as e:
+            print(str(e))
+            print("no alert")
+        print('Finish loading original URL again {:.4f}'.format(time.time() - start_time))
 
         start_time = time.time()
         top3_urls_cv = cv_heuristic_debug(driver=driver, orig_url=orig_url, old_screenshot_path=old_screenshot_path)
