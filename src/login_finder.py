@@ -10,7 +10,7 @@ from src.element_detector import *
 import time
 import pandas as pd
 from tqdm import tqdm
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, WebDriverException
 # from src.element_detector import vis
 
 
@@ -131,6 +131,10 @@ def keyword_heuristic(driver, orig_url, page_text,
             except TimeoutException as e:
                 print(e)
                 pass
+            except WebDriverException as e:
+                print(e)
+                pass
+
             except Exception as e:
                 print(e)
                 pass
@@ -212,6 +216,9 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
         except TimeoutException as e:
             print(e)
             pass
+        except WebDriverException as e:
+            print(e)
+            pass
         except Exception as e:
             print(e)
 
@@ -254,8 +261,8 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
 
     try:
         driver.get(orig_url)
-        time.sleep(2)
         click_popup()
+        time.sleep(2)
         alert_msg = driver.switch_to.alert.text
         driver.switch_to.alert.dismiss()
     except TimeoutException as e:
@@ -297,8 +304,8 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
         # FIXME: Ensure that it goes back to the original URL
         try:
             driver.get(orig_url)
-            time.sleep(2)
             click_popup()
+            time.sleep(2)
             alert_msg = driver.switch_to.alert.text
             driver.switch_to.alert.dismiss()
         except TimeoutException as e:
