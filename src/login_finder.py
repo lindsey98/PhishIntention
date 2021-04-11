@@ -94,7 +94,7 @@ def keyword_heuristic(driver, orig_url, page_text,
 
     for i in page_text: # iterate over html text
         # looking for keyword
-        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(join now)|(new user)|(my account)|(come in)|(check in)|(personal area)|(登入)|(登录)|(登錄)|(注册)|(Anmeldung)|(iniciar sesión)|(identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(войти)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(girişi)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar)|(giriş)|(เข้าสู่ระบบ)|(สมัครสมาชิก)|(Přihlásit)',
+        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(join now)|(new user)|(my account)|(come in)|(check in)|(personal area)|(登入)|(登录)|(登錄)|(注册)|(Anmeldung)|(iniciar sesión)|(identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(войти)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(girişi)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar)|(giriş)|(เข้าสู่ระบบ)|(สมัครสมาชิก)|(Přihlásit)|(mein konto)',
                                         i, re.IGNORECASE)
         if len(keyword_finder) > 0:
             ct += 1
@@ -102,7 +102,7 @@ def keyword_heuristic(driver, orig_url, page_text,
             print("found {} in HTML".format(found_kw))
 
             # FIXME: If it is not a bulk of text, click on the original text, e.g. Please login signup ...
-            if len(i) <= 20:
+            if len(i) <= 20 or len(i) < len(found_kw):
                 click_text(i)
             else: # otherwise click on keyword
                 click_text(found_kw)
@@ -272,19 +272,19 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
     except Exception as e:
         print(str(e))
         print("no alert") #FIXME: load twice because google translate not working the first time we visit a website
-    # try:
-    #     driver.get(orig_url)
-    #     time.sleep(2)
-    #     click_popup()
-    #     alert_msg = driver.switch_to.alert.text
-    #     driver.switch_to.alert.dismiss()
-    # except TimeoutException as e:
-    #     print(str(e))
-    #     clean_up_window(driver)  # clean up the windows
-    #     return url, screenshot_path, successful, 0
-    # except Exception as e:
-    #     print(str(e))
-    #     print("no alert") #FIXME: load twice because google translate not working the first time we visit a website
+    try:
+        driver.get(orig_url)
+        time.sleep(2)
+        click_popup()
+        alert_msg = driver.switch_to.alert.text
+        driver.switch_to.alert.dismiss()
+    except TimeoutException as e:
+        print(str(e))
+        clean_up_window(driver)  # clean up the windows
+        return url, screenshot_path, successful, 0
+    except Exception as e:
+        print(str(e))
+        print("no alert") #FIXME: load twice because google translate not working the first time we visit a website
 
     start_time = time.time()
     print("Getting url")
@@ -299,13 +299,12 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
 
     # If HTML login finder did not find CRP, call CV-based login finder
     if not reach_crp:
-        clean_up_window(driver)
 
         # FIXME: Ensure that it goes back to the original URL
         try:
             driver.get(orig_url)
-            click_popup()
             time.sleep(2)
+            click_popup()
             alert_msg = driver.switch_to.alert.text
             driver.switch_to.alert.dismiss()
         except TimeoutException as e:

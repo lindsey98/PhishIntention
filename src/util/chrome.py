@@ -115,6 +115,7 @@ def click_popup():
     Click unexpected popup (accpet terms condditions, close alerts etc.)
     :return:
     '''
+    helium.get_driver().implicitly_wait(2)
     if helium.Button("close").exists():
         helium.click(helium.Button("close"))
     elif helium.Button("Close").exists():
@@ -132,11 +133,12 @@ def click_text(text):
     :param text:
     :return:
     '''
+    helium.get_driver().implicitly_wait(2)
     try:
-        helium.highlight(text)
-        time.sleep(2)
+        # helium.highlight(text)
+        # time.sleep(2)
         helium.click(text)
-        time.sleep(2)
+        time.sleep(2) # wait until website is completely loaded
         click_popup()
     except TimeoutException as e:
         print(e)
@@ -152,10 +154,10 @@ def click_point(x, y):
     :param y:
     :return:
     '''
+    helium.get_driver().implicitly_wait(2)
     try:
-        # helium.highlight(helium.Point(x, y))
         helium.click(helium.Point(x, y))
-        time.sleep(2)
+        time.sleep(2) # wait until website is completely loaded
         click_popup()
     except TimeoutException as e:
         print(e)
