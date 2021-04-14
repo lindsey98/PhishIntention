@@ -193,8 +193,8 @@ if __name__ == '__main__':
     print(urldict)
 
     for kk, folder in tqdm(enumerate(os.listdir(legitimate_folder))):
-        if kk < 67:
-            continue
+        # if kk < 67:
+        #     continue
 
         old_screenshot_path = os.path.join(legitimate_folder, folder, 'shot.png')
         old_html_path = old_screenshot_path.replace('shot.png', 'html.txt')

@@ -1,7 +1,7 @@
-from phishintention_config import *
+from phishpedia_config import *
 import os
 import argparse
-from src.element_detector import vis
+from src.detectron2_pedia.inference import *
 import time
 
 
@@ -30,9 +30,11 @@ def main(url, screenshot_path):
     print("Entering phishpedia")
 
     ####################### Step1: layout detector ##############################################
-    pred_classes, pred_boxes, pred_scores = element_recognition(img=screenshot_path, model=ele_model)
-    plotvis = vis(screenshot_path, pred_boxes, pred_classes)
+    pred_boxes, _, _, _ = pred_rcnn(im=screenshot_path, predictor=ele_model)
+    pred_boxes = pred_boxes.detach().cpu().numpy()  ## get predicted logo box
+    plotvis = vis(screenshot_path, pred_boxes)
     print("plot")
+
     # If no element is reported
     if len(pred_boxes) == 0:
         print('No element is detected, report as benign')
@@ -40,8 +42,7 @@ def main(url, screenshot_path):
     print('Entering siamese')
 
     ######################## Step2: Siamese (logo matcher) ########################################
-    pred_target, matched_coord, siamese_conf = phishpedia_classifier(pred_classes=pred_classes,
-                                                                     pred_boxes=pred_boxes,
+    pred_target, matched_coord, siamese_conf = phishpedia_classifier_logo(logo_boxes=pred_boxes,
                                                                      domain_map_path=domain_map_path,
                                                                      model=pedia_model,
                                                                      logo_feat_list=logo_feat_list,

@@ -19,9 +19,11 @@ def save_pos_site(result_txt, source_folder, target_folder):
         try:
             shutil.copytree(os.path.join(source_folder, folder),
                         os.path.join(target_folder, folder))
-        except FileExistsError:
+        except FileExistsError as e:
+            print(e)
             continue
-        except FileNotFoundError:
+        except FileNotFoundError as e:
+            print(e)
             continue
 
 def get_diff(bigger_folder, smaller_folder, target_folder):
@@ -37,36 +39,38 @@ def get_diff(bigger_folder, smaller_folder, target_folder):
                 continue
 
 def get_runtime(result_txt):
-    df = pd.read_table(result_txt)
-    runtime_list = list(df['runtime (layout detector|siamese|crp classifier|login finder)'])
+    df = pd.read_table(result_txt, encoding='ISO-8859-1')
+    runtime_list = list(df['runtime (layout detector|siamese|crp classifier|login finder total|login finder process)'])
+    totaltime_list = list(df['total_runtime'])
+    # runtime_list = [x.strip().split('\t')[-2] for x in open(result_txt).readlines()]
+    # totaltime_list = [x.strip().split('\t')[-1] for x in open(result_txt).readlines()]
+
+
     breakdown = [list(map(float, x.split('|'))) for x in runtime_list]
     breakdown_df = pd.DataFrame(breakdown)
-    breakdown_df.columns = ['layout', 'siamese', 'crp', 'dynamic']
+    breakdown_df.columns = ['layout', 'siamese', 'crp', 'dynamic', 'dynamic_partial']
     breakdown_df = breakdown_df.replace(0, np.NaN)
-    print(breakdown_df.mean())
-    print(breakdown_df.median())
-    print(breakdown_df.min())
-    print(breakdown_df.max())
-    # print(breakdown_df)
+    print(breakdown_df.min(), '\n', breakdown_df.median(), '\n', breakdown_df.mean(), '\n', breakdown_df.max(), '\n')
+    print(np.min(totaltime_list), np.median(totaltime_list), np.mean(totaltime_list), np.max(totaltime_list))
 
-def get_total_runtime(result_txt):
-    df = pd.read_table(result_txt)
-    runtime = list(df['total_runtime'])
-    print(np.mean(runtime))
-    print(np.median(runtime))
-    print(np.min(runtime))
-    print(np.max(runtime))
+# def get_total_runtime(result_txt):
+#     df = pd.read_table(result_txt)
+#     runtime = list(df['total_runtime'])
+#     print(np.mean(runtime))
+#     print(np.median(runtime))
+#     print(np.min(runtime))
+#     print(np.max(runtime))
 
 
 if __name__ == '__main__':
-    date = '2021-04-07'
+    date = '2021-04-11'
     # for phishpedia
-    # save_pos_site('./{}_pedia.txt'.format(date), 'Z:\\screenshots_rf\\{}'.format(date),
+    # save_pos_site('./{}_pedia.txt'.format(date), 'Z:\\{}'.format(date),
     save_pos_site('./{}_pedia.txt'.format(date), 'E:\\screenshots_rf\\{}'.format(date),
                   './datasets/PhishDiscovery/Phishpedia/{}'.format(date))
 
     # for phishintention
-    # save_pos_site('./{}.txt'.format(date), 'Z:\\screenshots_rf\\{}'.format(date),
+    # save_pos_site('./{}.txt'.format(date), 'Z:\\{}'.format(date),
     save_pos_site('./{}.txt'.format(date), 'E:\\screenshots_rf\\{}'.format(date),
                   './datasets/PhishDiscovery/PhishIntention/{}'.format(date))
 
@@ -74,4 +78,4 @@ if __name__ == '__main__':
     get_diff('./datasets/PhishDiscovery/Phishpedia/{}'.format(date), './datasets/PhishDiscovery/PhishIntention/{}'.format(date),
              './datasets/PhishDiscovery/pedia_intention_diff/{}'.format(date))
 
-    # get_total_runtime('./{}.txt'.format(date))
+    get_runtime('./{}.txt'.format(date))
