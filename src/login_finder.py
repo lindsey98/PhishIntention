@@ -257,7 +257,7 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
 
     try:
         driver.get(orig_url)
-        click_popup()
+        click_popup() # only click popup when first visit a website
         time.sleep(2)
         alert_msg = driver.switch_to.alert.text
         driver.switch_to.alert.dismiss()
@@ -298,7 +298,6 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
         try:
             driver.get(orig_url)
             time.sleep(1)
-            click_popup()
             alert_msg = driver.switch_to.alert.text
             driver.switch_to.alert.dismiss()
         except TimeoutException as e:

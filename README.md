@@ -28,9 +28,19 @@
     - Else ```Return Benign, None``` 
 
 ### [Instructions]
-- Please run phishintention_main.py to get prediction
+- For phish discovery experiment:
+-- If you want to run phishintention
 ```
 python phishintention_main.py --folder [data folder] --results [xxx.txt]
+```
+-- If you want to run phishpedia instead
+```
+python phishpedia_main.py --folder [data folder] --results [xxx.txt]
+```
+- For general experiment:
+please run evaluation scripts
+```
+python -m src.pipeline_eval --data-dir [data folder] --mode [phish|benign] --write-txt [output.txt] --exp [pedia|intention] --ts [threshold for siamese]
 ```
 
 ### [Project structure]
@@ -39,10 +49,12 @@ python phishintention_main.py --folder [data folder] --results [xxx.txt]
     - layout_matcher: script for layout matcher and layout heuristic
     - phishpedia: training script for siamese
     - element_detector: training script for element detector
-
+    - util: other scripts (chromedriver utilities)
+    
     - element_detector.py: main script for element detector
     - credential.py: main script for CRP classifier
     - layout.py: main script for layout 
     - siamese.py: main script for siamese
+    - login_finder.py: main script for dynamic login finder
 
         

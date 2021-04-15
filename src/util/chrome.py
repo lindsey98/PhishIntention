@@ -124,8 +124,6 @@ def click_popup():
         helium.click(helium.Button("Close"))
     elif helium.Button("accept").exists():
         helium.click(helium.Button("accept"))
-    elif helium.Button("I accept").exists():
-        helium.click(helium.Button("I accept"))
     elif helium.Button("OK").exists():
         helium.click(helium.Button("OK"))
 
@@ -139,7 +137,7 @@ def click_text(text):
     helium.get_driver().implicitly_wait(1) # this is the implicit timeout for selenium
     try:
         # helium.highlight(text) # for debugging
-        # time.sleep(2)
+        # time.sleep(1)
         helium.click(text)
         time.sleep(1) # wait until website is completely loaded
         click_popup()
