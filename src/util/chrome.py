@@ -141,7 +141,7 @@ def click_text(text):
         # helium.highlight(text) # for debugging
         # time.sleep(2)
         helium.click(text)
-        time.sleep(0.5) # wait until website is completely loaded
+        time.sleep(1) # wait until website is completely loaded
         click_popup()
     except TimeoutException as e:
         print(e)
@@ -161,7 +161,7 @@ def click_point(x, y):
     helium.get_driver().implicitly_wait(1) # this the implicit timeout for selenium
     try:
         helium.click(helium.Point(x, y))
-        time.sleep(0.5) # wait until website is completely loaded
+        time.sleep(1) # wait until website is completely loaded
         click_popup()
     except TimeoutException as e:
         print(e)
