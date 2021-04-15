@@ -116,8 +116,8 @@ def click_popup():
     Click unexpected popup (accpet terms condditions, close alerts etc.)
     :return:
     '''
-    helium.Config.implicit_wait_secs = 2 # this is the implicit timeout for helium
-    helium.get_driver().implicitly_wait(2)
+    helium.Config.implicit_wait_secs = 1 # this is the implicit timeout for helium
+    helium.get_driver().implicitly_wait(1)
     if helium.Button("close").exists():
         helium.click(helium.Button("close"))
     elif helium.Button("Close").exists():
@@ -135,13 +135,13 @@ def click_text(text):
     :param text:
     :return:
     '''
-    helium.Config.implicit_wait_secs = 2 # this is the implicit timeout for helium
-    helium.get_driver().implicitly_wait(2) # this is the implicit timeout for selenium
+    helium.Config.implicit_wait_secs = 1 # this is the implicit timeout for helium
+    helium.get_driver().implicitly_wait(1) # this is the implicit timeout for selenium
     try:
         # helium.highlight(text) # for debugging
         # time.sleep(2)
         helium.click(text)
-        time.sleep(2) # wait until website is completely loaded
+        time.sleep(0.5) # wait until website is completely loaded
         click_popup()
     except TimeoutException as e:
         print(e)
@@ -157,11 +157,11 @@ def click_point(x, y):
     :param y:
     :return:
     '''
-    helium.Config.implicit_wait_secs = 2 # this is the implicit timeout for helium
-    helium.get_driver().implicitly_wait(2) # this the implicit timeout for selenium
+    helium.Config.implicit_wait_secs = 1 # this is the implicit timeout for helium
+    helium.get_driver().implicitly_wait(1) # this the implicit timeout for selenium
     try:
         helium.click(helium.Point(x, y))
-        time.sleep(2) # wait until website is completely loaded
+        time.sleep(0.5) # wait until website is completely loaded
         click_popup()
     except TimeoutException as e:
         print(e)

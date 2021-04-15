@@ -142,7 +142,7 @@ def keyword_heuristic(driver, orig_url, page_text,
             # FIXME: Back to the original site if CRP not found
             try:
                 driver.get(orig_url)
-                time.sleep(2)
+                time.sleep(1)
                 click_popup()
                 alert_msg = driver.switch_to.alert.text
                 driver.switch_to.alert.dismiss()
@@ -225,7 +225,7 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
         # FIXME: Back to the original site if CRP not found
         try:
             driver.get(orig_url)
-            time.sleep(2)
+            time.sleep(1)
             click_popup()
             alert_msg = driver.switch_to.alert.text
             driver.switch_to.alert.dismiss()
@@ -272,19 +272,19 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
     except Exception as e:
         print(str(e))
         print("no alert") #FIXME: load twice because google translate not working the first time we visit a website
-    try:
-        driver.get(orig_url)
-        time.sleep(2)
-        click_popup()
-        alert_msg = driver.switch_to.alert.text
-        driver.switch_to.alert.dismiss()
-    except TimeoutException as e:
-        print(str(e))
-        clean_up_window(driver)  # clean up the windows
-        return url, screenshot_path, successful, 0
-    except Exception as e:
-        print(str(e))
-        print("no alert") #FIXME: load twice because google translate not working the first time we visit a website
+    # try:
+    #     driver.get(orig_url)
+    #     time.sleep(2)
+    #     click_popup()
+    #     alert_msg = driver.switch_to.alert.text
+    #     driver.switch_to.alert.dismiss()
+    # except TimeoutException as e:
+    #     print(str(e))
+    #     clean_up_window(driver)  # clean up the windows
+    #     return url, screenshot_path, successful, 0
+    # except Exception as e:
+    #     print(str(e))
+    #     print("no alert")
 
     start_time = time.time()
     print("Getting url")
@@ -303,7 +303,7 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
         # FIXME: Ensure that it goes back to the original URL
         try:
             driver.get(orig_url)
-            time.sleep(2)
+            time.sleep(0.5)
             click_popup()
             alert_msg = driver.switch_to.alert.text
             driver.switch_to.alert.dismiss()

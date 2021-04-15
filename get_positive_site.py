@@ -63,14 +63,20 @@ def get_runtime(result_txt):
 
 
 if __name__ == '__main__':
-    date = '2021-04-11'
+    date = '2021-04-13'
     # for phishpedia
-    # save_pos_site('./{}_pedia.txt'.format(date), 'Z:\\{}'.format(date),
+    save_pos_site('./{}_pedia.txt'.format(date), 'Z:\\{}'.format(date),
+                  './datasets/PhishDiscovery/Phishpedia/{}'.format(date))
+
+    # for phishintention
+    save_pos_site('./{}.txt'.format(date), 'Z:\\{}'.format(date),
+                  './datasets/PhishDiscovery/PhishIntention/{}'.format(date))
+
+    # for phishpedia
     save_pos_site('./{}_pedia.txt'.format(date), 'E:\\screenshots_rf\\{}'.format(date),
                   './datasets/PhishDiscovery/Phishpedia/{}'.format(date))
 
     # for phishintention
-    # save_pos_site('./{}.txt'.format(date), 'Z:\\{}'.format(date),
     save_pos_site('./{}.txt'.format(date), 'E:\\screenshots_rf\\{}'.format(date),
                   './datasets/PhishDiscovery/PhishIntention/{}'.format(date))
 
@@ -78,4 +84,4 @@ if __name__ == '__main__':
     get_diff('./datasets/PhishDiscovery/Phishpedia/{}'.format(date), './datasets/PhishDiscovery/PhishIntention/{}'.format(date),
              './datasets/PhishDiscovery/pedia_intention_diff/{}'.format(date))
 
-    get_runtime('./{}.txt'.format(date))
+    # get_runtime('./{}.txt'.format(date))
