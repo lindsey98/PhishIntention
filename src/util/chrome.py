@@ -140,7 +140,6 @@ def click_text(text):
         # time.sleep(1)
         helium.click(text)
         time.sleep(1) # wait until website is completely loaded
-        click_popup()
     except TimeoutException as e:
         print(e)
     except LookupError as e:
@@ -160,7 +159,6 @@ def click_point(x, y):
     try:
         helium.click(helium.Point(x, y))
         time.sleep(1) # wait until website is completely loaded
-        click_popup()
     except TimeoutException as e:
         print(e)
     except MoveTargetOutOfBoundsException as e:
