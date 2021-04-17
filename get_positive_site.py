@@ -47,7 +47,6 @@ def get_runtime(result_txt):
     # runtime_list = [x.strip().split('\t')[-2] for x in open(result_txt).readlines()]
     # totaltime_list = [x.strip().split('\t')[-1] for x in open(result_txt).readlines()]
 
-
     breakdown = [list(map(float, x.split('|'))) for x in runtime_list]
     breakdown_df = pd.DataFrame(breakdown)
     breakdown_df.columns = ['layout', 'siamese', 'crp', 'dynamic', 'dynamic_partial']
@@ -94,6 +93,6 @@ if __name__ == '__main__':
     get_diff('./datasets/PhishDiscovery/Phishpedia/{}'.format(date), './datasets/PhishDiscovery/PhishIntention/{}'.format(date),
              './datasets/PhishDiscovery/pedia_intention_diff/{}'.format(date))
 
-    # get_runtime('./{}.txt'.format(date))
+    get_runtime('./{}.txt'.format(date))
 
     get_count(date)

@@ -91,6 +91,7 @@ def keyword_heuristic(driver, orig_url, page_text,
     '''
     ct = 0 # count number of sign-up/login links
     reach_crp = False # reach a CRP page or not
+    time_deduct = 0
 
     for i in page_text: # iterate over html text
         # looking for keyword
@@ -103,16 +104,22 @@ def keyword_heuristic(driver, orig_url, page_text,
 
             # FIXME: If it is not a bulk of text, click on the original text, e.g. Please login signup ...
             if len(i) <= 20 or len(i) < len(found_kw):
+                start_time = time.time()
                 click_text(i)
+                time_deduct += time.time() - start_time
             else: # otherwise click on keyword
+                start_time = time.time()
                 click_text(found_kw)
+                time_deduct += time.time() - start_time
 
             # save redirected url
             try:
+                start_time = time.time()
                 current_url = driver.current_url
                 driver.save_screenshot(new_screenshot_path)
                 writetxt(new_html_path, driver.page_source)
                 writetxt(new_info_path, str(current_url))
+                time_deduct += time.time() - start_time
                 ct += 1 # count +1
 
                 # Call CRP classifier
@@ -134,29 +141,31 @@ def keyword_heuristic(driver, orig_url, page_text,
             except WebDriverException as e:
                 print(e)
                 pass
-
             except Exception as e:
                 print(e)
                 pass
 
             # FIXME: Back to the original site if CRP not found
+            start_time = time.time()
             try:
                 driver.get(orig_url)
                 alert_msg = driver.switch_to.alert.text
                 driver.switch_to.alert.dismiss()
             except TimeoutException as e:
+                time_deduct += time.time() - start_time
                 print(str(e))
                 break  # FIXME: TIMEOUT Error
             except Exception as e:
                 print(str(e))
                 print("no alert")
+            time_deduct += time.time() - start_time
 
 
         # Only check Top 3
         if ct >= 3:
             break
 
-    return reach_crp
+    return reach_crp, time_deduct
 
 def cv_heuristic(driver, orig_url, old_screenshot_path,
                  new_screenshot_path, new_html_path, new_info_path,
@@ -182,21 +191,26 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
     # check = vis(old_screenshot_path, pred_boxes, pred_classes)
     # cv2.imshow(check)
     reach_crp = False
+    time_deduct = 0
     # if no prediction at all
     if len(pred_boxes) == 0:
-        return reach_crp
+        return reach_crp, time_deduct
 
     for bbox in pred_boxes.detach().cpu().numpy()[: min(3, len(pred_boxes))]: # only for top3 boxes
         x1, y1, x2, y2 = bbox
         center = ((x1 + x2) / 2, (y1 + y2) / 2)
+        start_time = time.time()
         click_point(center[0], center[1])  # click center point of predicted bbox for safe
+        time_deduct += time.time() - start_time
 
         # save redirected url
         try:
+            start_time = time.time()
             current_url = driver.current_url
             driver.save_screenshot(new_screenshot_path)
             writetxt(new_html_path, driver.page_source)
             writetxt(new_info_path, str(current_url))
+            time_deduct += time.time() - start_time
 
             # Call CRP classifier
             # CRP HTML heuristic
@@ -221,18 +235,21 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
             print(e)
 
         # FIXME: Back to the original site if CRP not found
+        start_time = time.time()
         try:
             driver.get(orig_url)
             alert_msg = driver.switch_to.alert.text
             driver.switch_to.alert.dismiss()
         except TimeoutException as e:
             print(str(e))
+            time_deduct += time.time() - start_time
             break  # FIXME: TIMEOUT Error
         except Exception as e:
             print(str(e))
             print("no alert")
+        time_deduct += time.time() - start_time
 
-    return reach_crp
+    return reach_crp, time_deduct
 
 
 def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, driver):
@@ -285,15 +302,15 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
     page_text = get_page_text(driver).split('\n')  # tokenize by \n
 
     # HTML heuristic based login finder
-    reach_crp = keyword_heuristic(driver=driver, orig_url=orig_url, page_text=page_text,
+    reach_crp, time_deduct_html = keyword_heuristic(driver=driver, orig_url=orig_url, page_text=page_text,
                                   new_screenshot_path=new_screenshot_path, new_html_path=new_html_path,
                                   new_info_path=new_info_path, ele_model=ele_model, cls_model=cls_model)
 
     print('After HTML keyword finder:', reach_crp)
+    total_time = time.time() - start_time - time_deduct_html
 
     # If HTML login finder did not find CRP, call CV-based login finder
     if not reach_crp:
-
         # FIXME: Ensure that it goes back to the original URL
         try:
             driver.get(orig_url)
@@ -303,14 +320,16 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
         except TimeoutException as e:
             print(str(e))
             clean_up_window(driver)  # clean up the windows
-            return url, screenshot_path, successful, time.time() - start_time  # load URL unsucessful
+            return url, screenshot_path, successful, total_time  # load URL unsucessful
         except Exception as e:
             print(str(e))
             print("no alert")
 
-        reach_crp = cv_heuristic(driver=driver, orig_url=orig_url, old_screenshot_path=screenshot_path,
+        start_time = time.time()
+        reach_crp, time_deduct_cv = cv_heuristic(driver=driver, orig_url=orig_url, old_screenshot_path=screenshot_path,
                                  new_screenshot_path=new_screenshot_path, new_html_path=new_html_path,
                                  new_info_path=new_info_path, login_model=login_model, ele_model=ele_model, cls_model=cls_model)
+        total_time += time.time() - start_time - time_deduct_cv
         print('After CV finder', reach_crp)
 
     # Final URL
@@ -325,4 +344,4 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
         current_ss = screenshot_path
 
     clean_up_window(driver) # clean up the windows
-    return current_url, current_ss, reach_crp, time.time() - start_time
+    return current_url, current_ss, reach_crp, total_time
