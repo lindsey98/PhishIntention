@@ -199,7 +199,7 @@ if __name__ == "__main__":
                     f.write(time_breakdown + "\t")
                     f.write(str(end_time - start_time) + "\n")
 
-                cv2.imwrite(os.path.join(full_path, "predict.png"), plotvis)
+                cv2.imwrite(os.path.join(full_path, "predict_intention.png"), plotvis)
 
         except Exception as e:
             print(str(e))

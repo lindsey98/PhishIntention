@@ -92,10 +92,11 @@ def keyword_heuristic(driver, orig_url, page_text,
     ct = 0 # count number of sign-up/login links
     reach_crp = False # reach a CRP page or not
     time_deduct = 0
+    print(page_text)
 
     for i in page_text: # iterate over html text
         # looking for keyword
-        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(join now)|(new user)|(my account)|(come in)|(check in)|(personal area)|(登入)|(登录)|(登錄)|(注册)|(Anmeldung)|(iniciar sesión)|(identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(войти)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(girişi)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar)|(giriş)|(เข้าสู่ระบบ)|(สมัครสมาชิก)|(Přihlásit)|(mein konto)|(registrati)|(anmelden)|(me connecter)|(ingresar)|(mon allociné)|(accedi)|(мой профиль)|(حسابي)|(administrer)',
+        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(open an account)|(get free.*now)|(join now)|(new user)|(my account)|(come in)|(check in)|(personal area)|(登入)|(登录)|(登錄)|(登録)|(注册)|(Anmeldung)|(iniciar sesión)|(identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(войти)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(girişi)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar)|(giriş)|(เข้าสู่ระบบ)|(สมัครสมาชิก)|(Přihlásit)|(mein konto)|(registrati)|(anmelden)|(me connecter)|(ingresar)|(mon allociné)|(accedi)|(мой профиль)|(حسابي)|(administrer)|(next)',
                                         i, re.IGNORECASE)
         if len(keyword_finder) > 0:
             ct += 1
@@ -106,10 +107,12 @@ def keyword_heuristic(driver, orig_url, page_text,
             if len(i) <= 20 or len(i) < len(found_kw):
                 start_time = time.time()
                 click_text(i)
+                print('Successfully click')
                 time_deduct += time.time() - start_time
             else: # otherwise click on keyword
                 start_time = time.time()
                 click_text(found_kw)
+                print('Successfully click')
                 time_deduct += time.time() - start_time
 
             # save redirected url
@@ -274,7 +277,7 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
 
     try:
         driver.get(orig_url)
-        click_popup() # only click popup when first visit a website
+        # click_popup() # only click popup when first visit a website
         time.sleep(2)
         alert_msg = driver.switch_to.alert.text
         driver.switch_to.alert.dismiss()
@@ -296,6 +299,7 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
     except Exception as e:
         print(str(e))
         print("no alert")
+    time.sleep(5)
 
     start_time = time.time()
     print("Getting url")

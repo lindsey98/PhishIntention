@@ -75,7 +75,7 @@ def get_count(date):
 
 
 if __name__ == '__main__':
-    date = '2021-04-17'
+    date = '2021-04-18'
     # for phishpedia
     save_pos_site('./{}_pedia.txt'.format(date), 'Z:\\{}'.format(date),
                   './datasets/PhishDiscovery/Phishpedia/{}'.format(date))
@@ -93,9 +93,9 @@ if __name__ == '__main__':
                   './datasets/PhishDiscovery/PhishIntention/{}'.format(date))
     #
     # # get phishpedia - phishintention
-    get_diff('./datasets/PhishDiscovery/Phishpedia/{}'.format(date), './datasets/PhishDiscovery/PhishIntention/{}'.format(date),
-             './datasets/PhishDiscovery/pedia_intention_diff/{}'.format(date))
+    # get_diff('./datasets/PhishDiscovery/Phishpedia/{}'.format(date), './datasets/PhishDiscovery/PhishIntention/{}'.format(date),
+    #          './datasets/PhishDiscovery/pedia_intention_diff/{}'.format(date))
 
-    get_runtime('./{}.txt'.format(date))
+    # get_runtime('./{}.txt'.format(date))
 
     # get_count(date)

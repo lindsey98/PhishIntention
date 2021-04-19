@@ -68,7 +68,7 @@ def pred_siamese(img, model, imshow=False, title=None, grayscale=False):
 
 
 
-def siamese_inference(model, domain_map, logo_feat_list, file_name_list, shot_path:str, gt_bbox, t_s=0.83, grayscale=False):
+def siamese_inference(model, domain_map, logo_feat_list, file_name_list, shot_path:str, gt_bbox, t_s, grayscale=False):
     '''
     Return predicted brand for one cropped image
     :param model: model to use
@@ -85,6 +85,7 @@ def siamese_inference(model, domain_map, logo_feat_list, file_name_list, shot_pa
     try:
         img = Image.open(shot_path)
     except OSError:  # if the image cannot be identified, return nothing
+        print('Screenshot cannot be open')
         return None, None, None
 
     ## get predicted box --> crop from screenshot
@@ -108,8 +109,7 @@ def siamese_inference(model, domain_map, logo_feat_list, file_name_list, shot_pa
     predicted_brand, predicted_domain = None, None
     candidate_logo = Image.open(pred_brand_list[0])
 
-    
-    ## If the largest similarity exceeds threshold 
+    ## If the largest similarity exceeds threshold
     if sim_list[0] >= t_s:  
         predicted_brand = brand_converter(os.path.basename(os.path.dirname(pred_brand_list[0])))
         predicted_domain = domain_map[predicted_brand]

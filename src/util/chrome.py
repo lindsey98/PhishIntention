@@ -23,7 +23,6 @@ def initialize_chrome_settings(lang_txt:str):
         "translate": {"enabled": "true"},
         "translate_whitelists": white_lists
     }
-
     options = webdriver.ChromeOptions()
 
     options.add_experimental_option("prefs", prefs)
@@ -116,8 +115,8 @@ def click_popup():
     Click unexpected popup (accpet terms condditions, close alerts etc.)
     :return:
     '''
-    helium.Config.implicit_wait_secs = 1 # this is the implicit timeout for helium
-    helium.get_driver().implicitly_wait(1)
+    helium.Config.implicit_wait_secs = 2 # this is the implicit timeout for helium
+    helium.get_driver().implicitly_wait(2)
     if helium.Button("close").exists():
         helium.click(helium.Button("close"))
     elif helium.Button("Close").exists():
