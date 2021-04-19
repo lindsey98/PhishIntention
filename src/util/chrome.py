@@ -133,13 +133,13 @@ def click_text(text):
     :param text:
     :return:
     '''
-    helium.Config.implicit_wait_secs = 1 # this is the implicit timeout for helium
-    helium.get_driver().implicitly_wait(1) # this is the implicit timeout for selenium
+    helium.Config.implicit_wait_secs = 5 # this is the implicit timeout for helium
+    helium.get_driver().implicitly_wait(5) # this is the implicit timeout for selenium
     try:
         # helium.highlight(text) # for debugging
         # time.sleep(1)
         helium.click(text)
-        time.sleep(1) # wait until website is completely loaded
+        time.sleep(2) # wait until website is completely loaded
     except TimeoutException as e:
         print(e)
     except LookupError as e:
@@ -154,11 +154,11 @@ def click_point(x, y):
     :param y:
     :return:
     '''
-    helium.Config.implicit_wait_secs = 1 # this is the implicit timeout for helium
-    helium.get_driver().implicitly_wait(1) # this the implicit timeout for selenium
+    helium.Config.implicit_wait_secs = 5 # this is the implicit timeout for helium
+    helium.get_driver().implicitly_wait(5) # this the implicit timeout for selenium
     try:
         helium.click(helium.Point(x, y))
-        time.sleep(1) # wait until website is completely loaded
+        time.sleep(2) # wait until website is completely loaded
     except TimeoutException as e:
         print(e)
     except MoveTargetOutOfBoundsException as e:
