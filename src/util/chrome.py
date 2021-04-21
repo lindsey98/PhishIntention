@@ -69,29 +69,6 @@ def vt_scan(url_test):
 
     return positive, total
 
-def visit_url(url, driver):
-    '''
-    Visit URL
-    :param url:
-    :param driver:
-    :return: driver
-    :return successful/unsuccessful: True/False
-    '''
-
-    try:
-        driver.get(url)
-        time.sleep(2)
-        click_popup()
-        alert_msg = driver.switch_to.alert.text
-        driver.switch_to.alert.dismiss()
-        return True
-    except TimeoutException as e:
-        print(str(e))
-        return False # FIXME: TIMEOUT Error
-    except Exception as e:
-        print(str(e))
-        print("no alert")
-        return True
 
 def get_page_text(driver):
     '''
@@ -115,16 +92,24 @@ def click_popup():
     Click unexpected popup (accpet terms condditions, close alerts etc.)
     :return:
     '''
-    helium.Config.implicit_wait_secs = 2 # this is the implicit timeout for helium
-    helium.get_driver().implicitly_wait(2)
+    helium.Config.implicit_wait_secs = 5 # this is the implicit timeout for helium
+    helium.get_driver().implicitly_wait(5)
     if helium.Button("close").exists():
         helium.click(helium.Button("close"))
     elif helium.Button("Close").exists():
         helium.click(helium.Button("Close"))
     elif helium.Button("accept").exists():
         helium.click(helium.Button("accept"))
+    elif helium.Button("Accept").exists():
+        helium.click(helium.Button("Accept"))
+    elif helium.Button("I accept").exists():
+        helium.click(helium.Button("I accept"))
+    elif helium.Button("I agree").exists():
+        helium.click(helium.Button("I agree"))
     elif helium.Button("OK").exists():
         helium.click(helium.Button("OK"))
+    elif helium.Button("Continue").exists():
+        helium.click(helium.Button("Continue"))
 
 def click_text(text):
     '''

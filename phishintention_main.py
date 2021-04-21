@@ -117,6 +117,7 @@ def main(url, screenshot_path):
 #
     ######################## Step5: Return #################################
     if pred_target is not None:
+        print('Phishing is found!')
         phish_category = 1
         # Visualize, add annotations
         cv2.putText(plotvis, "Target: {} with confidence {:.4f}".format(pred_target, siamese_conf),

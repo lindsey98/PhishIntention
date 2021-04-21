@@ -96,7 +96,7 @@ def keyword_heuristic(driver, orig_url, page_text,
 
     for i in page_text: # iterate over html text
         # looking for keyword
-        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(open an account)|(get free.*now)|(join now)|(new user)|(my account)|(come in)|(check in)|(personal area)|(登入)|(登录)|(登錄)|(登録)|(注册)|(Anmeldung)|(iniciar sesión)|(identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(войти)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(girişi)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar)|(giriş)|(เข้าสู่ระบบ)|(สมัครสมาชิก)|(Přihlásit)|(mein konto)|(registrati)|(anmelden)|(me connecter)|(ingresar)|(mon allociné)|(accedi)|(мой профиль)|(حسابي)|(administrer)|(next)',
+        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(open an account)|(get free.*now)|(join now)|(new user)|(my account)|(come in)|(check in)|(personal area)|(logg inn)|(become a member)|(登入)|(登录)|(登錄)|(登録)|(注册)|(Anmeldung)|(iniciar sesión)|(identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(войти)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(girişi)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar)|(giriş)|(เข้าสู่ระบบ)|(สมัครสมาชิก)|(Přihlásit)|(mein konto)|(registrati)|(anmelden)|(me connecter)|(ingresar)|(mon allociné)|(accedi)|(мой профиль)|(حسابي)|(administrer)|(next)|(entre)|(cadastre-se)|(είσοδος)',
                                         i, re.IGNORECASE)
         if len(keyword_finder) > 0:
             ct += 1
@@ -104,7 +104,7 @@ def keyword_heuristic(driver, orig_url, page_text,
             print("found {} in HTML".format(found_kw))
 
             # FIXME: If it is not a bulk of text, click on the original text, e.g. Please login signup ...
-            if len(i) <= 20 or len(i) < len(found_kw):
+            if len(i) <= 2*len(found_kw) or len(i.split(' ')) <= 4:
                 start_time = time.time()
                 click_text(i)
                 print('Successfully click')
@@ -223,10 +223,10 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
                 pred_classes_crp, pred_boxes_crp, _ = element_recognition(img=new_screenshot_path, model=ele_model)
                 cre_pred, cred_conf, _ = credential_classifier_mixed_al(img=new_screenshot_path, coords=pred_boxes_crp,
                                                                         types=pred_classes_crp, model=cls_model)
-
-            elif cre_pred == 0:  # this is an CRP already
+            # stop when reach an CRP already
+            if cre_pred == 0:  # this is an CRP already
                 reach_crp = True
-                break  # stop when reach an CRP already
+                break
 
         except TimeoutException as e:
             print(e)
@@ -277,8 +277,6 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
 
     try:
         driver.get(orig_url)
-        click_popup() # only click popup when first visit a website
-        # time.sleep(2)
         alert_msg = driver.switch_to.alert.text
         driver.switch_to.alert.dismiss()
     except TimeoutException as e:
@@ -290,6 +288,8 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
         print("no alert") #FIXME: load twice because google translate not working the first time we visit a website
     try:
         driver.get(orig_url)
+        time.sleep(2)
+        click_popup()
         alert_msg = driver.switch_to.alert.text
         driver.switch_to.alert.dismiss()
     except TimeoutException as e:
@@ -318,7 +318,7 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
         # FIXME: Ensure that it goes back to the original URL
         try:
             driver.get(orig_url)
-            time.sleep(1)
+            time.sleep(5)
             alert_msg = driver.switch_to.alert.text
             driver.switch_to.alert.dismiss()
         except TimeoutException as e:
