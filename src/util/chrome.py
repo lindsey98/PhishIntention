@@ -87,6 +87,33 @@ def get_page_text(driver):
             body = ''
     return body
 
+def visit_url(driver, orig_url, popup=False, sleep=False):
+    '''
+
+    :param driver:
+    :param orig_url:
+    :param popup:
+    :param sleep:
+    :return: load url successful or not
+    '''
+    try:
+        driver.get(orig_url)
+        if sleep:
+            time.sleep(2)
+        if popup:
+            click_popup()
+        alert_msg = driver.switch_to.alert.text
+        driver.switch_to.alert.dismiss()
+        return True, driver
+    except TimeoutException as e:
+        print(str(e))
+        clean_up_window(driver)  # clean up the windows
+        return False, driver
+    except Exception as e:
+        print(str(e))
+        print("no alert")
+        return True, driver
+
 def click_popup():
     '''
     Click unexpected popup (accpet terms condditions, close alerts etc.)

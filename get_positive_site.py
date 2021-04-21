@@ -75,7 +75,7 @@ def get_count(date):
 
 
 if __name__ == '__main__':
-    date = '2021-04-18'
+    date = '2021-04-20'
     # for phishpedia
     save_pos_site('./{}_pedia.txt'.format(date), 'Z:\\{}'.format(date),
                   './datasets/PhishDiscovery/Phishpedia/{}'.format(date))
@@ -92,9 +92,9 @@ if __name__ == '__main__':
     save_pos_site('./{}.txt'.format(date), 'E:\\screenshots_rf\\{}'.format(date),
                   './datasets/PhishDiscovery/PhishIntention/{}'.format(date))
     #
-    # # get phishpedia - phishintention
-    # get_diff('./datasets/PhishDiscovery/Phishpedia/{}'.format(date), './datasets/PhishDiscovery/PhishIntention/{}'.format(date),
-    #          './datasets/PhishDiscovery/pedia_intention_diff/{}'.format(date))
+    # # get phishintention - phishpedia
+    get_diff(target_folder='./datasets/PhishDiscovery/intention_pedia_diff/{}'.format(date),
+             smaller_folder='./datasets/PhishDiscovery/Phishpedia/{}'.format(date), bigger_folder='./datasets/PhishDiscovery/PhishIntention/{}'.format(date))
 
     # get_runtime('./{}.txt'.format(date))
 

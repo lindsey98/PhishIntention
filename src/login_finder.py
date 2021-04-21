@@ -150,19 +150,11 @@ def keyword_heuristic(driver, orig_url, page_text,
 
             # FIXME: Back to the original site if CRP not found
             start_time = time.time()
-            try:
-                driver.get(orig_url)
-                alert_msg = driver.switch_to.alert.text
-                driver.switch_to.alert.dismiss()
-            except TimeoutException as e:
+            return_success, driver = visit_url(driver, orig_url)
+            if not return_success:
                 time_deduct += time.time() - start_time
-                print(str(e))
                 break  # FIXME: TIMEOUT Error
-            except Exception as e:
-                print(str(e))
-                print("no alert")
             time_deduct += time.time() - start_time
-
 
         # Only check Top 3
         if ct >= 3:
@@ -239,17 +231,10 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
 
         # FIXME: Back to the original site if CRP not found
         start_time = time.time()
-        try:
-            driver.get(orig_url)
-            alert_msg = driver.switch_to.alert.text
-            driver.switch_to.alert.dismiss()
-        except TimeoutException as e:
-            print(str(e))
+        return_success, driver = visit_url(driver, orig_url)
+        if not return_success:
             time_deduct += time.time() - start_time
             break  # FIXME: TIMEOUT Error
-        except Exception as e:
-            print(str(e))
-            print("no alert")
         time_deduct += time.time() - start_time
 
     return reach_crp, time_deduct
@@ -275,31 +260,14 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
     new_html_path = new_screenshot_path.replace('new_shot.png', 'new_html.txt')
     new_info_path = new_screenshot_path.replace('new_shot.png', 'new_info.txt')
 
-    try:
-        driver.get(orig_url)
-        alert_msg = driver.switch_to.alert.text
-        driver.switch_to.alert.dismiss()
-    except TimeoutException as e:
-        print(str(e))
-        clean_up_window(driver)  # clean up the windows
+    # FIXME: load twice because google translate not working the first time we visit a website
+    visit_success, driver = visit_url(driver, orig_url)
+    if not visit_success:
         return url, screenshot_path, successful, 0
-    except Exception as e:
-        print(str(e))
-        print("no alert") #FIXME: load twice because google translate not working the first time we visit a website
-    try:
-        driver.get(orig_url)
-        time.sleep(2)
-        click_popup()
-        alert_msg = driver.switch_to.alert.text
-        driver.switch_to.alert.dismiss()
-    except TimeoutException as e:
-        print(str(e))
-        clean_up_window(driver)  # clean up the windows
+    visit_success, driver = visit_url(driver, orig_url, popup=True, sleep=True)
+    if not visit_success:
         return url, screenshot_path, successful, 0
-    except Exception as e:
-        print(str(e))
-        print("no alert")
-    time.sleep(5)
+    time.sleep(5) # extra wait to translate html
 
     start_time = time.time()
     print("Getting url")
@@ -316,18 +284,9 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
     # If HTML login finder did not find CRP, call CV-based login finder
     if not reach_crp:
         # FIXME: Ensure that it goes back to the original URL
-        try:
-            driver.get(orig_url)
-            time.sleep(5)
-            alert_msg = driver.switch_to.alert.text
-            driver.switch_to.alert.dismiss()
-        except TimeoutException as e:
-            print(str(e))
-            clean_up_window(driver)  # clean up the windows
+        visit_success, driver = visit_url(driver, orig_url, sleep=True)
+        if not visit_success:
             return url, screenshot_path, successful, total_time  # load URL unsucessful
-        except Exception as e:
-            print(str(e))
-            print("no alert")
 
         start_time = time.time()
         reach_crp, time_deduct_cv = cv_heuristic(driver=driver, orig_url=orig_url, old_screenshot_path=screenshot_path,
