@@ -133,10 +133,14 @@ def click_popup():
         helium.click(helium.Button("I accept"))
     elif helium.Button("I agree").exists():
         helium.click(helium.Button("I agree"))
+    elif helium.Button("I AGREE").exists():
+        helium.click(helium.Button("I AGREE"))
     elif helium.Button("OK").exists():
         helium.click(helium.Button("OK"))
     elif helium.Button("Continue").exists():
         helium.click(helium.Button("Continue"))
+    elif helium.Button("Allow everyone").exists():
+        helium.click(helium.Button("Allow everyone"))
 
 def click_text(text):
     '''
