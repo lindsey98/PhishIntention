@@ -151,7 +151,7 @@ if __name__ == "__main__":
             f.write("runtime (layout detector|siamese|crp classifier|login finder total|login finder process)" + "\t")
             f.write("total_runtime" + "\n")
 
-    # # load driver ONCE!
+    # # TODO: load driver ONCE!
     # driver = driver_loader()
     # print('Finish loading webdriver')
 

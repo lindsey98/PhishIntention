@@ -89,7 +89,7 @@ def get_page_text(driver):
 
 def visit_url(driver, orig_url, popup=False, sleep=False):
     '''
-
+    Visit a URL
     :param driver:
     :param orig_url:
     :param popup:
@@ -141,6 +141,9 @@ def click_popup():
         helium.click(helium.Button("Continue"))
     elif helium.Button("Allow everyone").exists():
         helium.click(helium.Button("Allow everyone"))
+    elif helium.Button("Proceed").exists():
+        helium.click(helium.Button("Proceed"))
+
 
 def click_text(text):
     '''

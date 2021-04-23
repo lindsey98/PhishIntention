@@ -96,22 +96,30 @@ def keyword_heuristic(driver, orig_url, page_text,
 
     for i in page_text: # iterate over html text
         # looking for keyword
-        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(open an account)|(get free.*now)|(join now)|(new user)|(my account)|(come in)|(check in)|(personal area)|(logg inn)|(become a member)|(登入)|(登录)|(登錄)|(登録)|(注册)|(Anmeldung)|(iniciar sesión)|(identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(войти)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(girişi)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar )|(giriş)|(เข้าสู่ระบบ)|(สมัครสมาชิก)|(Přihlásit)|(mein konto)|(registrati)|(anmelden)|(me connecter)|(ingresar)|(mon allociné)|(accedi)|(мой профиль)|(حسابي)|(administrer)|(next)|(entre )|(cadastre-se)|(είσοδος)|(entrance)|(start now)|(accessibilité)|(accéder)',
+        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(open an account)|(get free.*now)|(join now)|(new user)|(my account)|(come in)|(check in)|(personal area)|(logg inn)|(Log-in)|(become a member)|(customer centre)|(登入)|(登录)|(登錄)|(登録)|(注册)|(Anmeldung)|(iniciar sesión)|(identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(войти)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(girişi)|(Giriş)|(สมัครสม)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar )|(giriş)|(เข้าสู่ระบบ)|(สมัครสมาชิก)|(Přihlásit)|(mein konto)|(registrati)|(anmelden)|(me connecter)|(ingresar)|(mon allociné)|(accedi)|(мой профиль)|(حسابي)|(administrer)|(next)|(entre )|(cadastre-se)|(είσοδος)|(entrance)|(start now)|(accessibilité)|(accéder)|(zaloguj)|(otwórz konto osobiste)',
                                         i, re.IGNORECASE)
         if len(keyword_finder) > 0:
             ct += 1
-            found_kw = [x for x in keyword_finder[0] if len(x) > 0][0]
-            print("found {} in HTML".format(found_kw))
+            found_kw = [y for x in keyword_finder for y in x if len(y) > 0]
 
             # FIXME: If it is not a bulk of text, click on the original text, e.g. Please login signup ...
-            if len(i) <= 2*len(found_kw) or len(i.split(' ')) <= 4:
+            if len(found_kw) == 1: # find only 1 keyword
+                found_kw = found_kw[0]
+                if len(i) <= 2*len(found_kw): # if the text is not long, click on text
+                    start_time = time.time()
+                    click_text(i)
+                    print('Successfully click')
+                    time_deduct += time.time() - start_time
+                else: # otherwise click on keyword
+                    start_time = time.time()
+                    click_text(found_kw)
+                    print('Successfully click')
+                    time_deduct += time.time() - start_time
+
+            else: # find at least 2 keywords in same bulk of text
+                found_kw = found_kw[0] # only click the first keyword
                 start_time = time.time()
-                click_text(i)
-                print('Successfully click')
-                time_deduct += time.time() - start_time
-            else: # otherwise click on keyword
-                start_time = time.time()
-                click_text(found_kw)
+                click_text(found_kw) # click the keyword itself
                 print('Successfully click')
                 time_deduct += time.time() - start_time
 
@@ -264,6 +272,7 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
     visit_success, driver = visit_url(driver, orig_url)
     if not visit_success:
         return url, screenshot_path, successful, 0
+    # visit_success, driver = visit_url(driver, orig_url)
     visit_success, driver = visit_url(driver, orig_url, popup=True, sleep=True)
     if not visit_success:
         return url, screenshot_path, successful, 0
