@@ -22,11 +22,15 @@ import time
 
 def main(url, screenshot_path):
     '''
-    Get phishing prediction 
-    params url: url
-    params screenshot_path: path to screenshot
-    returns phish_category: 0 for benign, 1 for phish
-    returns phish_target: None/brand name
+    Phish-discovery main script
+    :param url: URL
+    :param screenshot_path: path to screenshot
+    :return phish_category: 0 for benign, 1 for phish
+    :return phish_target: None/brand name
+    :return plotvis: predicted image
+    :return siamese_conf: matching confidence reported by siamese
+    :return dynamic: go through dynamic analysis or not
+    :return time breakdown
     '''
     
     waive_crp_classifier = False
@@ -151,9 +155,6 @@ if __name__ == "__main__":
             f.write("runtime (layout detector|siamese|crp classifier|login finder total|login finder process)" + "\t")
             f.write("total_runtime" + "\n")
 
-    # # TODO: load driver ONCE!
-    # driver = driver_loader()
-    # print('Finish loading webdriver')
 
     for item in tqdm(os.listdir(directory)):
 
@@ -166,7 +167,7 @@ if __name__ == "__main__":
             screenshot_path = os.path.join(full_path, "shot.png")
             url = open(os.path.join(full_path, 'info.txt'), encoding='ISO-8859-1').read()
 
-            if not os.path.exists(screenshot_path):
+            if not os.path.exists(screenshot_path): # screenshot not exist
                 continue
 
             else:
@@ -174,6 +175,7 @@ if __name__ == "__main__":
                 phish_category, phish_target, plotvis, siamese_conf, dynamic, time_breakdown = main(url=url, screenshot_path=screenshot_path)
                 end_time = time.time()
 
+                # FIXME: call VTScan only when phishintention report it as positive
                 vt_result = "None"
                 if phish_target is not None:
                     try:
@@ -189,6 +191,7 @@ if __name__ == "__main__":
                         print('VTScan is not working...')
                         vt_result = "error"
 
+                # write results as well as predicted image
                 with open(args.results, "a+", encoding='ISO-8859-1') as f:
                     f.write(item + "\t")
                     f.write(url +"\t")
@@ -205,9 +208,6 @@ if __name__ == "__main__":
         except Exception as e:
             print(str(e))
 
-      #  raise(e)
-    # driver.quit()
-    time.sleep(2)
 
 
 

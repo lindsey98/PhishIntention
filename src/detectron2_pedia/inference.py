@@ -7,7 +7,12 @@ import numpy as np
 
 
 def pred_rcnn(im, predictor):
-    # Perform inference
+    '''
+    Perform inference for RCNN
+    :param im:
+    :param predictor:
+    :return:
+    '''
     im = cv2.imread(im)
     outputs = predictor(im)
 
@@ -26,7 +31,13 @@ def pred_rcnn(im, predictor):
 
 
 def config_rcnn(cfg_path, weights_path, conf_threshold):
-    # Configure weights and confidence threshold
+    '''
+    Configure weights and confidence threshold
+    :param cfg_path:
+    :param weights_path:
+    :param conf_threshold:
+    :return:
+    '''
     cfg = get_cfg()
     cfg.merge_from_file(cfg_path)
     cfg.MODEL.WEIGHTS = weights_path

@@ -10,7 +10,14 @@ import copy
 
 
 def compute_jacobian(model, num_classes, inputs, output):
-    '''Helper function: compute jacobian matrix of confidence score vector w.r.t. input'''
+    '''
+    'Helper function: compute jacobian matrix of confidence score vector w.r.t. input
+    :param model: subject model
+    :param num_classes:
+    :param inputs:
+    :param output:
+    :return:
+    '''
 
     jacobian = torch.zeros(num_classes, *inputs.size()).cuda()
 
@@ -25,7 +32,13 @@ def compute_jacobian(model, num_classes, inputs, output):
 
 
 def saliency_map(jacobian, search_space, target_index):
-    '''Helper function: compute saliency map and select the maximum index'''
+    '''
+    Helper function: compute saliency map and select the maximum index
+    :param jacobian: jocabian matrix
+    :param search_space: ignore some regions
+    :param target_index: take one column of jacobian
+    :return:
+    '''
     
     jacobian = jacobian.squeeze(0)
     alpha = jacobian[target_index].sum(0).sum(0)
@@ -43,16 +56,18 @@ def saliency_map(jacobian, search_space, target_index):
 
 
 def jsma(model, num_classes, image, target, max_iter=100, clip_min=-1.0, clip_max=1.0):
-    '''https://github.com/ast0414/adversarial-example/blob/master/craft.py
+    '''
+    https://github.com/ast0414/adversarial-example/blob/master/craft.py
     Saliency map attack
-    Parameters:
-        image: input image
-        target: target class
-        max_iter: maximum iteration
-        clip_min: minimum value of pixel
-        clip_max: maximum value of pixel
-    Returns:
-        perturbed image
+
+    :param model: subject model
+    :param num_classes: number of classes in classification
+    :param image: input image
+    :param target: original class
+    :param max_iter: maximum iteration allowed
+    :param clip_min: clip image into legal range
+    :param clip_max:
+    :return:
     '''
 
     # Make a clone since we will alter the values

@@ -1,17 +1,23 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
-from torch.autograd.gradcheck import zero_gradients
-from torch.autograd import Variable
 
-import numpy as np
-import copy
 
 
 def cw(model, device, image, label, target_cls, c=1, kappa=0, max_iter=1000, learning_rate=0.05, verbose=1) :
     '''
     Implementation of C&W L2 targeted attack, Modified from https://github.com/Harry24k/CW-pytorch
+    :param model: subject model
+    :param device: cuda/cpu
+    :param image: input image
+    :param label: original class
+    :param target_cls: adv class
+    :param c: trade-off parameter to balance two optimization goals
+    :param kappa: margin in confidence difference
+    :param max_iter: maximimum iterations in optimization
+    :param learning_rate: learning rate of optimizer
+    :param verbose: print intermediate results or not
+    :return: perturbed image
     '''
     
     # Get loss2

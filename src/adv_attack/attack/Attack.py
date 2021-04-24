@@ -4,26 +4,26 @@ from .DeepFool import deepfool
 from .CWL2 import cw
 
 import os
-# os.chdir('..')
-# from dataloader import *
-# from models.vgg import VGG11
-import argparse
-import sys
 import numpy as np
-import copy
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-from torch.autograd.gradcheck import zero_gradients
-from torch.autograd import Variable
 from tqdm import tqdm
 
 
 class adversarial_attack():
-    
+    '''
+    Perform adversarial attack
+    '''
     def __init__(self, method, model, dataloader, device, num_classes=10, save_data=False):
+        '''
+        :param method: Which attack method to use
+        :param model: subject model to attack
+        :param dataloader: dataloader
+        :param device: cuda/cpu
+        :param num_classes: number of classes for classification model
+        :param save_data: save data or not
+        '''
         self.method = method
         self.model = model
         self.dataloader = dataloader
@@ -81,7 +81,6 @@ class adversarial_attack():
                 while target_class == init_pred:
                     target_class = torch.randint(0, self.num_classes, (1,)).to(self.device)
                 print(target_class)
-
                 perturbed_data = cw(self.model, self.device, data, label, target_class)
                 
             else:

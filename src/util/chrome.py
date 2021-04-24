@@ -8,7 +8,7 @@ from seleniumwire import webdriver
 def initialize_chrome_settings(lang_txt:str):
     '''
     initialize chrome settings
-    :return:
+    :return: chrome options
     '''
     # enable translation
     white_lists = {}
@@ -44,6 +44,11 @@ def initialize_chrome_settings(lang_txt:str):
     return  options
 
 def vt_scan(url_test):
+    '''
+    Call VTScan
+    :param url_test: url to scan
+    :return: # positive engines, # total engines
+    '''
     retry = 0
     api_key = "2b93fae94a62662be089e9aa067e672ac242e3276b0f6a1e44e298b4858d4cf8"
     url = 'https://www.virustotal.com/vtapi/v2/url/report'
@@ -73,8 +78,8 @@ def vt_scan(url_test):
 def get_page_text(driver):
     '''
     get body text from html
-    :param driver:
-    :return:
+    :param driver: chromdriver
+    :return: text
     '''
     try:
         body = driver.find_element_by_tag_name('body').text
@@ -90,10 +95,10 @@ def get_page_text(driver):
 def visit_url(driver, orig_url, popup=False, sleep=False):
     '''
     Visit a URL
-    :param driver:
-    :param orig_url:
-    :param popup:
-    :param sleep:
+    :param driver: chromedriver
+    :param orig_url: URL to visit
+    :param popup: click popup window or not
+    :param sleep: need sleep time or not
     :return: load url successful or not
     '''
     try:
@@ -121,14 +126,14 @@ def click_popup():
     '''
     helium.Config.implicit_wait_secs = 5 # this is the implicit timeout for helium
     helium.get_driver().implicitly_wait(5)
-    if helium.Button("close").exists():
-        helium.click(helium.Button("close"))
-    elif helium.Button("Close").exists():
-        helium.click(helium.Button("Close"))
-    elif helium.Button("accept").exists():
+    if helium.Button("accept").exists():
         helium.click(helium.Button("accept"))
     elif helium.Button("Accept").exists():
         helium.click(helium.Button("Accept"))
+    elif helium.Button("close").exists():
+        helium.click(helium.Button("close"))
+    elif helium.Button("Close").exists():
+        helium.click(helium.Button("Close"))
     elif helium.Button("I accept").exists():
         helium.click(helium.Button("I accept"))
     elif helium.Button("I agree").exists():
@@ -154,7 +159,7 @@ def click_text(text):
     helium.Config.implicit_wait_secs = 5 # this is the implicit timeout for helium
     helium.get_driver().implicitly_wait(5) # this is the implicit timeout for selenium
     try:
-        # helium.highlight(text) # for debugging
+        # helium.highlight(text) # highlight text for debugging
         # time.sleep(1)
         helium.click(text)
         time.sleep(2) # wait until website is completely loaded
@@ -186,26 +191,25 @@ def click_point(x, y):
     except AttributeError as e:
         print(e)
     except Exception as e:
-        # print(x, y)
         print(e)
-
 
 
 def clean_up_window(driver):
     '''
-    Close chrome tab properly
-    :param driver:
+    Close chrome tabs except the current tab properly
+    :param driver: chromedriver
     :return:
     '''
     current_window = driver.current_window_handle
-    for i in driver.window_handles:
+    for i in driver.window_handles: # loop over all chrome windows
         try:
-            if i != current_window:
+            if i != current_window: # close other windows
                 driver.switch_to_window(i)
                 driver.close()
         except Exception as e: # unknown exception occurs
             print(e)
             pass
+    # switch back to the current window
     try:
         driver.switch_to_window(current_window)
     except Exception as e:
@@ -217,7 +221,7 @@ def writetxt(txtpath, contents):
     '''
     write into txt file with encoding utf-8
     :param txtpath:
-    :param contents:
+    :param contents: text to write
     :return:
     '''
     with open(txtpath, 'w', encoding='utf-8') as fw:

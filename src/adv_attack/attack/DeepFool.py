@@ -10,16 +10,19 @@ import copy
 
 
 def deepfool(model, num_classes, image, label, I, overshoot=0.02, max_iter=100, clip_min=-1.0, clip_max=1.0):
-    '''https://github.com/LTS4/DeepFool/tree/master/Python
+    '''
+    https://github.com/LTS4/DeepFool/tree/master/Python
     DeepFool attack
-    Parameters:
-        image: input image
-        label: ground-truth label
-        I: current predicted class ranked by decending order
-        overshoot: scale factor to increase perturbation a little bit
-        max_iter: maximum iterations allowed
-    Returns:
-        perturbed image
+    :param model: subject model
+    :param num_classes: number of classes in classification
+    :param image: input image
+    :param label: original class
+    :param I: current predicted class ranked by decending order
+    :param overshoot: scale factor to increase perturbation a little bit
+    :param max_iter: maximum iterations allowed
+    :param clip_min: clip image into legal range
+    :param clip_max: clip image into legal range
+    :return: perturbed image
     '''
 
     pert_image = copy.deepcopy(image)

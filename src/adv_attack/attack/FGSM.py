@@ -11,16 +11,22 @@ import copy
 
 
 def fgsm(model, method, image, label, criterion, max_iter=100, epsilon=0.05, clip_min=-1.0, clip_max=1.0):
-    ''' https://pytorch.org/tutorials/beginner/fgsm_tutorial.html
+    '''
+    https://pytorch.org/tutorials/beginner/fgsm_tutorial.html
     FGSM attack
-    Parameters:
-        image: input image
-        label: gt label
-        criterion: loss function to use
-        epsilon: perturbation strength
-        clip_min, clip_max: minimum/maximum value a pixel can take
+    :param model: subject model
+    :param method: fgsm|stepll
+    :param image: input image
+    :param label: original class
+    :param criterion: loss function to use
+    :param max_iter: maximum iteration allowed
+    :param epsilon: perturbation strength
+    :param clip_min:  minimum/maximum value a pixel can take
+    :param clip_max:
+    :return: perturbed images
     '''
 
+    # initialize perturbed image
     pert_image = copy.deepcopy(image)
     x = Variable(pert_image, requires_grad=True)
 
@@ -28,6 +34,7 @@ def fgsm(model, method, image, label, criterion, max_iter=100, epsilon=0.05, cli
     pred = output.max(1, keepdim=True)[1]
     iter_ct = 0
 
+    # loop until attack is successful
     while pred == label:
         if method == 'fgsm':
             loss = criterion(output, label)  # loss for ground-truth class

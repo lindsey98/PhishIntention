@@ -17,6 +17,7 @@ def credential_config(checkpoint, model_type='mixed'):
     '''
     Load credential classifier configurations
     :param checkpoint: classifier weights
+    :param model_type: layout|screenshot|mixed|topo
     :return model: classifier
     '''
     # load weights
@@ -50,7 +51,14 @@ def credential_config(checkpoint, model_type='mixed'):
 
 
 def credential_classifier_mixed(img:str, coords, types, model):
-    # process it into grid_array
+    '''
+    Call mixed CRP classifier
+    :param img: image path
+    :param coords: prediction from layout detector
+    :param types: prediction from layout detector
+    :param model: CRP model
+    :return: CRP = 0 or nonCRP = 1
+    '''
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     image = Image.open(img).convert('RGB')
     
@@ -85,7 +93,7 @@ def credential_classifier_mixed_al(img:str, coords, types, model):
     :param coords: torch.Tensor/np.ndarray Nx4 bbox coords
     :param types: torch.Tensor/np.ndarray Nx4 bbox types
     :param model: classifier 
-    :return pred: predicted class 'credential': 0, 'noncredential': 1
+    :return pred: CRP = 0 or nonCRP = 1
     :return conf: torch.Tensor NxC prediction confidence
     '''
     # process it into grid_array
@@ -114,6 +122,19 @@ def credential_classifier_mixed_al(img:str, coords, types, model):
         
     return pred, conf, pred_features
 
+
+
+############################################ For HTML heuristic ##########################################################
+
+def html_heuristic(html_path):
+    '''
+    Call HTML heuristic
+    :param html_path: path to html file
+    :return: CRP = 0 or nonCRP = 1
+    '''
+    tree = read_html(html_path)
+    proc_data = proc_tree(tree)
+    return check_post(proc_data, version=2)
 
 # def credential_classifier_al(img:str, coords, types, model):
 #     '''
@@ -168,13 +189,6 @@ def credential_classifier_mixed_al(img:str, coords, types, model):
         
 #     return pred, conf, pred_features
 
-
-############################################ For HTML heuristic ##########################################################
-
-def html_heuristic(html_path):
-    tree = read_html(html_path)
-    proc_data = proc_tree(tree)
-    return check_post(proc_data, version=2)
 
 
 

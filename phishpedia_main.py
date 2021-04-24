@@ -16,11 +16,13 @@ import time
 
 def main(url, screenshot_path):
     '''
-    Get phishing prediction
-    params url: url
-    params screenshot_path: path to screenshot
-    returns phish_category: 0 for benign, 1 for phish
-    returns phish_target: None/brand name
+    Phishdiscovery for phishpedia main script
+    :param url: URL
+    :param screenshot_path: path to screenshot
+    :return phish_category: 0 for benign 1 for phish
+    :return pred_target: None or phishing target
+    :return plotvis: predicted image
+    :return siamese_conf: siamese matching confidence
     '''
 
     # 0 for benign, 1 for phish, default is benign
@@ -105,6 +107,7 @@ if __name__ == "__main__":
             else:
                 phish_category, phish_target, plotvis, siamese_conf = main(url=url, screenshot_path=screenshot_path)
 
+                # FIXME: call VTScan only when phishpedia report it as phishing
                 vt_result = "None"
                 if phish_target is not None:
                     try:
@@ -120,6 +123,7 @@ if __name__ == "__main__":
                         print('VTScan is not working...')
                         vt_result = "error"
 
+                # write results as well as predicted images
                 with open(results_path, "a+", encoding='ISO-8859-1') as f:
                     f.write(item + "\t")
                     f.write(url + "\t")

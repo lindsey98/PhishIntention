@@ -5,10 +5,10 @@ import pandas as pd
 import numpy as np
 
 def save_pos_site(result_txt, source_folder, target_folder):
-    # df = pd.read_table(result_txt)
+    # df = pd.read_table(result_txt, encoding='ISO-8859-1')
     # df_pos = df.loc[df['phish'] == 1]
-    df = [x.strip().split('\t') for x in open(result_txt).readlines()]
-    df_pos = [x for x in df if x[2] == '1']
+    df = [x.strip().split('\t') for x in open(result_txt, encoding='ISO-8859-1').readlines()]
+    df_pos = [x for x in df if (len(x) >= 3) and (x[2] == '1')]
     print('Number of reported positive: {}'.format(len(df_pos)))
 
     if len(df_pos) == 0:
@@ -75,7 +75,7 @@ def get_count(date):
 
 
 if __name__ == '__main__':
-    date = '2021-04-20'
+    date = '2021-04-22'
     # for phishpedia
     save_pos_site('./{}_pedia.txt'.format(date), 'Z:\\{}'.format(date),
                   './datasets/PhishDiscovery/Phishpedia/{}'.format(date))

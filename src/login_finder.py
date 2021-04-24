@@ -79,15 +79,16 @@ def keyword_heuristic(driver, orig_url, page_text,
                       ele_model, cls_model):
     '''
     Keyword based login finder
-   :param driver:
-   :param orig_url:
-   :param page_text:
-   :param new_screenshot_path:
-   :param new_html_path:
-   :param new_info_path:
-   :param ele_model:
-   :param cls_model:
-   :return:
+   :param driver: chromedriver
+   :param orig_url: original URL
+   :param page_text: html text
+   :param new_screenshot_path: new screenshot path
+   :param new_html_path: new html path
+   :param new_info_path: new info path
+   :param ele_model: element detector model
+   :param cls_model: CRP classifier
+   :return reach_crp: reach CRP or not
+   :return time_deduct: URL loading and clicking time
     '''
     ct = 0 # count number of sign-up/login links
     reach_crp = False # reach a CRP page or not
@@ -96,13 +97,12 @@ def keyword_heuristic(driver, orig_url, page_text,
 
     for i in page_text: # iterate over html text
         # looking for keyword
-        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(open an account)|(get free.*now)|(join now)|(new user)|(my account)|(come in)|(check in)|(personal area)|(logg inn)|(Log-in)|(become a member)|(customer centre)|(登入)|(登录)|(登錄)|(登録)|(注册)|(Anmeldung)|(iniciar sesión)|(identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(войти)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(girişi)|(Giriş)|(สมัครสม)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar )|(giriş)|(เข้าสู่ระบบ)|(สมัครสมาชิก)|(Přihlásit)|(mein konto)|(registrati)|(anmelden)|(me connecter)|(ingresar)|(mon allociné)|(accedi)|(мой профиль)|(حسابي)|(administrer)|(next)|(entre )|(cadastre-se)|(είσοδος)|(entrance)|(start now)|(accessibilité)|(accéder)|(zaloguj)|(otwórz konto osobiste)',
+        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(open an account)|(get free.*now)|(join now)|(new user)|(my account)|(come in)|(check in)|(personal area)|(logg inn)|(Log-in)|(become a member)|(customer centre)|(登入)|(登录)|(登錄)|(登録)|(注册)|(Anmeldung)|(iniciar sesión)|(identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(войти)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(girişi)|(Giriş)|(สมัครสม)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar )|(giriş)|(เข้าสู่ระบบ)|(สมัครสมาชิก)|(Přihlásit)|(mein konto)|(registrati)|(anmelden)|(me connecter)|(ingresar)|(mon allociné)|(accedi)|(мой профиль)|(حسابي)|(administrer)|(next)|(entre )|(cadastre-se)|(είσοδος)|(entrance)|(start now)|(accessibilité)|(accéder)|(zaloguj)|(otwórz konto osobiste)|(đăng nhập)',
                                         i, re.IGNORECASE)
         if len(keyword_finder) > 0:
             ct += 1
             found_kw = [y for x in keyword_finder for y in x if len(y) > 0]
 
-            # FIXME: If it is not a bulk of text, click on the original text, e.g. Please login signup ...
             if len(found_kw) == 1: # find only 1 keyword
                 found_kw = found_kw[0]
                 if len(i) <= 2*len(found_kw): # if the text is not long, click on text
@@ -156,12 +156,12 @@ def keyword_heuristic(driver, orig_url, page_text,
                 print(e)
                 pass
 
-            # FIXME: Back to the original site if CRP not found
+            # Back to the original site if CRP not found
             start_time = time.time()
             return_success, driver = visit_url(driver, orig_url)
             if not return_success:
                 time_deduct += time.time() - start_time
-                break  # FIXME: TIMEOUT Error
+                break  # TIMEOUT Error
             time_deduct += time.time() - start_time
 
         # Only check Top 3
@@ -175,16 +175,17 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
                  login_model, ele_model, cls_model):
     '''
     CV based login finder
-    :param driver:
-    :param orig_url:
-    :param old_screenshot_path:
-    :param new_screenshot_path:
-    :param new_html_path:
-    :param new_info_path:
-    :param login_model:
-    :param ele_model:
-    :param cls_model:
-    :return:
+    :param driver: chromedriver
+    :param orig_url: original URL
+    :param old_screenshot_path: old screenshot path
+    :param new_screenshot_path: new screenshot path
+    :param new_html_path: new html path
+    :param new_info_path: new info path
+    :param login_model: login button detector
+    :param ele_model: element detector
+    :param cls_model: CRP classifier
+    :return reach_crp: reach CRP or not
+    :return time_deduct: URL loading/clicking time
     '''
 
     # CV-based login finder
@@ -210,7 +211,7 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
         try:
             start_time = time.time()
             current_url = driver.current_url
-            driver.save_screenshot(new_screenshot_path)
+            driver.save_screenshot(new_screenshot_path) # save new screenshot
             writetxt(new_html_path, driver.page_source)
             writetxt(new_info_path, str(current_url))
             time_deduct += time.time() - start_time
@@ -237,12 +238,12 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
         except Exception as e:
             print(e)
 
-        # FIXME: Back to the original site if CRP not found
+        # Back to the original site if CRP not found
         start_time = time.time()
         return_success, driver = visit_url(driver, orig_url)
         if not return_success:
             time_deduct += time.time() - start_time
-            break  # FIXME: TIMEOUT Error
+            break  # TIMEOUT Error
         time_deduct += time.time() - start_time
 
     return reach_crp, time_deduct
@@ -251,13 +252,16 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
 def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, driver):
     '''
     Dynamic analysis to find CRP
-    :param url:
-    :param screenshot_path:
-    :param login_model:
-    :param ele_model:
-    :param cls_model:
-    :param driver:
-    :return:
+    :param url: URL
+    :param screenshot_path: old screenshot path
+    :param login_model: login button detector
+    :param ele_model: element detector
+    :param cls_model: CRP classifier
+    :param driver: chromedriver
+    :return current_url: final URL
+    :return current_ss: final screenshot path
+    :return reach_crp: reach CRP or not
+    :return total_time: total processing time
     '''
 
     # get url
@@ -268,15 +272,16 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
     new_html_path = new_screenshot_path.replace('new_shot.png', 'new_html.txt')
     new_info_path = new_screenshot_path.replace('new_shot.png', 'new_info.txt')
 
-    # FIXME: load twice because google translate not working the first time we visit a website
+    # FIXME: load twice because google translate not working the first time it visits a website
+    # FIXME: Tricks: If webdriver is not working, try 1) enable/diable google translate 2) enable/disable click popup window 3) switch on/off headless mode
     visit_success, driver = visit_url(driver, orig_url)
     if not visit_success:
         return url, screenshot_path, successful, 0
     # visit_success, driver = visit_url(driver, orig_url)
-    visit_success, driver = visit_url(driver, orig_url, popup=True, sleep=True)
+    visit_success, driver = visit_url(driver, orig_url, popup=True, sleep=True) # click popup window before proceeding
     if not visit_success:
         return url, screenshot_path, successful, 0
-    time.sleep(5) # extra wait to translate html
+    time.sleep(5) # extra wait to translate html properly
 
     start_time = time.time()
     print("Getting url")
@@ -292,7 +297,7 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
 
     # If HTML login finder did not find CRP, call CV-based login finder
     if not reach_crp:
-        # FIXME: Ensure that it goes back to the original URL
+        # Ensure that it goes back to the original URL
         visit_success, driver = visit_url(driver, orig_url, sleep=True)
         if not visit_success:
             return url, screenshot_path, successful, total_time  # load URL unsucessful
@@ -315,5 +320,5 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
         current_url = orig_url
         current_ss = screenshot_path
 
-    clean_up_window(driver) # clean up the windows
+    clean_up_window(driver) # clean up the chrome windows
     return current_url, current_ss, reach_crp, total_time

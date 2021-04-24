@@ -13,7 +13,9 @@ from PIL import Image
 import cv2
 
 class HybridLoaderV2(data.Dataset):
-    
+    '''
+    Dataloader for topological classifier
+    '''
     def __init__(self, img_folder: str, annot_path: str):
         self.img_folder = img_folder
         self.annot_path = annot_path
@@ -71,7 +73,9 @@ class HybridLoaderV2(data.Dataset):
     
     
 class HybridLoader(data.Dataset):
-    
+    '''
+    Dataloader for mixed classifier
+    '''
     def __init__(self, img_folder: str, annot_path: str):
         self.img_folder = img_folder
         self.annot_path = annot_path
@@ -113,7 +117,7 @@ class HybridLoader(data.Dataset):
     
 class GetLoader(data.Dataset):
     '''
-    Define customized dataloader
+    Data loader for layout classifier
     '''
 
     def __init__(self, img_folder: str, annot_path: str):
@@ -142,7 +146,9 @@ class GetLoader(data.Dataset):
 
 
 class ImageLoader(data.Dataset):
-
+    '''
+    Dataloader for screenshot classifier
+    '''
     def __init__(self, img_folder: str, annot_path: str):
         self.img_folder = img_folder
         self.annot_path = annot_path

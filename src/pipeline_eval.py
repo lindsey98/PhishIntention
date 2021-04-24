@@ -1,6 +1,6 @@
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"  # use all devices
+# os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # use all devices
 
 from tqdm import tqdm
 import time
@@ -13,6 +13,14 @@ import errno
 
 
 def phishintention_eval(data_dir, mode, siamese_ts, write_txt):
+    '''
+    Run phishintention evaluation
+    :param data_dir: data folder dir
+    :param mode: phish|benign
+    :param siamese_ts: siamese threshold
+    :param write_txt: txt path to write results
+    :return:
+    '''
     with open(write_txt, 'w') as f:
         f.write('folder\t')
         f.write('true_brand\t')
@@ -21,7 +29,7 @@ def phishintention_eval(data_dir, mode, siamese_ts, write_txt):
         f.write('runtime_element_recognition\t')
         f.write('runtime_credential_classifier\t')
         f.write('runtime_siamese\t')
-        f.write('runtime_layout\n')
+        f.write('\n')
 
     for folder in tqdm(os.listdir(data_dir)):
 
@@ -100,19 +108,26 @@ def phishintention_eval(data_dir, mode, siamese_ts, write_txt):
             # siamese time
             f.write(str(siamese_time) + '\t') if 'siamese_time' in locals() else f.write('\t')
             # layout time
-            f.write(str(layout_time) + '\n') if 'layout_time' in locals() else f.write('\n')
+            f.write('\n')
 
             # delete time variables
         try:
             del ele_recog_time
             del credential_cls_time
             del siamese_time
-            del layout_time
         except:
             pass
 
 
 def phishpedia_eval(data_dir, mode, siamese_ts, write_txt):
+    '''
+    Run phishpedia evaluation
+    :param data_dir: data folder dir
+    :param mode: phish|benign
+    :param siamese_ts: siamese threshold
+    :param write_txt: txt path to write results
+    :return:
+    '''
     with open(write_txt, 'w') as f:
         f.write('folder\t')
         f.write('true_brand\t')
@@ -174,8 +189,7 @@ def phishpedia_eval(data_dir, mode, siamese_ts, write_txt):
             f.write(folder + '\t')
             f.write(brand_converter(folder.split('+')[0]) + '\t')  # true brand
             f.write(str(phish_category) + '\t')  # phish/benign/suspicious
-            f.write(brand_converter(pred_target) + '\t') if pred_target is not None else f.write(
-                '\t')  # phishing target
+            f.write(brand_converter(pred_target) + '\t') if pred_target is not None else f.write('\t')  # phishing target
             # element recognition time
             f.write(str(ele_recog_time) + '\t')
             # siamese time
@@ -229,7 +243,8 @@ if __name__ == '__main__':
     # Siamese
     pedia_model, logo_feat_list, file_name_list = phishpedia_config(num_classes=277,
                                                                     weights_path='src/phishpedia/resnetv2_rgb_new.pth.tar',
-                                                                    targetlist_path='src/phishpedia/expand_targetlist/')
+                                                                    targetlist_path='src/phishpedia/expand_targetlist_copy/')
+    print('Number of protected logos = {}'.format(str(len(logo_feat_list))))
 
     # Domain map path
     domain_map_path = 'src/phishpedia/domain_map.pkl'
