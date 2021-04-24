@@ -5,18 +5,25 @@ import pandas as pd
 import numpy as np
 
 def save_pos_site(result_txt, source_folder, target_folder):
-    # df = pd.read_table(result_txt, encoding='ISO-8859-1')
-    # df_pos = df.loc[df['phish'] == 1]
-    df = [x.strip().split('\t') for x in open(result_txt, encoding='ISO-8859-1').readlines()]
-    df_pos = [x for x in df if (len(x) >= 3) and (x[2] == '1')]
+    '''
+    Save reported positive sites
+    :param result_txt: txt path for phish-discovery results
+    :param source_folder: data folder
+    :param target_folder: folder to save positive sites
+    :return:
+    '''
+    df = pd.read_table(result_txt, encoding='ISO-8859-1')
+    df_pos = df.loc[df['phish'] == 1]
+    # df = [x.strip().split('\t') for x in open(result_txt, encoding='ISO-8859-1').readlines()]
+    # df_pos = [x for x in df if (len(x) >= 3) and (x[2] == '1')]
     print('Number of reported positive: {}'.format(len(df_pos)))
 
     if len(df_pos) == 0:
         return
     os.makedirs(target_folder, exist_ok=True)
-    # for folder in list(df_pos['folder']):
-    for folder in [x[0] for x in df_pos]:
-        if 'autodiscover' == folder.split('.')[0] or 'outlook' == folder.split('.')[0]: # filter out those webmail service
+    for folder in list(df_pos['folder']):
+    # for folder in [x[0] for x in df_pos]:
+        if 'autodiscover' == folder.split('.')[0] or 'outlook' == folder.split('.')[0]: # FIXME: filter out those webmail service
             continue
         try:
             shutil.copytree(os.path.join(source_folder, folder),
@@ -32,6 +39,13 @@ def save_pos_site(result_txt, source_folder, target_folder):
             continue
 
 def get_diff(bigger_folder, smaller_folder, target_folder):
+    '''
+    Get set(bigger_folder) - set(smaller_folder)
+    :param bigger_folder:
+    :param smaller_folder:
+    :param target_folder: folder to save diff sites
+    :return:
+    '''
     os.makedirs(target_folder, exist_ok=True)
     for folder in os.listdir(bigger_folder):
         if folder not in os.listdir(smaller_folder):
@@ -44,27 +58,27 @@ def get_diff(bigger_folder, smaller_folder, target_folder):
                 continue
 
 def get_runtime(result_txt):
+    '''
+    Get 5-number summary statistics for runtime
+    :param result_txt:
+    :return:
+    '''
     df = pd.read_table(result_txt, encoding='ISO-8859-1')
     runtime_list = list(df['runtime (layout detector|siamese|crp classifier|login finder total|login finder process)'])
     totaltime_list = list(df['total_runtime'])
-    # runtime_list = [x.strip().split('\t')[-2] for x in open(result_txt).readlines()]
-    # totaltime_list = [x.strip().split('\t')[-1] for x in open(result_txt).readlines()]
 
     breakdown = [list(map(float, x.split('|'))) for x in runtime_list]
     breakdown_df = pd.DataFrame(breakdown)
     breakdown_df.columns = ['layout', 'siamese', 'crp', 'dynamic', 'dynamic_partial']
     breakdown_df = breakdown_df.replace(0, np.NaN)
-    print(breakdown_df.min(), '\n', breakdown_df.median(), '\n', breakdown_df.mean(), '\n', breakdown_df.max(), '\n')
+    print('Minimum: \n', breakdown_df.min(), '\n',
+          'Median: \n', breakdown_df.median(), '\n',
+          'Mean: \n', breakdown_df.mean(), '\n',
+          'Maximum: \n', breakdown_df.max(), '\n')
+
+    print('Total time Min|Median|Mean|Max: \n')
     print(np.min(totaltime_list), np.median(totaltime_list), np.mean(totaltime_list), np.max(totaltime_list))
 
-
-# def get_total_runtime(result_txt):
-#     df = pd.read_table(result_txt)
-#     runtime = list(df['total_runtime'])
-#     print(np.mean(runtime))
-#     print(np.median(runtime))
-#     print(np.min(runtime))
-#     print(np.max(runtime))
 
 def get_count(date):
     count_pedia = len(os.listdir('./datasets/PhishDiscovery/Phishpedia/{}'.format(date)))
