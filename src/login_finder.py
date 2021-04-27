@@ -95,31 +95,43 @@ def keyword_heuristic(driver, orig_url, page_text,
     time_deduct = 0
     print(page_text)
 
+    # URL after loading might be different from orig_url
+    try:
+        orig_url = driver.current_url
+    except TimeoutException as e:
+        print(e)
+        pass
+    except WebDriverException as e:
+        print(e)
+        pass
+
     for i in page_text: # iterate over html text
         # looking for keyword
-        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(open an account)|(get free.*now)|(join now)|(new user)|(my account)|(come in)|(check in)|(personal area)|(logg inn)|(Log-in)|(become a member)|(customer centre)|(登入)|(登录)|(登錄)|(登録)|(注册)|(Anmeldung)|(iniciar sesión)|(identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(войти)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(girişi)|(Giriş)|(สมัครสม)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar )|(giriş)|(เข้าสู่ระบบ)|(สมัครสมาชิก)|(Přihlásit)|(mein konto)|(registrati)|(anmelden)|(me connecter)|(ingresar)|(mon allociné)|(accedi)|(мой профиль)|(حسابي)|(administrer)|(next)|(entre )|(cadastre-se)|(είσοδος)|(entrance)|(start now)|(accessibilité)|(accéder)|(zaloguj)|(otwórz konto osobiste)|(đăng nhập)',
+        keyword_finder = re.findall('(login)|(log in)|(signup)|(sign up)|(sign in)|(submit)|(register)|(create.*account)|(open an account)|(get free.*now)|(join now)|(new user)|(my account)|(come in)|(check in)|(personal area)|(logg inn)|(Log-in)|(become a member)|(customer centre)|(登入)|(登录)|(登錄)|(登録)|(注册)|(Anmeldung)|(iniciar sesión)|(identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(войти)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(girişi)|(Giriş)|(สมัครสม)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar )|(giriş)|(เข้าสู่ระบบ)|(สมัครสมาชิก)|(Přihlásit)|(mein konto)|(registrati)|(anmelden)|(me connecter)|(ingresa)|(mon allociné)|(accedi)|(мой профиль)|(حسابي)|(administrer)|(next)|(entre )|(cadastre-se)|(είσοδος)|(entrance)|(start now)|(accessibilité)|(accéder)|(zaloguj)|(otwórz konto osobiste)|(đăng nhập)|(devam)',
                                         i, re.IGNORECASE)
         if len(keyword_finder) > 0:
             ct += 1
             found_kw = [y for x in keyword_finder for y in x if len(y) > 0]
-
-            if len(found_kw) == 1: # find only 1 keyword
-                found_kw = found_kw[0]
-                if len(i) <= 2*len(found_kw): # if the text is not long, click on text
-                    start_time = time.time()
-                    click_text(i)
-                    print('Successfully click')
-                    time_deduct += time.time() - start_time
-                else: # otherwise click on keyword
-                    start_time = time.time()
-                    click_text(found_kw)
-                    print('Successfully click')
-                    time_deduct += time.time() - start_time
-
-            else: # find at least 2 keywords in same bulk of text
-                found_kw = found_kw[0] # only click the first keyword
+            if len(re.sub("[/|,!?]", "", i).replace(" ", "")) <= 30: # if the text is not long, click on text
                 start_time = time.time()
-                click_text(found_kw) # click the keyword itself
+                click_text(i)
+                try:
+                    current_url = driver.current_url
+                    if current_url == orig_url: # if page is not redirected, try clicking the keyword instead
+                        print(found_kw[0])
+                        click_text(found_kw[0])
+                except TimeoutException as e:
+                    print(e)
+                    pass
+                except WebDriverException as e:
+                    print(e)
+                    pass
+                print('Successfully click')
+                time_deduct += time.time() - start_time
+
+            else: # otherwise click on keyword
+                start_time = time.time()
+                click_text(found_kw[0])
                 print('Successfully click')
                 time_deduct += time.time() - start_time
 

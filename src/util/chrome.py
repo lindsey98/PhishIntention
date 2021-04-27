@@ -119,6 +119,16 @@ def visit_url(driver, orig_url, popup=False, sleep=False):
         print("no alert")
         return True, driver
 
+
+def click_button(button_text):
+    helium.Config.implicit_wait_secs = 5 # this is the implicit timeout for helium
+    helium.get_driver().implicitly_wait(5)
+    try:
+        helium.click(helium.Button(button_text))
+        return True
+    except:
+        return False
+
 def click_popup():
     '''
     Click unexpected popup (accpet terms condditions, close alerts etc.)
@@ -126,28 +136,14 @@ def click_popup():
     '''
     helium.Config.implicit_wait_secs = 5 # this is the implicit timeout for helium
     helium.get_driver().implicitly_wait(5)
-    if helium.Button("accept").exists():
-        helium.click(helium.Button("accept"))
-    elif helium.Button("Accept").exists():
-        helium.click(helium.Button("Accept"))
-    elif helium.Button("close").exists():
-        helium.click(helium.Button("close"))
-    elif helium.Button("Close").exists():
-        helium.click(helium.Button("Close"))
-    elif helium.Button("I accept").exists():
-        helium.click(helium.Button("I accept"))
-    elif helium.Button("I agree").exists():
-        helium.click(helium.Button("I agree"))
-    elif helium.Button("I AGREE").exists():
-        helium.click(helium.Button("I AGREE"))
-    elif helium.Button("OK").exists():
-        helium.click(helium.Button("OK"))
-    elif helium.Button("Continue").exists():
-        helium.click(helium.Button("Continue"))
-    elif helium.Button("Allow everyone").exists():
-        helium.click(helium.Button("Allow everyone"))
-    elif helium.Button("Proceed").exists():
-        helium.click(helium.Button("Proceed"))
+    keyword_list = ["Accept", "Accept all cookies", "Accept and continue", "Continue", "I accept",
+                    "OK", "AGREE", "close", "Close", "accept", "Accept all",
+                    "I agree", "I AGREE", "Allow everyone", "Enter Now", "Confirm selection"]
+
+    for button_text in keyword_list:
+        success = click_button(button_text=button_text)
+        if success:
+            return
 
 
 def click_text(text):

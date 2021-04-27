@@ -115,7 +115,7 @@ def siamese_inference(model, domain_map, logo_feat_list, file_name_list, shot_pa
         predicted_domain = domain_map[predicted_brand]
         final_sim = max(sim_list)
         
-    ## Else if not exeed, try resolution alignment, see if can improve
+    ## Else if not exxeed, try resolution alignment, see if can improve
     else:
         cropped, candidate_logo = resolution_alignment(cropped, candidate_logo)
         img_feat = pred_siamese(cropped, model, imshow=False, title=None, grayscale=grayscale)

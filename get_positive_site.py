@@ -13,16 +13,16 @@ def save_pos_site(result_txt, source_folder, target_folder):
     :return:
     '''
     df = pd.read_table(result_txt, encoding='ISO-8859-1')
-    df_pos = df.loc[df['phish'] == 1]
-    # df = [x.strip().split('\t') for x in open(result_txt, encoding='ISO-8859-1').readlines()]
-    # df_pos = [x for x in df if (len(x) >= 3) and (x[2] == '1')]
+    # df_pos = df.loc[df['phish'] == 1]
+    df = [x.strip().split('\t') for x in open(result_txt, encoding='ISO-8859-1').readlines()]
+    df_pos = [x for x in df if (len(x) >= 3) and (x[2] == '1')]
     print('Number of reported positive: {}'.format(len(df_pos)))
 
     if len(df_pos) == 0:
         return
     os.makedirs(target_folder, exist_ok=True)
-    for folder in list(df_pos['folder']):
-    # for folder in [x[0] for x in df_pos]:
+    # for folder in list(df_pos['folder']):
+    for folder in [x[0] for x in df_pos]:
         if 'autodiscover' == folder.split('.')[0] or 'outlook' == folder.split('.')[0]: # FIXME: filter out those webmail service
             continue
         try:
@@ -67,7 +67,11 @@ def get_runtime(result_txt):
     runtime_list = list(df['runtime (layout detector|siamese|crp classifier|login finder total|login finder process)'])
     totaltime_list = list(df['total_runtime'])
 
-    breakdown = [list(map(float, x.split('|'))) for x in runtime_list]
+    for i, x in enumerate(runtime_list):
+        if isinstance(x, float):
+            print(i, x)
+
+    breakdown = [list(map(float, x.split('|'))) for x in runtime_list if not isinstance(x, float)]
     breakdown_df = pd.DataFrame(breakdown)
     breakdown_df.columns = ['layout', 'siamese', 'crp', 'dynamic', 'dynamic_partial']
     breakdown_df = breakdown_df.replace(0, np.NaN)
@@ -77,7 +81,7 @@ def get_runtime(result_txt):
           'Maximum: \n', breakdown_df.max(), '\n')
 
     print('Total time Min|Median|Mean|Max: \n')
-    print(np.min(totaltime_list), np.median(totaltime_list), np.mean(totaltime_list), np.max(totaltime_list))
+    print(np.nanmin(totaltime_list), np.nanmedian(totaltime_list), np.nanmean(totaltime_list), np.nanmax(totaltime_list))
 
 
 def get_count(date):
@@ -89,9 +93,9 @@ def get_count(date):
 
 
 if __name__ == '__main__':
-    date = '2021-04-22'
+    date = '2021-04-25'
     # for phishpedia
-    save_pos_site('./{}_pedia.txt'.format(date), 'Z:\\{}'.format(date),
+    save_pos_site('./{}_pedia.txt'.format(date), 'Z:\\{}'.format(date), #TODO: move to Y: disk
                   './datasets/PhishDiscovery/Phishpedia/{}'.format(date))
     #
     # # for phishintention
@@ -110,6 +114,6 @@ if __name__ == '__main__':
     get_diff(target_folder='./datasets/PhishDiscovery/intention_pedia_diff/{}'.format(date),
              smaller_folder='./datasets/PhishDiscovery/Phishpedia/{}'.format(date), bigger_folder='./datasets/PhishDiscovery/PhishIntention/{}'.format(date))
 
-    # get_runtime('./{}.txt'.format(date))
+    get_runtime('./{}.txt'.format(date))
 
     # get_count(date)

@@ -58,9 +58,63 @@ print('Intention TP = {}, FP = {}, Miss(FN) = {}, Unsure = {}'.format(str(len(in
 
 try:
     shutil.rmtree('./datasets/PhishDiscovery/phishintention_miss')
-except:
+except Exception as e:
+    print(e)
     pass
 os.makedirs('./datasets/PhishDiscovery/phishintention_miss', exist_ok=True)
 for folder in intention_miss:
-    shutil.copytree(os.path.join('./datasets/PhishDiscovery/Phishpedia/', folder),
+    try:
+        shutil.copytree(os.path.join('./datasets/PhishDiscovery/Phishpedia/', folder),
                     os.path.join('./datasets/PhishDiscovery/phishintention_miss/', folder.split('/')[1]))
+    except Exception as e:
+        print(e)
+
+try:
+    shutil.rmtree('./datasets/PhishDiscovery/phishintention_fp')
+except Exception as e:
+    print(e)
+    pass
+os.makedirs('./datasets/PhishDiscovery/phishintention_fp', exist_ok=True)
+for folder in intention_fp:
+    try:
+        shutil.copytree(os.path.join('./datasets/PhishDiscovery/Phishpedia/', folder),
+                    os.path.join('./datasets/PhishDiscovery/phishintention_fp/', folder.split('/')[1]))
+    except Exception as e:
+        print(e)
+
+
+from src.credential import html_heuristic, credential_classifier_mixed_al, credential_config
+from src.element_detector import element_recognition, element_config, vis
+import cv2
+
+# element recognition model
+ele_cfg, ele_model = element_config(rcnn_weights_path = './src/element_detector/output/website_lr0.001/model_final.pth',
+                                    rcnn_cfg_path='./src/element_detector/configs/faster_rcnn_web.yaml')
+# # # CRP classifier -- mixed version
+cls_model = credential_config(checkpoint='./src/credential_classifier/output/hybrid/hybrid_lr0.005/BiT-M-R50x1V2_0.005.pth.tar',
+                              model_type='mixed')
+
+r_element = 0
+element_folder = []
+
+for folder in intention_miss:
+    screenshot_path = 'D:\\ruofan\\PhishIntention\\datasets\\PhishDiscovery\\phishintention_miss\\{}\\shot.png'.format(folder.split('/')[-1]) # secure.terratopmail.xyz, facebookadcenter.acierbuildingtech.com
+    html_path = screenshot_path.replace("shot.png", "html.txt")
+    url = open(screenshot_path.replace("shot.png", "info.txt")).read()
+    cre_pred = html_heuristic(html_path)
+    print('HTML heuristic:', cre_pred)
+    pred_classes, pred_boxes, pred_scores = element_recognition(img=screenshot_path, model=ele_model)
+    plotvis = vis(screenshot_path, pred_boxes, pred_classes)
+    cv2.imwrite('debug.png', plotvis)
+
+    if cre_pred == 1:  # if HTML heuristic report as nonCRP
+        # CRP classifier
+        cre_pred, cred_conf, _ = credential_classifier_mixed_al(img=screenshot_path, coords=pred_boxes,
+                                                                types=pred_classes, model=cls_model)
+        print(cre_pred, cred_conf)
+
+    if cre_pred == 0:
+        r_element += 1
+        element_folder.append(folder.split('/')[-1])
+
+print(r_element)
