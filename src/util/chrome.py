@@ -51,10 +51,13 @@ def vt_scan(url_test):
     '''
     retry = 0
     api_key = "2b93fae94a62662be089e9aa067e672ac242e3276b0f6a1e44e298b4858d4cf8"
+    # FIXME: my public API: 76d947105d47a73cc9fa20f1a1a5905f75ca4bb83fc0ff2f41b6cd14daa798e5
     url = 'https://www.virustotal.com/vtapi/v2/url/report'
 
     params = {'apikey': api_key, 'resource': url_test, 'scan':1}
-    response = requests.get(url, params=params).json()
+    response = requests.get(url, params=params)
+    print("Response: ", response)
+    response = response.json()
 
     # This means the url wasnt in VT's database, preparing a new scan
     while("total" not in response and "positives" not in response and retry < 3):
@@ -158,7 +161,8 @@ def click_text(text):
         # helium.highlight(text) # highlight text for debugging
         # time.sleep(1)
         helium.click(text)
-        time.sleep(2) # wait until website is completely loaded
+        time.sleep(5) # wait until website is completely loaded
+        # click_popup()
     except TimeoutException as e:
         print(e)
     except LookupError as e:
@@ -177,7 +181,8 @@ def click_point(x, y):
     helium.get_driver().implicitly_wait(5) # this the implicit timeout for selenium
     try:
         helium.click(helium.Point(x, y))
-        time.sleep(2) # wait until website is completely loaded
+        time.sleep(5) # wait until website is completely loaded
+        # click_popup()
     except TimeoutException as e:
         print(e)
     except MoveTargetOutOfBoundsException as e:

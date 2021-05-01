@@ -157,6 +157,9 @@ if __name__ == "__main__":
 
     for item in tqdm(os.listdir(directory)):
 
+        if item == 'hikiyose.t03imd.info':
+            continue
+
         if item in open(args.results, encoding='ISO-8859-1').read():
             continue # have been predicted
 
