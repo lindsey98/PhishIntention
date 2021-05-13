@@ -5,6 +5,9 @@ import pandas as pd
 import numpy as np
 from datetime import date, timedelta
 from src.util.chrome import vt_scan
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+from collections import Counter
 
 def daterange(start_date, end_date):
     for n in range(int((end_date - start_date).days)):
@@ -20,49 +23,7 @@ def get_vtscan4pos(result_txt):
     return_df = pd.DataFrame({'url':urls, 'vtscan':vtresults})
     return return_df
 
-def save_zeroday_phish(result_txt, source_folder, target_folder):
-    df = [x.strip().split('\t') for x in open(result_txt, encoding='ISO-8859-1').readlines()]
-    df_pos = [x for x in df if (len(x) >= 3) and (x[2] == '1')] # get reported phishing
-    os.makedirs(target_folder, exist_ok=True)
 
-    # get entries
-    folders = [x[0] for x in df_pos]
-    urls = [x[1] for x in df_pos]
-    vtresults = [x[5] for x in df_pos]
-
-    # get vtscan corrected results
-    print('./datasets/phishdiscovery_vtscan_error_{}.csv'.format(os.path.basename(result_txt).split('.txt')[0]))
-    if not os.path.exists('./datasets/phishdiscovery_vtscan_error_{}.csv'.format(os.path.basename(result_txt).split('.txt')[0])):
-        newvtresults = vtresults
-    else:
-        df_correct = pd.read_csv('./datasets/phishdiscovery_vtscan_error_{}.csv'.format(os.path.basename(result_txt).split('.txt')[0]))
-        newvtresults = []
-        for i, r in enumerate(vtresults):
-            if r == 'error':
-                newvtresults.append(list(df_correct[df_correct['url'] == urls[i]]['vtscan'])[0])
-            else:
-                newvtresults.append(r)
-
-    print(newvtresults)
-    ct = 0
-    for k, vt in enumerate(newvtresults):
-        if 'autodiscover' == folders[k].split('.')[0] or 'outlook' == folders[k].split('.')[0]: # FIXME: filter out those webmail service
-            continue
-        if int(vt.split('/')[0]) == 0: # not zero-day
-            ct += 1
-            try:
-                shutil.copytree(os.path.join(source_folder, folders[k]),
-                            os.path.join(target_folder, folders[k]))
-            except FileExistsError as e:
-                print(e)
-                continue
-            except FileNotFoundError as e:
-                print(e)
-                continue
-            except Exception as e:
-                print(e)
-                continue
-    print('Number of zero-day phishing:', ct)
 
 def save_pos_site(result_txt, source_folder, target_folder):
     '''
@@ -97,6 +58,7 @@ def save_pos_site(result_txt, source_folder, target_folder):
         except Exception as e:
             print(e)
             continue
+
 
 def get_diff(bigger_folder, smaller_folder, target_folder):
     '''
@@ -154,83 +116,78 @@ def get_count(date):
 
 if __name__ == '__main__':
     '''Save reported phishing'''
-    # date = '2021-04-30'
-    # # for phishpedia
-    # save_pos_site('./{}_pedia.txt'.format(date), 'Z:\\{}'.format(date), #TODO: move to Y: disk
-    #               './datasets/PhishDiscovery/Phishpedia/{}'.format(date))
-    # save_pos_site('./{}_pedia.txt'.format(date), 'Y:\\{}'.format(date), #TODO: move to Y: disk
-    #               './datasets/PhishDiscovery/Phishpedia/{}'.format(date))
-    # #
-    # # # for phishintention
-    # save_pos_site('./{}.txt'.format(date), 'Z:\\{}'.format(date),
-    #               './datasets/PhishDiscovery/PhishIntention/{}'.format(date))
-    # save_pos_site('./{}.txt'.format(date), 'Y:\\{}'.format(date),
-    #               './datasets/PhishDiscovery/PhishIntention/{}'.format(date))
-    #
-    # # # for phishpedia
-    # save_pos_site('./{}_pedia.txt'.format(date), 'E:\\screenshots_rf\\{}'.format(date),
-    #               './datasets/PhishDiscovery/Phishpedia/{}'.format(date))
-    # #
-    # # # for phishintention
-    # save_pos_site('./{}.txt'.format(date), 'E:\\screenshots_rf\\{}'.format(date),
-    #               './datasets/PhishDiscovery/PhishIntention/{}'.format(date))
-    # #
-    # # # get phishintention - phishpedia
-    # get_diff(target_folder='./datasets/PhishDiscovery/intention_pedia_diff/{}'.format(date),
-    #          smaller_folder='./datasets/PhishDiscovery/Phishpedia/{}'.format(date), bigger_folder='./datasets/PhishDiscovery/PhishIntention/{}'.format(date))
-    # #
-#     # # get_runtime('./{}.txt'.format(date))
-#     #
-#     # get_count(date)
-
-    '''VTscan error correction'''
-    start_date = date(2021, 4, 2)
-    end_date = date(2021, 5, 1)
-    for single_date in daterange(start_date, end_date):
-        date = single_date.strftime("%Y-%m-%d")
-        print(date)
-        # df = get_vtscan4pos('./{}.txt'.format(date))
-        df = get_vtscan4pos('./{}_pedia.txt'.format(date))
-        df_error = df[df['vtscan'] == 'error']
-        if len(df_error) > 0:
-            # df_error.to_csv('./datasets/phishdiscovery_vtscan_error_{}.csv'.format(date), index=None)
-            df_error.to_csv('./datasets/phishdiscovery_vtscan_error_{}_pedia.csv'.format(date), index=None) #FIXME: two models
-            print(df_error)
-    #
-    for single_date in daterange(start_date, end_date):
-        date = single_date.strftime("%Y-%m-%d")
-        # if not os.path.exists('./datasets/phishdiscovery_vtscan_error_{}.csv'.format(date)):
-        if not os.path.exists('./datasets/phishdiscovery_vtscan_error_{}_pedia.csv'.format(date)):
-            continue
-        # df_error = pd.read_csv('./datasets/phishdiscovery_vtscan_error_{}.csv'.format(date))
-        df_error = pd.read_csv('./datasets/phishdiscovery_vtscan_error_{}_pedia.csv'.format(date))
-        for index, row in df_error.iterrows():
-            url = row['url']
-            print(url)
-            vt_result = "None"
-            try:
-                if vt_scan(url) is not None:
-                    positive, total = vt_scan(url)
-                    print("Positive VT scan!")
-                    vt_result = str(positive) + "/" + str(total)
-                else:
-                    print("Negative VT scan!")
-                    vt_result = "None"
-
-            except Exception as e:
-                print(e)
-                print('VTScan is not working...')
-                vt_result = "error"
-            row['vtscan'] = vt_result
-
-        # df_error.to_csv('./datasets/phishdiscovery_vtscan_error_{}.csv'.format(date), index=None)
-        df_error.to_csv('./datasets/phishdiscovery_vtscan_error_{}_pedia.csv'.format(date), index=None)
-
-    '''Count zero-day phishing'''
-    # start_date = date(2021, 4, 12)
-    # end_date = date(2021, 4, 30)
+    # start_date = date(2021, 4, 2)
+    # end_date = date(2021, 5, 3)
     # for single_date in daterange(start_date, end_date):
     #     date = single_date.strftime("%Y-%m-%d")
-    #     save_zeroday_phish(result_txt='./{}.txt'.format(date),
-    #                        source_folder='./datasets/PhishDiscovery/PhishIntention/{}'.format(date),
-    #                        target_folder='./datasets/PhishDiscovery/zeroday/{}'.format(date))
+    #     # for phishpedia
+    #     save_pos_site('./{}_pedia.txt'.format(date), 'Z:\\{}'.format(date), #TODO: move to Y: disk
+    #                   './datasets/PhishDiscovery/Phishpedia/{}'.format(date))
+    #     save_pos_site('./{}_pedia.txt'.format(date), 'Y:\\{}'.format(date), #TODO: move to Y: disk
+    #                   './datasets/PhishDiscovery/Phishpedia/{}'.format(date))
+    #
+    #     # for phishintention
+    #     save_pos_site('./{}.txt'.format(date), 'Z:\\{}'.format(date),
+    #                   './datasets/PhishDiscovery/PhishIntention/{}'.format(date))
+    #     save_pos_site('./{}.txt'.format(date), 'Y:\\{}'.format(date),
+    #                   './datasets/PhishDiscovery/PhishIntention/{}'.format(date))
+    #
+    #     # for phishpedia
+    #     save_pos_site('./{}_pedia.txt'.format(date), 'E:\\screenshots_rf\\{}'.format(date),
+    #                   './datasets/PhishDiscovery/Phishpedia/{}'.format(date))
+    #
+    #     # for phishintention
+    #     save_pos_site('./{}.txt'.format(date), 'E:\\screenshots_rf\\{}'.format(date),
+    #                   './datasets/PhishDiscovery/PhishIntention/{}'.format(date))
+    #
+    #     # get phishintention - phishpedia
+    #     get_diff(target_folder='./datasets/PhishDiscovery/intention_pedia_diff/{}'.format(date),
+    #              smaller_folder='./datasets/PhishDiscovery/Phishpedia/{}'.format(date), bigger_folder='./datasets/PhishDiscovery/PhishIntention/{}'.format(date))
+
+    # get_runtime('./{}.txt'.format(date))
+
+    # get_count(date)
+
+    '''VTscan error correction'''
+    # start_date = date(2021, 5, 2)
+    # end_date = date(2021, 5, 3)
+    # for single_date in daterange(start_date, end_date):
+    #     date = single_date.strftime("%Y-%m-%d")
+    #     print(date)
+    #     # df = get_vtscan4pos('./{}.txt'.format(date))
+    #     df = get_vtscan4pos('./{}_pedia.txt'.format(date))
+    #     df_error = df[df['vtscan'] == 'error']
+    #     if len(df_error) > 0:
+    #         # df_error.to_csv('./datasets/phishdiscovery_vtscan_error_{}.csv'.format(date), index=None)
+    #         df_error.to_csv('./datasets/phishdiscovery_vtscan_error_{}_pedia.csv'.format(date), index=None) #FIXME: two models
+    #         print(df_error)
+    # #
+    # for single_date in daterange(start_date, end_date):
+    #     date = single_date.strftime("%Y-%m-%d")
+    #     # if not os.path.exists('./datasets/phishdiscovery_vtscan_error_{}.csv'.format(date)):
+    #     if not os.path.exists('./datasets/phishdiscovery_vtscan_error_{}_pedia.csv'.format(date)):
+    #         continue
+    #     # df_error = pd.read_csv('./datasets/phishdiscovery_vtscan_error_{}.csv'.format(date))
+    #     df_error = pd.read_csv('./datasets/phishdiscovery_vtscan_error_{}_pedia.csv'.format(date))
+    #     for index, row in df_error.iterrows():
+    #         url = row['url']
+    #         print(url)
+    #         vt_result = "None"
+    #         try:
+    #             if vt_scan(url) is not None:
+    #                 positive, total = vt_scan(url)
+    #                 print("Positive VT scan!")
+    #                 vt_result = str(positive) + "/" + str(total)
+    #             else:
+    #                 print("Negative VT scan!")
+    #                 vt_result = "None"
+    #
+    #         except Exception as e:
+    #             print(e)
+    #             print('VTScan is not working...')
+    #             vt_result = "error"
+    #         row['vtscan'] = vt_result
+    #
+    #     # df_error.to_csv('./datasets/phishdiscovery_vtscan_error_{}.csv'.format(date), index=None)
+    #     df_error.to_csv('./datasets/phishdiscovery_vtscan_error_{}_pedia.csv'.format(date), index=None)
+
