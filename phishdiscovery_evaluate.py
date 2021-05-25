@@ -287,36 +287,36 @@ if __name__ == '__main__':
     # print('Total number of reported phishing: {} for phishintention'.format(len(set([y for x in os.listdir('./datasets/PhishDiscovery/PhishIntention/') for y in os.listdir(os.path.join('./datasets/PhishDiscovery/PhishIntention/', x))]))))
 
     '''Count zero-day phishing'''
-    all_intention_zeroday_TP = []
-    all_pedia_zeroday_TP = []
-
-    for single_date in daterange(start_date, end_date):
-        date = single_date.strftime("%Y-%m-%d")
-        this_zerodayTP = save_zeroday_phish(result_txt='./{}.txt'.format(date),
-                           source_folder='./datasets/PhishDiscovery/PhishIntention/{}'.format(date),
-                           target_folder='./datasets/PhishDiscovery/zeroday/',
-                           df_labels=df_labels,
-                           df_labels2=df_labels2)
-        this_zerodayTP_pedia = save_zeroday_phish(result_txt='./{}_pedia.txt'.format(date),
-                           source_folder='./datasets/PhishDiscovery/Phishpedia/{}'.format(date),
-                           target_folder='./datasets/PhishDiscovery/zeroday_pedia/',
-                           df_labels=df_labels,
-                           df_labels2=df_labels2)
-
-        all_intention_zeroday_TP.extend(this_zerodayTP)
-        all_pedia_zeroday_TP.extend(this_zerodayTP_pedia)
+    # all_intention_zeroday_TP = []
+    # all_pedia_zeroday_TP = []
+    #
+    # for single_date in daterange(start_date, end_date):
+    #     date = single_date.strftime("%Y-%m-%d")
+    #     this_zerodayTP = save_zeroday_phish(result_txt='./{}.txt'.format(date),
+    #                        source_folder='./datasets/PhishDiscovery/PhishIntention/{}'.format(date),
+    #                        target_folder='./datasets/PhishDiscovery/zeroday/',
+    #                        df_labels=df_labels,
+    #                        df_labels2=df_labels2)
+    #     this_zerodayTP_pedia = save_zeroday_phish(result_txt='./{}_pedia.txt'.format(date),
+    #                        source_folder='./datasets/PhishDiscovery/Phishpedia/{}'.format(date),
+    #                        target_folder='./datasets/PhishDiscovery/zeroday_pedia/',
+    #                        df_labels=df_labels,
+    #                        df_labels2=df_labels2)
+    #
+    #     all_intention_zeroday_TP.extend(this_zerodayTP)
+    #     all_pedia_zeroday_TP.extend(this_zerodayTP_pedia)
 
     # print('Number of zero-day TP for phishintention', len(all_intention_zeroday_TP))
     # print('Number of zero-day TP for phishpedia',len(all_pedia_zeroday_TP))
 
     '''Count how many TP come from dynamic'''
-    # for single_date in daterange(start_date, end_date):
-    #     date = single_date.strftime("%Y-%m-%d")
-    #     dynamic_TP, ct_dynamic_TP = get_phishintention_dynamic(date=date, result_txt='./{}.txt'.format(date),
-    #                                                            df_labels=df_labels, df_labels2=df_labels2)
-    #     dynamic_ct += ct_dynamic_TP
-    #     print(dynamic_TP)
-    #     print(date, dynamic_ct)
+    for single_date in daterange(start_date, end_date):
+        date = single_date.strftime("%Y-%m-%d")
+        dynamic_TP, ct_dynamic_TP = get_phishintention_dynamic(date=date, result_txt='./{}.txt'.format(date),
+                                                               df_labels=df_labels, df_labels2=df_labels2)
+        dynamic_ct += ct_dynamic_TP
+        print(dynamic_TP)
+        print(date, dynamic_ct)
 
     '''Get predicted brand distribution'''
     # all_pred_brands_TP = []
@@ -336,29 +336,29 @@ if __name__ == '__main__':
 
 
     '''Get TP, FP for sampled 1000'''
-    pedia_tp, pedia_fp, pedia_unsure, intention_tp, intention_fp, intention_unsure, intention_miss = normal_eval(df_labels, df_labels2, target_folder='./datasets/Phishdiscovery/')
+    # pedia_tp, pedia_fp, pedia_unsure, intention_tp, intention_fp, intention_unsure, intention_miss = normal_eval(df_labels, df_labels2, target_folder='./datasets/Phishdiscovery/')
 
     # # FIXME: here we deliberately drop some FP from phishpedia
     # pedia_fp = list(random.sample(pedia_fp, 216))
     #
-    print('{} zeroday TPs, from all reported phishing for phishpedia'.format(np.sum([x.split('/')[1] in all_pedia_zeroday_TP for x in pedia_tp])))
-    print('{} zeroday TPs, from all reported phishing for phishintention'.format(np.sum([x.split('/')[1] in all_intention_zeroday_TP for x in intention_tp])))
-    for tp in pedia_tp:
-        if tp.split('/')[1] in all_pedia_zeroday_TP:
-            try:
-                shutil.copytree(os.path.join('./datasets/PhishDiscovery/Phishpedia', tp),
-                      os.path.join('./datasets/PhishDiscovery/', 'Phishpedia_zeroday', tp.split('/')[-1]))
-            except FileExistsError:
-                continue
-    for tp in intention_tp:
-        if tp.split('/')[1] in all_intention_zeroday_TP:
-            try:
-                shutil.copytree(os.path.join('./datasets/PhishDiscovery/PhishIntention', tp),
-                  os.path.join('./datasets/PhishDiscovery/', 'PhishIntention_zeroday', tp.split('/')[-1]))
-            except FileExistsError:
-                continue
+    # print('{} zeroday TPs, from all reported phishing for phishpedia'.format(np.sum([x.split('/')[1] in all_pedia_zeroday_TP for x in pedia_tp])))
+    # print('{} zeroday TPs, from all reported phishing for phishintention'.format(np.sum([x.split('/')[1] in all_intention_zeroday_TP for x in intention_tp])))
+    # for tp in pedia_tp:
+    #     if tp.split('/')[1] in all_pedia_zeroday_TP:
+    #         try:
+    #             shutil.copytree(os.path.join('./datasets/PhishDiscovery/Phishpedia', tp),
+    #                   os.path.join('./datasets/PhishDiscovery/', 'Phishpedia_zeroday', tp.split('/')[-1]))
+    #         except FileExistsError:
+    #             continue
+    # for tp in intention_tp:
+    #     if tp.split('/')[1] in all_intention_zeroday_TP:
+    #         try:
+    #             shutil.copytree(os.path.join('./datasets/PhishDiscovery/PhishIntention', tp),
+    #               os.path.join('./datasets/PhishDiscovery/', 'PhishIntention_zeroday', tp.split('/')[-1]))
+    #         except FileExistsError:
+    #             continue
 
-    # aggregate what are reported together, ignore unsure
+    '''aggregate what are reported together, ignore unsure'''
     # all_pedia = pedia_fp + pedia_tp
     # all_intention = intention_fp + intention_tp
     # print(pedia_unsure)
@@ -373,12 +373,14 @@ if __name__ == '__main__':
     # print('{} TPs, {} FPs, from 1000 samples for phishpedia'.format(np.sum([x in pedia_tp for x in pedia1000]), np.sum([x in pedia_fp for x in pedia1000])))
     # print('{} TPs, {} FPs, from 1000 samples for phishintention'.format(np.sum([x in intention_tp for x in intention1000]), np.sum([x in intention_fp for x in intention1000])))
 
+    '''zero-day in sample1000'''
     # print('{} TPs, {} FPs, {} zeroday TPs from 1000 samples for phishpedia'.format(np.sum([x in pedia_tp for x in pedia1000]), np.sum([x in pedia_fp for x in pedia1000]), np.sum([x.split('/')[1] in all_pedia_zeroday_TP for x in pedia1000])))
     # print('{} TPs, {} FPs, {} zeroday TPs from 1000 samples for phishintention'.format(np.sum([x in intention_tp for x in intention1000]), np.sum([x in intention_fp for x in intention1000]), np.sum([x.split('/')[1] in all_intention_zeroday_TP for x in intention1000])))
 
     # print(len(set(pedia_fp).intersection(set(intention_fp))))
     # print(set(pedia_fp).intersection(set(intention_fp)))
 
+    '''find a paypal phishing'''
     # for single_date in daterange(start_date, end_date):
     #     date = single_date.strftime("%Y-%m-%d")
     #     findpaypal('./{}.txt'.format(date))
