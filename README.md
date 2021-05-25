@@ -1,7 +1,7 @@
 # PHIND
 
 ## PHIND
-- This is the repository for phishintention project
+- This is the official implementation of "Intention Matters: Extracting Static and Dynamic WebpageIntention for Identifying and Explaining Phishing Attacks"
     
 ## Framework
     
@@ -51,7 +51,6 @@ phishpedia_main.py: main script for Phishpedia
 
         
 ## Requirements
-- Linux machine equipped with GPU 
 
 python=3.7 
 
@@ -98,12 +97,12 @@ python -m src.pipeline_eval --data-dir [data folder] \
 ```
 
 - For phish discovery experiment, the data folder should be organized in [this format](https://github.com/lindsey98/Phishpedia/tree/main/datasets/test_sites):
--- If you want to run PHIND
+If you want to run PHIND
 ```
 python phishintention_main.py --folder [data folder] \
                               --results [output_file.txt]
 ```
--- If you want to run phishpedia instead
+If you want to run phishpedia instead
 ```
 python phishpedia_main.py --folder [data folder] \
                           --results [output_file.txt]

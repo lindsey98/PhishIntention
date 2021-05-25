@@ -8,6 +8,9 @@
 # cd detectron2-windows
 # pip install -e .
 ################################################################################
+torch==1.5.1
+torchvision==0.6.0
+torchsummary
 scipy
 tldextract
 opencv-python
@@ -17,3 +20,11 @@ selenium-wire
 webdriver-manager
 pandas
 numpy
+tqdm
+Pillow
+pathlib
+fvcore
+pycocotools
+errno
+scikit-learn
+advertorch
