@@ -42,6 +42,8 @@ src
     |___ siamese.py: main script for siamese
     |___ login_finder.py: main script for dynamic login finder
 
+tele: telegram scripts to vote for phishing 
+
 phishintention_config.py: config file for PHIND
 phishintention_main.py: main script for PHIND
 phishpedia_config.py: config file for Phishpedia
