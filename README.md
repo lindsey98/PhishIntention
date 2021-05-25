@@ -97,11 +97,13 @@ python -m src.pipeline_eval --data-dir [data folder] \
 ```
 
 - For phish discovery experiment, the data folder should be organized in [this format](https://github.com/lindsey98/Phishpedia/tree/main/datasets/test_sites):
+
 If you want to run PHIND
 ```
 python phishintention_main.py --folder [data folder] \
                               --results [output_file.txt]
 ```
+
 If you want to run phishpedia instead
 ```
 python phishpedia_main.py --folder [data folder] \
