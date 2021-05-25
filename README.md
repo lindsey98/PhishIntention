@@ -53,6 +53,7 @@ phishpedia_main.py: main script for Phishpedia
 
         
 ## Requirements
+Linux equipped with GPU
 
 python=3.7 
 
