@@ -28,18 +28,26 @@
     - Else ```Return Benign, None``` 
     
 ## Project structure
-- src
-    - credential_classifier: training scrip for CRP classifier
-    - layout_matcher: script for layout matcher and layout heuristic
-    - phishpedia: training script for siamese
-    - element_detector: training script for element detector
-    - util: other scripts (chromedriver utilities)
+```
+src
+    |___ credential_classifier: training scrip for CRP classifier
+    |___ layout_matcher: script for layout matcher and layout heuristic
+    |___ phishpedia: training script for siamese
+    |___ element_detector: training script for element detector
+    |___ util: other scripts (chromedriver utilities)
     
-    - element_detector.py: main script for element detector
-    - credential.py: main script for CRP classifier
-    - layout.py: main script for layout 
-    - siamese.py: main script for siamese
-    - login_finder.py: main script for dynamic login finder
+    |___ element_detector.py: main script for element detector
+    |___ credential.py: main script for CRP classifier
+    |___ layout.py: main script for layout 
+    |___ siamese.py: main script for siamese
+    |___ login_finder.py: main script for dynamic login finder
+
+phishintention_config.py: config file for PHIND
+phishintention_main.py: main script for PHIND
+phishpedia_config.py: config file for Phishpedia
+phishpedia_main.py: main script for Phishpedia
+
+```
 
         
 ## Requirements
