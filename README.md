@@ -106,7 +106,7 @@ python phishintention_main.py --folder [data folder] \
                               --results [output_file.txt]
 ```
 
-If you want to run phishpedia instead
+If you want to run Phishpedia instead
 ```
 python phishpedia_main.py --folder [data folder] \
                           --results [output_file.txt]
