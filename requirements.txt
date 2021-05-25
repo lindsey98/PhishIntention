@@ -28,6 +28,6 @@ pycocotools
 errno
 scikit-learn
 advertorch
-telegram
+python-telegram-bot
 gspread
 oauth2client
