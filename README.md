@@ -66,16 +66,16 @@ pip install -r requirements.txt
 - Download [Object detector weights for PHIND](https://drive.google.com/file/d/1HWjE5Fv-c3nCDzLCBc7I3vClP1IeuP_I/view?usp=sharing),
 put it under **src/element_detector/output/website_lr0.001/**
 
-- Download [Credential_classifier_for_PHIND](https://drive.google.com/file/d/1igEMRz0vFBonxAILeYMRWTyd7A9sRirO/view?usp=sharing), put it under **src/credential_classifier/output/hybrid/hybrid_lr0.005/**
+- Download [Credential classifier weights](https://drive.google.com/file/d/1igEMRz0vFBonxAILeYMRWTyd7A9sRirO/view?usp=sharing), put it under **src/credential_classifier/output/hybrid/hybrid_lr0.005/**
 
-- Download [Credential_locator_for_PHIND](https://drive.google.com/file/d/1_O5SALqaJqvWoZDrdIVpsZyCnmSkzQcm/view?usp=sharing), put it under **src/dynamic/login_finder/output/lr0.001_finetune**
+- Download [Credential locator weights](https://drive.google.com/file/d/1_O5SALqaJqvWoZDrdIVpsZyCnmSkzQcm/view?usp=sharing), put it under **src/dynamic/login_finder/output/lr0.001_finetune**
 
 - (Optional, if you want to run Phishpedia) Download [Object detector weights for Phishpedia](https://drive.google.com/file/d/1tE2Mu5WC8uqCxei3XqAd7AWaP5JTmVWH/view?usp=sharing),
 put it under **src/detectron2_pedia/output/rcnn_2/**
 
 ### 2. Download all data files
 - Download [Phish 30k](https://drive.google.com/file/d/12ypEMPRQ43zGRqHGut0Esq2z5en0DH4g/view?usp=sharing), out of which 4093 are non-credential-requiring phishing, see this [list](https://drive.google.com/file/d/1UVoK-Af3j4ixYy2_jEzG9ZBbYpRkuKFK/view?usp=sharing), shall filter them out when running experiment
-[Benign 25k](https://drive.google.com/file/d/1ymkGrDT8LpTmohOOOnA2yjhEny1XYenj/view?usp=sharing) dataset,
+- Download [Benign 25k](https://drive.google.com/file/d/1ymkGrDT8LpTmohOOOnA2yjhEny1XYenj/view?usp=sharing) dataset,
 unzip and move them to **datasets/**
 
 ### 3. Run experiment 
