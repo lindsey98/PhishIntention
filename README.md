@@ -30,28 +30,30 @@
 ## Project structure
 ```
 src
-    |___ credential_classifier: training scrip for CRP classifier
-    |___ layout_matcher: script for layout matcher and layout heuristic
-    |___ phishpedia: training script for siamese
-    |___ element_detector: training script for element detector
+    |___ credential_classifier: training script for CRP classifier
+    |___ phishpedia: inference script for siamese
+    |___ siamese_retrain: training script for siamese 
+    |___ element_detector: training script for UI layout detector 
     |___ util: other scripts (chromedriver utilities)
+    |___ dynamic: training script for CRP locator 
+    |___ detectron2_pedia: training script for logo detector (for Phishpedia not PHIND)
+    |___ adv_attack: adversarial attacking script for classification model 
     
     |___ element_detector.py: main script for element detector
     |___ credential.py: main script for CRP classifier
-    |___ layout.py: main script for layout 
     |___ siamese.py: main script for siamese
     |___ login_finder.py: main script for dynamic login finder
+    |___ pipeline_eval.py: evaluation script 
 
 tele: telegram scripts to vote for phishing 
 
-phishintention_config.py: config file for PHIND
-phishintention_main.py: main script for PHIND
-phishpedia_config.py: config file for Phishpedia
-phishpedia_main.py: main script for Phishpedia
+phishintention_config.py: phish-discovery experiment config file for PHIND
+phishintention_main.py: phish-discovery experiment evaluation script for PHIND
+phishpedia_config.py: phish-discovery experiment config file for Phishpedia
+phishpedia_main.py: phish-discovery experiment evaluation script for Phishpedia
 
 ```
 
-        
 ## Requirements
 Linux equipped with GPU
 
