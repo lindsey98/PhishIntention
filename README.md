@@ -115,6 +115,26 @@ python phishpedia_main.py --folder [data folder] \
                           --results [output_file.txt]
 ```
 
+## Telegram service to label found phishing (Optional)
+### Introduction
+- When phishing are reported by the model, users may also want to manually verify the intention of the websites, thus we also developed a telegram-bot to help labeling the screenshot. An example is like this <img src="big_pic/tele.png"/>
+- In this application, we support the following command:
+```
+/start # this will return all the unlabelled data
+/get all/date # this will return the statistics for all the data namely how many positive and negatives there are
+/classify disagree # this will bring up phishing pages with any disagreement, ie one voted not phishing and one voted phishing for a revote
+```
+### Setup tele-bot
+- 1. Create an empty google sheet for saving the results (foldername, voting results etc.)
+- 2. Follow the [guide](https://www.analyticsvidhya.com/blog/2020/07/read-and-update-google-spreadsheets-with-python/) to download JSON file which stores the credential for that particular google sheet, save as **tele/cred.json**
+- 3. Go to **tele/tele.py**, Change 
+```
+token = '[token for telebot]' 
+folder = "[the folder you want to label]"
+```
+[How do I find token for telebot?](https://core.telegram.org/bots#botfather)
+- 4. Run **tele/tele.py**
+
 ## Miscellaneous
 - In our paper, we also implement several phishing detection and identification baselines, see [here](https://github.com/lindsey98/PhishingBaseline)
 - We did not include the certstream code in this repo, our code is basically the same as [phish_catcher](https://github.com/x0rz/phishing_catcher), we lower the score threshold to be 40 to process more suspicious websites, readers can refer to their repo for details
