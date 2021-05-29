@@ -324,10 +324,17 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
         if not visit_success:
             return url, screenshot_path, successful, total_time  # load URL unsucessful
 
+        # FIXME: update the screenshots
+        try:
+            driver.save_screenshot(screenshot_path.replace('shot.png', 'shot4cv.png'))
+        except Exception as e:
+            return url, screenshot_path, successful, total_time  # save updated screenshot unsucessful
+
         start_time = time.time()
-        reach_crp, time_deduct_cv = cv_heuristic(driver=driver, orig_url=orig_url, old_screenshot_path=screenshot_path,
-                                 new_screenshot_path=new_screenshot_path, new_html_path=new_html_path,
-                                 new_info_path=new_info_path, login_model=login_model, ele_model=ele_model, cls_model=cls_model)
+        reach_crp, time_deduct_cv = cv_heuristic(driver=driver,
+                                                 orig_url=orig_url, old_screenshot_path=screenshot_path.replace('shot.png', 'shot4cv.png'),
+                                                 new_screenshot_path=new_screenshot_path, new_html_path=new_html_path,
+                                                 new_info_path=new_info_path, login_model=login_model, ele_model=ele_model, cls_model=cls_model)
         total_time += time.time() - start_time - time_deduct_cv
         print('After CV finder', reach_crp)
 
