@@ -97,51 +97,58 @@ def siamese_inference(model, domain_map, logo_feat_list, file_name_list, shot_pa
     # print(img_feat.shape)
     sim_list = logo_feat_list @ img_feat.T # take dot product for every pair of embeddings (Cosine Similarity)
     pred_brand_list = file_name_list
-    #print(pred_brand_list)
+    # print(pred_brand_list)
 
     assert len(sim_list) == len(pred_brand_list)
 
-    ## get top 10 brands
-    idx = np.argsort(sim_list)[::-1][:10]
+    ## get top 3 brands
+    idx = np.argsort(sim_list)[::-1][:3]
     pred_brand_list = np.array(pred_brand_list)[idx]
     sim_list = np.array(sim_list)[idx]
 
-    predicted_brand, predicted_domain = None, None
-    candidate_logo = Image.open(pred_brand_list[0])
+    # top1,2,3 candidate logos
+    top3_logolist = [Image.open(x) for x in pred_brand_list]
+    top3_brandlist = [brand_converter(os.path.basename(os.path.dirname(x))) for x in pred_brand_list]
+    top3_domainlist = [domain_map[x] for x in top3_brandlist]
+    top3_simlist = sim_list
 
-    ## If the largest similarity exceeds threshold
-    if sim_list[0] >= t_s:  
-        predicted_brand = brand_converter(os.path.basename(os.path.dirname(pred_brand_list[0])))
-        predicted_domain = domain_map[predicted_brand]
-        final_sim = max(sim_list)
+    for j in range(3):
+        predicted_brand, predicted_domain = None, None
+
+        ## If we are trying those lower rank logo, the predicted brand of them should be the same as top1 logo, otherwise might be false positive
+        if top3_brandlist[j] != top3_brandlist[0]:
+            continue
+
+        ## If the largest similarity exceeds threshold
+        if top3_simlist[j] >= t_s:
+            predicted_brand = top3_brandlist[j]
+            predicted_domain = top3_domainlist[j]
+            final_sim = top3_simlist[j]
         
-    ## Else if not exxeed, try resolution alignment, see if can improve
-    else:
-        cropped, candidate_logo = resolution_alignment(cropped, candidate_logo)
-        img_feat = pred_siamese(cropped, model, imshow=False, title=None, grayscale=grayscale)
-        logo_feat = pred_siamese(candidate_logo, model, imshow=False, title=None, grayscale=grayscale)
-        final_sim = logo_feat.dot(img_feat)
-        if final_sim >= t_s:
-            predicted_brand = brand_converter(os.path.basename(os.path.dirname(pred_brand_list[0])))
-            predicted_domain = domain_map[predicted_brand]
-
-    ## If no prediction, return None
-    if predicted_brand is None:  
-        return None, None, final_sim
-    
-    ## If there is a prediction, do aspect ratio check 
-    else:
-        ratio_crop = cropped.size[0]/cropped.size[1]
-        ratio_logo = candidate_logo.size[0]/candidate_logo.size[1]
-        # aspect ratios of matched pair must not deviate by more than factor of 2
-        if max(ratio_crop, ratio_logo)/min(ratio_crop, ratio_logo) > 2: 
-            return None, None, final_sim
-
-        # If pass aspect ratio check, report a match
+        ## Else if not exceed, try resolution alignment, see if can improve
         else:
-            return predicted_brand, predicted_domain, final_sim
+            cropped, candidate_logo = resolution_alignment(cropped, top3_logolist[j])
+            img_feat = pred_siamese(cropped, model, imshow=False, title=None, grayscale=grayscale)
+            logo_feat = pred_siamese(candidate_logo, model, imshow=False, title=None, grayscale=grayscale)
+            final_sim = logo_feat.dot(img_feat)
+            if final_sim >= t_s:
+                predicted_brand = top3_brandlist[j]
+                predicted_domain = top3_domainlist[j]
+            else:
+                break  # no hope, do not try other lower rank logos
 
+        ## If there is a prediction, do aspect ratio check
+        if predicted_brand is not None:
+            ratio_crop = cropped.size[0] / cropped.size[1]
+            ratio_logo = top3_logolist[j].size[0] / top3_logolist[j].size[1]
+            # aspect ratios of matched pair must not deviate by more than factor of 2.5
+            if max(ratio_crop, ratio_logo) / min(ratio_crop, ratio_logo) > 2.5:
+                continue # did not pass aspect ratio check, try other
+            # If pass aspect ratio check, report a match
+            else:
+                return predicted_brand, predicted_domain, final_sim
 
+    return None, None, top3_simlist[0]
 
 # def siamese_inference_debug(model, domain_map, logo_feat_list, file_name_list, shot_path, gt_bbox, t_s=0.83, grayscale=False):
 #     '''
