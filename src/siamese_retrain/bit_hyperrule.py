@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-def get_resolution(original_resolution):
-    """Takes (H,W) and returns (precrop, crop)."""
-    area = original_resolution[0] * original_resolution[1]
-    return (160, 128) if area < 96*96 else (512, 480)
+# def get_resolution(original_resolution):
+#     """Takes (H,W) and returns (precrop, crop)."""
+#     area = original_resolution[0] * original_resolution[1]
+#     return (160, 128) if area < 96*96 else (512, 480)
 
 
 known_dataset_sizes = {
@@ -35,7 +35,7 @@ known_dataset_sizes = {
 def get_resolution_from_dataset(dataset):
     if dataset not in known_dataset_sizes:
         raise ValueError(f"Unsupported dataset {dataset}. Add your own here :)")
-    return get_resolution(known_dataset_sizes[dataset])
+    return known_dataset_sizes[dataset]
 
 
 def get_mixup(dataset_size):
