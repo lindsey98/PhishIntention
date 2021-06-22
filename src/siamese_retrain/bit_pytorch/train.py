@@ -198,9 +198,13 @@ def main(args):
 
     train_set, valid_set, train_loader, valid_loader = mktrainval(args, logger)
 
-    logger.info("Loading model from {}.npz".format(args.model))
-    model = models.KNOWN_MODELS[args.model](head_size=len(valid_set.classes), zero_head=True)
-    model.load_from(np.load("{}.npz".format(args.model)))
+    if args.model.startswith('BiT'):
+        logger.info("Loading model from {}.npz".format(args.model))
+        model = models.KNOWN_MODELS[args.model](head_size=len(valid_set.classes), zero_head=True)
+        model.load_from(np.load("{}.npz".format(args.model)))
+    else:
+        model = models.KNOWN_MODELS[args.model](head_size=len(valid_set.classes))
+        model.load_state_dict(torch.load("{}.pth".format(args.model), map_location="cpu"), strict=False)
 
     logger.info("Moving model onto all GPUs")
     model = torch.nn.DataParallel(model)
@@ -221,6 +225,7 @@ def main(args):
         del checkpoint['model']['module.head.conv.weight']
         del checkpoint['model']['module.head.conv.bias']
         model.load_state_dict(checkpoint["model"], strict=False)
+
 
     # Resume fine-tuning if we find a saved model.
     savename = pjoin(args.logdir, args.name, "bit.pth.tar")
