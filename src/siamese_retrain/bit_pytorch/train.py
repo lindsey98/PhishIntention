@@ -204,7 +204,10 @@ def main(args):
         model.load_from(np.load("{}.npz".format(args.model)))
     else:
         model = models.KNOWN_MODELS[args.model](head_size=len(valid_set.classes))
-        model.load_state_dict(torch.load("{}.pth".format(args.model), map_location="cpu"), strict=False)
+        checkpoint = torch.load("{}.pth".format(args.model), map_location="cpu")
+        del checkpoint['last_linear.weight']
+        del checkpoint['last_linear.bias']
+        model.load_state_dict(checkpoint, strict=False)
 
     logger.info("Moving model onto all GPUs")
     model = torch.nn.DataParallel(model)

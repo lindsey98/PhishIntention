@@ -81,7 +81,7 @@ def phishpedia_classifier(pred_classes, pred_boxes,
     # look at boxes for logo class only
     # print(pred_classes)
     logo_boxes = pred_boxes[pred_classes==0] 
-    print('number of logo boxes:', len(logo_boxes))
+#     print('number of logo boxes:', len(logo_boxes))
     matched_coord = None
     siamese_conf = None
     

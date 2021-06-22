@@ -25,8 +25,10 @@ known_dataset_sizes = {
     'oxford_flowers102': (224, 224),
     'imagenet2012': (224, 224),
     # TODO: Specify image size of custom dataset here
-    'logo_2k': (95, 95),
-    'targetlist': (95, 95),
+#     'logo_2k': (95, 95),
+#     'targetlist': (95, 95),
+    'logo_2k': (224, 224),
+    'targetlist': (224, 224),
 }
 
 
@@ -42,11 +44,11 @@ def get_mixup(dataset_size):
 
 def get_schedule(dataset_size):
     if dataset_size < 20_000:
-        return [100, 200, 300, 400, 500]
+        return [400, 800, 1200, 1600, 2000]
     elif dataset_size < 500_000:
-        return [500, 3000, 6000, 9000, 10_000]
+        return [5000, 30000, 60000, 90000, 10_0000]
     else:
-        return [500, 6000, 12_000, 18_000, 20_000]
+        return [5000, 30000, 60000, 90000, 10_0000]
 
 
 def get_lr(step, dataset_size, base_lr=0.003):
