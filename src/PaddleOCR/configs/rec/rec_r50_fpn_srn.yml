@@ -1,5 +1,5 @@
 Global:
-  use_gpu: True
+  use_gpu: False
   epoch_num: 72
   log_smooth_window: 20
   print_batch_step: 5
@@ -9,7 +9,7 @@ Global:
   eval_batch_step: [0, 5000]
   cal_metric_during_train: True
   pretrained_model: 
-  checkpoints: src/PaddleOCR/rec_r50_vd_srn_train/best_accuracy
+  checkpoints: ./src/PaddleOCR/rec_r50_vd_srn_train/best_accuracy
   save_inference_dir:
   use_visualdl: False
   infer_img: doc/imgs_words/ch/word_1.jpg

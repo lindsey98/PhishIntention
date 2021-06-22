@@ -23,7 +23,7 @@ import sys
 import six
 import cv2
 import numpy as np
-
+import PIL
 
 class DecodeImage(object):
     """ decode image """
@@ -38,10 +38,15 @@ class DecodeImage(object):
             assert type(img) is str and len(
                 img) > 0, "invalid input 'img' in DecodeImage"
         else:
-            assert type(img) is bytes and len(
-                img) > 0, "invalid input 'img' in DecodeImage"
-        img = np.frombuffer(img, dtype='uint8')
-        img = cv2.imdecode(img, 1)
+            assert ((type(img) is bytes and len(
+                img) > 0) or (type(img) is PIL.Image.Image)) , "invalid input 'img' in DecodeImage"
+
+        if type(img) is bytes or type(img) is str:
+            img = np.frombuffer(img, dtype='uint8')
+            img = cv2.imdecode(img, 1)
+        else:
+            img = np.array(img.convert('RGB'))[:, :, ::-1]
+
         if img is None:
             return None
         if self.img_mode == 'GRAY':

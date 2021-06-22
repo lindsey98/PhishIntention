@@ -84,16 +84,19 @@ def initialize_model(config_path):
 
     # set as eval mode
     model.eval()
-    return model, ops, post_process_class
+    return model, ops, post_process_class, logger
 
-def infer_img(config_path, file:str, model, ops, post_process_class):
+def infer_img(config_path, file, model, ops, post_process_class):
 
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
-        
-    with open(file, 'rb') as f:
-        img = f.read()
-        data = {'image': img}
+
+    if isinstance(file, str):
+        with open(file, 'rb') as f:
+            img = f.read()
+            data = {'image': img}
+    else:
+        data = {'image': file}
     
     batch = transform(data, ops)
     if config['Architecture']['algorithm'] == "SRN":
@@ -117,8 +120,6 @@ def infer_img(config_path, file:str, model, ops, post_process_class):
     else:
         preds = model(images)
         
-#     preds_emb = model.forward_emb(images)
-#     preds_emb = paddle.fluid.layers.nn.flatten(preds_emb.detach().cpu()).numpy()
     post_result = post_process_class(preds)
     
     return post_result
