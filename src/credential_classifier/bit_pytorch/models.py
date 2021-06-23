@@ -23,29 +23,29 @@ import torch.nn.functional as F
 
 class StdConv2d(nn.Conv2d):
 
-  def forward(self, x):
-    w = self.weight
-    v, m = torch.var_mean(w, dim=[1, 2, 3], keepdim=True, unbiased=False)
-    w = (w - m) / torch.sqrt(v + 1e-10)
-    return F.conv2d(x, w, self.bias, self.stride, self.padding,
-                    self.dilation, self.groups)
+    def forward(self, x):
+        w = self.weight
+        v, m = torch.var_mean(w, dim=[1, 2, 3], keepdim=True, unbiased=False)
+        w = (w - m) / torch.sqrt(v + 1e-10)
+        return F.conv2d(x, w, self.bias, self.stride, self.padding,
+                        self.dilation, self.groups)
 
 
 def conv3x3(cin, cout, stride=1, groups=1, bias=False):
-  return StdConv2d(cin, cout, kernel_size=3, stride=stride,
+    return StdConv2d(cin, cout, kernel_size=3, stride=stride,
                    padding=1, bias=bias, groups=groups)
 
 
 def conv1x1(cin, cout, stride=1, bias=False):
-  return StdConv2d(cin, cout, kernel_size=1, stride=stride,
+    return StdConv2d(cin, cout, kernel_size=1, stride=stride,
                    padding=0, bias=bias)
 
 
 def tf2th(conv_weights):
   """Possibly convert HWIO to OIHW."""
-  if conv_weights.ndim == 4:
-    conv_weights = conv_weights.transpose([3, 2, 0, 1])
-  return torch.from_numpy(conv_weights)
+    if conv_weights.ndim == 4:
+        conv_weights = conv_weights.transpose([3, 2, 0, 1])
+    return torch.from_numpy(conv_weights)
 
 
 class PreActBottleneck(nn.Module):

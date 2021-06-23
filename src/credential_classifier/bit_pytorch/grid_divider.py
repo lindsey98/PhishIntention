@@ -5,7 +5,7 @@ import numpy as np
 import os
 import math
 
-def coord_reshape(coords, image_shape, reshaped_size=256):
+def coord_reshape(coords, image_shape, reshaped_size=(1000, 2000)):
     '''
     Revise coordinates when the image is resized
     '''
@@ -13,12 +13,13 @@ def coord_reshape(coords, image_shape, reshaped_size=256):
     new_coords = []
     for c in coords:
         x1, y1, x2, y2 = c
-        x1n, y1n, x2n, y2n = reshaped_size*x1/width, reshaped_size*y1/height, reshaped_size*x2/width, reshaped_size*y2/height
+        x1n, y1n, x2n, y2n = reshaped_size[1]*x1/width, reshaped_size[0]*y1/height, \
+                             reshaped_size[1]*x2/width, reshaped_size[0]*y2/height
         new_coords.append([x1n, y1n, x2n, y2n])
         
     return np.asarray(new_coords)
 
-def coord2pixel_reverse(img_path, coords, types, num_types=5, reshaped_size=256) -> torch.Tensor:
+def coord2pixel_reverse(img_path, coords, types, num_types=5, reshaped_size=(1000, 2000)) -> torch.Tensor:
     '''
     Convert coordinate to multi-hot encodings for coordinate class
     '''
@@ -36,7 +37,7 @@ def coord2pixel_reverse(img_path, coords, types, num_types=5, reshaped_size=256)
         raise AttributeError('Empty image')
 
     # grid array of shape ClassxHxW
-    grid_arrs = np.zeros((num_types, reshaped_size, reshaped_size))  
+    grid_arrs = np.zeros((num_types, reshaped_size[0], reshaped_size[1]))  
     
     for j, coord in enumerate(coords):
         x1, y1, x2, y2 = coord
@@ -50,7 +51,7 @@ def coord2pixel_reverse(img_path, coords, types, num_types=5, reshaped_size=256)
         
     return torch.from_numpy(grid_arrs)   
 
-def coord2pixel(img_path, coords, types, num_types=5, reshaped_size=256) -> torch.Tensor:
+def coord2pixel(img_path, coords, types, num_types=5, reshaped_size=(1000, 2000)) -> torch.Tensor:
     '''
     Convert coordinate to multi-hot encodings for coordinate class
     '''
@@ -68,7 +69,7 @@ def coord2pixel(img_path, coords, types, num_types=5, reshaped_size=256) -> torc
         raise AttributeError('Empty image')
 
     # grid array of shape ClassxHxW = 5xHxW
-    grid_arrs = np.zeros((num_types, reshaped_size, reshaped_size))  
+    grid_arrs = np.zeros((num_types, reshaped_size[0], reshaped_size[1]))  
     type_dict = {'logo': 1, 'input': 2, 'button': 3, 'label': 4, 'block':5}
     
     for j, coord in enumerate(coords):
@@ -84,7 +85,7 @@ def coord2pixel(img_path, coords, types, num_types=5, reshaped_size=256) -> torc
     return torch.from_numpy(grid_arrs)  
 
 
-def topo2pixel(img_path, coords, knn_matrix, reshaped_size=256) -> torch.Tensor:
+def topo2pixel(img_path, coords, knn_matrix, reshaped_size=(1000, 2000)) -> torch.Tensor:
     '''
     Convert coordinate to multi-hot encodings for coordinate class
     '''
@@ -102,7 +103,7 @@ def topo2pixel(img_path, coords, knn_matrix, reshaped_size=256) -> torch.Tensor:
         raise AttributeError('Empty image')
 
     # grid array of shape (KxZ)xHxW = 12xHxW
-    topo_arrs = np.zeros((12, reshaped_size, reshaped_size))  
+    topo_arrs = np.zeros((12, reshaped_size[0], reshaped_size[1]))  
     if len(coords) <= 1: # num of components smaller than 2
         return torch.from_numpy(topo_arrs)  
     

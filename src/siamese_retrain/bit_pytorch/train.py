@@ -210,6 +210,7 @@ def main(args):
         model.load_state_dict(checkpoint, strict=False)
 
     logger.info("Moving model onto all GPUs")
+    logger.info(model)
     model = torch.nn.DataParallel(model)
     
     # Note: no weight-decay!
@@ -224,9 +225,13 @@ def main(args):
     if args.weights_path:
         logger.info("Loading weights from {}".format(args.weights_path))
         checkpoint = torch.load(args.weights_path, map_location="cpu")
-        # New task might have different classes; remove the pretrained classifier weights
-        del checkpoint['model']['module.head.conv.weight']
-        del checkpoint['model']['module.head.conv.bias']
+        if args.model.startswith('BiT'):
+            # New task might have different classes; remove the pretrained classifier weights
+            del checkpoint['model']['module.head.conv.weight']
+            del checkpoint['model']['module.head.conv.bias']
+        else:
+            del checkpoint['model']['module.last_linear.weight']
+            del checkpoint['model']['module.last_linear.bias']
         model.load_state_dict(checkpoint["model"], strict=False)
 
 

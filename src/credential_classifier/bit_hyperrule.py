@@ -28,7 +28,9 @@ known_dataset_sizes = {
   'logo_2k': (224, 224),
   'targetlist': (224, 224),
   'web':(10, 10),
-  'screenshot': (256, 256)
+#   'screenshot': (256, 256)
+#   'screenshot': (1080, 1920), # HxW
+    'screenshot': (1000, 2000)
 }
 
 

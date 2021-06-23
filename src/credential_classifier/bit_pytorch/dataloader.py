@@ -22,8 +22,8 @@ class HybridLoaderV2(data.Dataset):
         self.num_imgs, self.labels, self.paths, self.preprocess_coordinates, self.img_classes = read_txt(annot_path)
 
         self.classes = {'credential': 0, 'noncredential': 1}
-        self.transform = transform.Compose([transform.Resize((256, 256)),
-                                            transform.ToTensor()])
+        self.transform = transform.Compose([transform.ToTensor(),
+                                            transform.Resize((1000, 2000))])
 
     def __getitem__(self, item: int):
 
@@ -62,7 +62,7 @@ class HybridLoaderV2(data.Dataset):
                                      coords=compos, 
                                      knn_matrix=box_matrix).double()
         else:
-            topo_tensor = torch.zeros((12, 256, 256)).double() # no component
+            topo_tensor = torch.zeros((12, 1000, 2000)).double() # no component
         
         return image, topo_tensor, img_label
 
@@ -82,8 +82,9 @@ class HybridLoader(data.Dataset):
         self.num_imgs, self.labels, self.paths, self.preprocess_coordinates, self.img_classes = read_txt(annot_path)
 
         self.classes = {'credential': 0, 'noncredential': 1}
-        self.transform = transform.Compose([transform.Resize((256, 256)),
-                                            transform.ToTensor()])
+        self.transform = transform.Compose([transform.ToTensor(),
+                                            transform.Resize((1000, 2000)),
+                                            ])
 
     def __getitem__(self, item: int):
 
@@ -154,8 +155,8 @@ class ImageLoader(data.Dataset):
         self.annot_path = annot_path
         self.num_imgs, self.labels, self.paths = read_txt_screenshot(annot_path)
         self.classes = {'credential': 0, 'noncredential': 1}
-        self.transform = transform.Compose([transform.Resize((256, 256)),
-                                            transform.ToTensor()])
+        self.transform = transform.Compose([transform.ToTensor(),
+                                            transform.Resize((1000, 2000))])
 
     def __getitem__(self, item: int):
 

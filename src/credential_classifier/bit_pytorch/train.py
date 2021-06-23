@@ -24,8 +24,6 @@ import torch
 import torchvision as tv
 from torchsummary import summary
 
-# import .fewshot as fs
-# import .lbtoolbox as lb
 import os
 import credential_classifier.bit_pytorch.models as models
 
@@ -35,7 +33,7 @@ from credential_classifier import bit_hyperrule
 from credential_classifier.bit_pytorch.dataloader import GetLoader, ImageLoader, HybridLoader, HybridLoaderV2
 from torch.utils.tensorboard import SummaryWriter
 import os
-os.environ["CUDA_VISIBLE_DEVICES"]="1,0,2,3"
+os.environ["CUDA_VISIBLE_DEVICES"]="1,0"
 
 def recycle(iterable):
     """Variant of itertools.cycle that does not save iterates."""
@@ -60,10 +58,10 @@ def mktrainval(args, logger):
 #                          annot_path='../datasets/val_merge_coords.txt')
 
 
-    train_set = HybridLoaderV2(img_folder='../datasets/train_imgs', 
+    train_set = HybridLoader(img_folder='../datasets/train_imgs', 
                           annot_path='../datasets/train_coords.txt') 
 
-    val_set = HybridLoaderV2(img_folder='../datasets/val_merge_imgs',
+    val_set = HybridLoader(img_folder='../datasets/val_merge_imgs',
                          annot_path='../datasets/val_merge_coords.txt')
 
 
@@ -95,16 +93,16 @@ def run_eval(model, data_loader, device, logger, step):
 
     correct = 0
     total = 0
-#     for b, (x, y) in enumerate(data_loader):
-    for b, (x, topo, y) in enumerate(data_loader):
+    for b, (x, y) in enumerate(data_loader):
+#     for b, (x, topo, y) in enumerate(data_loader):
         with torch.no_grad():
             x = x.to(device, dtype=torch.float)
             topo = topo.to(device, dtype=torch.float)
             y = y.to(device, dtype=torch.long)
 
             # Compute output, measure accuracy
-#             logits = model(x)
-            logits = model(x, topo)
+            logits = model(x)
+#             logits = model(x, topo)
             preds = torch.argmax(logits, dim=1)
             correct += preds.eq(y).sum().item()
             total += len(logits)
@@ -117,7 +115,6 @@ def run_eval(model, data_loader, device, logger, step):
 
 
 def main(args):
-#     writer = SummaryWriter(os.path.join(args.logdir, args.name, 'tensorboard_write_{}_{}'.format(args.model, str(args.base_lr))), flush_secs=60)
     logger = bit_common.setup_logger(args)
 
     # Lets cuDNN benchmark conv implementations and choose the fastest.
@@ -145,27 +142,22 @@ def main(args):
         
     # Resume fine-tuning if we find a saved model.
     savename = pjoin(args.logdir, args.name, "{}_{}.pth.tar".format(args.model, str(args.base_lr)))
-#     try:
-#         checkpoint = torch.load(savename, map_location="cpu")
-#         logger.info(f"Found saved model to resume from at '{savename}'")
-#         step = checkpoint["step"]
-#         model.load_state_dict(checkpoint["model"])
-#         optim.load_state_dict(checkpoint["optim"])
-#         logger.info(f"Resumed at step {step}")
-#     except FileNotFoundError:
-#         logger.info("Training from scratch")
+    try:
+        checkpoint = torch.load(savename, map_location="cpu")
+        logger.info(f"Found saved model to resume from at '{savename}'")
+        step = checkpoint["step"]
+        model.load_state_dict(checkpoint["model"])
+        optim.load_state_dict(checkpoint["optim"])
+        logger.info(f"Resumed at step {step}")
+    except FileNotFoundError:
+        logger.info("Training from scratch")
 
     # Print out the model summary
     logger.info("Moving model onto all GPUs")
     model = torch.nn.DataParallel(model)
     model = model.to(device)
-#     summary(model, (9, 10, 10))
-    summary(model, [(8, 256, 256), (12, 256, 256)])
-
-    # Add model graph
-#     dummy_input = torch.rand(1, 9, 10, 10, device=device)
-#     writer.add_graph(model, dummy_input)
-#     writer.flush()
+    summary(model, (8, 1080, 1920))
+#     summary(model, [(8, 256, 256), (12, 256, 256)])
 
     # Start training
     model.train()
@@ -176,19 +168,15 @@ def main(args):
     best_correct_rate = init_correct_rate
     logger.info(f"[Initial validation accuracy {init_correct_rate}]")
     logger.flush()
-#     writer.add_scalar('val_top1_acc', init_correct_rate, 0)
-#     writer.flush()
 
     logger.info("Starting training!")
     
-#     for x, y in recycle(train_loader):
-    for x, topo, y in recycle(train_loader):
+    for x, y in recycle(train_loader):
+#     for x, topo, y in recycle(train_loader):
 
         print('Batch input shape:', x.shape)
         print('Batch input (topo) shape:', topo.shape)
         print('Batch target shape:', y.shape)
-#         writer.add_histogram('model.input', x.data, step)
-#         writer.flush()
 
         # Schedule sending to GPU(s)
         x = x.to(device, dtype=torch.float)
@@ -205,16 +193,14 @@ def main(args):
             param_group["lr"] = lr
 
         # Compute output
-        logits = model(x, topo)
-#         logits = model(x)
+#         logits = model(x, topo)
+        logits = model(x)
         c = cri(logits, y)
         c_num = float(c.data.cpu().numpy())    # Also ensures a sync point.
 
         # BP
         optim.zero_grad()
         c.backward()
-#         writer.add_histogram('model.input.grad', x.grad.data, step)
-#         writer.flush()
         optim.step()
         step += 1
 
@@ -225,8 +211,6 @@ def main(args):
         # Get train_acc every 1 epoch
         if step % (len(train_set)//args.batch) == 0:
             correct_rate = run_eval(model, valid_loader, device, logger, step)
-#             writer.add_scalar('val_top1_acc', correct_rate, step)
-#             writer.flush()
 
             # Save model at best validation accuracy
             if correct_rate > best_correct_rate:
@@ -240,9 +224,10 @@ def main(args):
 
     # Final evaluation at the end of training
     correct_rate = run_eval(model, valid_loader, device, logger, step)
-#     writer.add_scalar('val_top1_acc', correct_rate, step)
-#     writer.flush()
-
+    torch.save({"step": step,
+                "model": model.state_dict(),
+                "optim": optim.state_dict(),
+                }, savename)
 
 if __name__ == "__main__":
     parser = bit_common.argparser(models.KNOWN_MODELS.keys())

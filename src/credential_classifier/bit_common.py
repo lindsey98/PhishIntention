@@ -44,7 +44,7 @@ def argparser(known_models):
   parser.add_argument("--examples_per_class_seed", type=int, default=0,
                       help="Random seed for selecting examples.")
 
-  parser.add_argument("--batch", type=int, default=256,
+  parser.add_argument("--batch", type=int, default=64,
                       help="Batch size.")
   parser.add_argument("--batch_split", type=int, default=1,
                       help="Number of batches to compute gradient on before updating weights.")
