@@ -75,11 +75,11 @@ def proc_tree(tree):
             inputs = form.xpath('.//input')
             count_inputs.append(len(inputs)) # get number if inputs
             inputs = form.xpath('.//input[@type="password"]') # get number of password fields
-            inputs2 = form.xpath('.//input[@name="password" and @type!="hidden" and @type!="search"]')
+            inputs2 = form.xpath('.//input[@name="password" and @type!="hidden" and @type!="search" and not(contains(@placeholder, "search")) and @aria-label!="search" and @title!="search"]')
             count_password.append(len(inputs) + len(inputs2))
 
             usernames = form.xpath('.//input[@type="username"]') # get number of username fields
-            usernames2 = form.xpath('.//input[@name="username" and @type!="hidden" and @type!="search"]') # get number of username fields
+            usernames2 = form.xpath('.//input[@name="username" and @type!="hidden" and @type!="search" and not(contains(@placeholder, "search")) and @aria-label!="search" and @title!="search"]') # get number of username fields
             count_username.append(len(usernames) + len(usernames2))
 
         return len(forms), methods, count_inputs, count_password, count_username
@@ -121,6 +121,8 @@ def check_post(x, version=1):
 
 
 if __name__ == '__main__':
-    tree_list = read_html('D:/ruofan/PhishIntention/datasets/PhishDiscovery/PhishIntention_FP/maylockhi.trustweb.vn/html.txt')
+    tree_list = read_html('D:/ruofan/PhishIntention/datasets/PhishDiscovery/PhishIntention_FP/santanderresearch.com/html.txt')
     results = proc_tree(tree_list)
+    label = check_post(results, 2)
+    print(label)
 

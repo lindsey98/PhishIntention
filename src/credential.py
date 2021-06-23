@@ -71,7 +71,8 @@ def credential_classifier_mixed(img:str, coords, types, model):
     # class grid tensor is of shape 5xHxW
     grid_tensor = coord2pixel_reverse(img_path=img,
                               coords=coords, 
-                              types=types)
+                              types=types,
+                              reshaped_size=(256, 256))
 
     image = torch.cat((image.double(), grid_tensor), dim=0)
     assert image.shape == (8, 256, 256) # ensure correct shape
@@ -107,7 +108,7 @@ def credential_classifier_mixed_al(img:str, coords, types, model):
     
     # append class channels
     # class grid tensor is of shape 8xHxW
-    grid_tensor = coord2pixel_reverse(img_path=img, coords=coords, types=types)
+    grid_tensor = coord2pixel_reverse(img_path=img, coords=coords, types=types, reshaped_size=(256, 256))
 
     image = torch.cat((image.double(), grid_tensor), dim=0)
     assert image.shape == (8, 256, 256) # ensure correct shape
