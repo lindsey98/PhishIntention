@@ -50,3 +50,7 @@ class GetLoader(data.Dataset):
 
     def __len__(self):
         return self.n_data
+    
+    
+if __name__ == '__main__':
+    

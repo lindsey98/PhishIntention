@@ -32,7 +32,7 @@ import bit_hyperrule
 
 from .dataloader import GetLoader
 import os
-os.environ["CUDA_VISIBLE_DEVICES"]="0, 1"
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
 
 def topk(output, target, ks=(1,)):
@@ -111,7 +111,7 @@ def mktrainval(args, logger):
     if micro_batch_size <= len(train_set):
         train_loader = torch.utils.data.DataLoader(
                 train_set, batch_size=micro_batch_size, shuffle=True,
-                num_workers=args.workers, pin_memory=True, drop_last=False)
+                num_workers=args.workers, pin_memory=True, drop_last=True)
     else:
         # In the few-shot cases, the total dataset size might be smaller than the batch-size.
         # In these cases, the default sampler doesn't repeat, so we need to make it do that
@@ -123,7 +123,7 @@ def mktrainval(args, logger):
     return train_set, valid_set, train_loader, valid_loader
 
 
-def run_eval(model, data_loader, device, chrono, logger, step):
+def run_eval(model, data_loader, device, chrono, logger,  step):
     # switch to evaluate mode
     model.eval()
 
@@ -191,9 +191,9 @@ def main(args):
 
     # Lets cuDNN benchmark conv implementations and choose the fastest.
     # Only good if sizes stay the same within the main loop!
-    torch.backends.cudnn.benchmark = True
+#     torch.backends.cudnn.benchmark = True
 
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logger.info("Going to train on {}".format(device))
 
     train_set, valid_set, train_loader, valid_loader = mktrainval(args, logger)
@@ -225,6 +225,7 @@ def main(args):
     if args.weights_path:
         logger.info("Loading weights from {}".format(args.weights_path))
         checkpoint = torch.load(args.weights_path, map_location="cpu")
+#         print(checkpoint['model'].keys())
         if args.model.startswith('BiT'):
             # New task might have different classes; remove the pretrained classifier weights
             del checkpoint['model']['module.head.conv.weight']
@@ -233,7 +234,7 @@ def main(args):
             del checkpoint['model']['module.last_linear.weight']
             del checkpoint['model']['module.last_linear.bias']
         model.load_state_dict(checkpoint["model"], strict=False)
-
+        logger.info("Weights successfully loaded")
 
     # Resume fine-tuning if we find a saved model.
     savename = pjoin(args.logdir, args.name, "bit.pth.tar")
