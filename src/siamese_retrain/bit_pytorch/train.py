@@ -32,7 +32,7 @@ import bit_hyperrule
 
 from .dataloader import GetLoader
 import os
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
+os.environ["CUDA_VISIBLE_DEVICES"]="0,1"
 
 
 def topk(output, target, ks=(1,)):
@@ -117,7 +117,7 @@ def mktrainval(args, logger):
         # In these cases, the default sampler doesn't repeat, so we need to make it do that
         # if we want to match the behaviour from the paper.
         train_loader = torch.utils.data.DataLoader(
-                train_set, batch_size=micro_batch_size, num_workers=args.workers, pin_memory=True,
+                train_set, batch_size=micro_batch_size, num_workers=args.workers, pin_memory=True, drop_last=True,
                 sampler=torch.utils.data.RandomSampler(train_set, replacement=True, num_samples=micro_batch_size))
 
     return train_set, valid_set, train_loader, valid_loader
@@ -191,7 +191,7 @@ def main(args):
 
     # Lets cuDNN benchmark conv implementations and choose the fastest.
     # Only good if sizes stay the same within the main loop!
-#     torch.backends.cudnn.benchmark = True
+    torch.backends.cudnn.benchmark = True
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logger.info("Going to train on {}".format(device))
@@ -225,6 +225,7 @@ def main(args):
     if args.weights_path:
         logger.info("Loading weights from {}".format(args.weights_path))
         checkpoint = torch.load(args.weights_path, map_location="cpu")
+#         checkpoint = torch.load(args.weights_path)
 #         print(checkpoint['model'].keys())
         if args.model.startswith('BiT'):
             # New task might have different classes; remove the pretrained classifier weights
@@ -233,7 +234,7 @@ def main(args):
         else:
             del checkpoint['model']['module.last_linear.weight']
             del checkpoint['model']['module.last_linear.bias']
-        model.load_state_dict(checkpoint["model"], strict=False)
+        model.module.load_state_dict(checkpoint["model"], strict=False)
         logger.info("Weights successfully loaded")
 
     # Resume fine-tuning if we find a saved model.

@@ -397,9 +397,11 @@ class SENet(nn.Module):
         x = self.layer3(x)
         x = self.layer4(x)
         x = self.avg_pool(x)
-        return x.squeeze(-1).squeeze(-1)
+        return x
+#         return x.squeeze(-1).squeeze(-1)
 
     def logits(self, x):
+#         print(x.shape)
         x = self.avg_pool(x)
         if self.dropout is not None:
             x = self.dropout(x)

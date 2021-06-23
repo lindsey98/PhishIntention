@@ -3,6 +3,8 @@ from PIL import Image, ImageOps
 import pickle
 import numpy as np
 import os
+import torchvision as tv
+import torch
 
 class GetLoader(data.Dataset):
     def __init__(self, data_root, data_list, label_dict, transform=None, grayscale=False):
@@ -53,4 +55,28 @@ class GetLoader(data.Dataset):
     
     
 if __name__ == '__main__':
+    def recycle(iterable):
+        """Variant of itertools.cycle that does not save iterates."""
+        while True:
+            for i in iterable:
+                yield i
+
     
+    train_tx = tv.transforms.Compose([
+            tv.transforms.Resize((224, 224)),
+            tv.transforms.RandomCrop((224, 224)),
+            tv.transforms.RandomHorizontalFlip(),
+            tv.transforms.ToTensor(),
+            tv.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+    ])
+        
+    train_set = GetLoader(data_root='../phishpedia/expand_targetlist',
+                                        data_list='train_targets.txt',
+                                        label_dict='target_dict.json',
+                                        transform=train_tx)
+    
+    train_loader = torch.utils.data.DataLoader(
+                train_set, batch_size=32, shuffle=True, pin_memory=True, drop_last=False)
+    
+    for x, y in train_loader:
+        print(x.shape)
