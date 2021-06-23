@@ -5,7 +5,7 @@ import numpy as np
 import os
 import math
 
-def coord_reshape(coords, image_shape, reshaped_size=(1000, 2000)):
+def coord_reshape(coords, image_shape, reshaped_size=(256, 512)):
     '''
     Revise coordinates when the image is resized
     '''
@@ -19,7 +19,7 @@ def coord_reshape(coords, image_shape, reshaped_size=(1000, 2000)):
         
     return np.asarray(new_coords)
 
-def coord2pixel_reverse(img_path, coords, types, num_types=5, reshaped_size=(1000, 2000)) -> torch.Tensor:
+def coord2pixel_reverse(img_path, coords, types, num_types=5, reshaped_size=(256, 512)) -> torch.Tensor:
     '''
     Convert coordinate to multi-hot encodings for coordinate class
     '''
@@ -51,7 +51,7 @@ def coord2pixel_reverse(img_path, coords, types, num_types=5, reshaped_size=(100
         
     return torch.from_numpy(grid_arrs)   
 
-def coord2pixel(img_path, coords, types, num_types=5, reshaped_size=(1000, 2000)) -> torch.Tensor:
+def coord2pixel(img_path, coords, types, num_types=5, reshaped_size=(256, 512)) -> torch.Tensor:
     '''
     Convert coordinate to multi-hot encodings for coordinate class
     '''
@@ -85,7 +85,7 @@ def coord2pixel(img_path, coords, types, num_types=5, reshaped_size=(1000, 2000)
     return torch.from_numpy(grid_arrs)  
 
 
-def topo2pixel(img_path, coords, knn_matrix, reshaped_size=(1000, 2000)) -> torch.Tensor:
+def topo2pixel(img_path, coords, knn_matrix, reshaped_size=(256, 512)) -> torch.Tensor:
     '''
     Convert coordinate to multi-hot encodings for coordinate class
     '''

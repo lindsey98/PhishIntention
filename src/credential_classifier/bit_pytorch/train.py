@@ -156,7 +156,7 @@ def main(args):
     logger.info("Moving model onto all GPUs")
     model = torch.nn.DataParallel(model)
     model = model.to(device)
-    summary(model, (8, 1080, 1920))
+    summary(model, (8, 256, 512))
 #     summary(model, [(8, 256, 256), (12, 256, 256)])
 
     # Start training

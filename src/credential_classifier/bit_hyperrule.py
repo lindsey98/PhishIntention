@@ -30,7 +30,7 @@ known_dataset_sizes = {
   'web':(10, 10),
 #   'screenshot': (256, 256)
 #   'screenshot': (1080, 1920), # HxW
-    'screenshot': (1000, 2000)
+    'screenshot': (256, 512)
 }
 
 
