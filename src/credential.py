@@ -192,4 +192,3 @@ def html_heuristic(html_path):
 
 
 
-
