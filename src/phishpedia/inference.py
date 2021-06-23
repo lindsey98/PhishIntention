@@ -27,7 +27,7 @@ def pred_siamese(img, model, imshow=False, title=None, grayscale=False):
     :param grayscale: convert image to grayscale or not
     :return feature embedding of shape (2048,)
     '''
-    img_size = 128
+    img_size = 224
     mean = [0.5, 0.5, 0.5]
     std = [0.5, 0.5, 0.5]
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -158,7 +158,7 @@ def siamese_inference(model, domain_map, logo_feat_list, file_name_list, shot_pa
 #     :param logo_feat_list: reference logo feature embeddings
 #     :param file_name_list: reference logo paths
 #     :param shot_path: path to the screenshot
-#     :param gt_bbox: 1x4 np.ndarray/list/tensor bounding box coords 
+#     :param gt_bbox: 1x4 np.ndarray/list/tensor bounding box coords
 #     :param t_s: similarity threshold for siamese
 #     :param grayscale: convert image(cropped) to grayscale or not
 #     :return: predicted target, predicted target's domain
@@ -172,7 +172,7 @@ def siamese_inference(model, domain_map, logo_feat_list, file_name_list, shot_pa
 #     ## get predicted box --> crop from screenshot
 #     cropped = img.crop((gt_bbox[0], gt_bbox[1], gt_bbox[2], gt_bbox[3]))
 #     img_feat = pred_siamese(cropped, model, imshow=False, title='Original rcnn box', grayscale=grayscale)
-    
+
 #     ###### Debug #########################################################################
 #     pred_siamese(cropped, model, imshow=True, title='Original rcnn box', grayscale=grayscale)
 #     ######################################################################################
@@ -180,7 +180,7 @@ def siamese_inference(model, domain_map, logo_feat_list, file_name_list, shot_pa
 #     ## get cosine similarity with every protected logo
 #     sim_list = logo_feat_list @ img_feat.T # take dot product for every pair of embeddings (Cosine Similarity)
 #     pred_brand_list = file_name_list
-    
+
 #     assert len(sim_list) == len(pred_brand_list)
 
 #     ## get top 10 brands
@@ -196,14 +196,14 @@ def siamese_inference(model, domain_map, logo_feat_list, file_name_list, shot_pa
 #     plt.title('Top1 similar logo in targetlist {} Similarity : {:.2f}'.format(brand_converter(pred_brand_list[0].split('/')[-2]), sim_list[0]))
 #     plt.show()
 #     ######################################################################################
-    
-#     ## If the largest similarity exceeds threshold 
-#     if sim_list[0] >= t_s:  
-        
+
+#     ## If the largest similarity exceeds threshold
+#     if sim_list[0] >= t_s:
+
 #         predicted_brand = brand_converter(pred_brand_list[0].split('/')[-2])
 #         predicted_domain = domain_map[predicted_brand]
 #         final_sim = max(sim_list)
-        
+
 #     ## Else if not exeed, try resolution alignment, see if can improve
 #     else:
 #         cropped, candidate_logo = resolution_alignment(cropped, candidate_logo)
@@ -213,7 +213,7 @@ def siamese_inference(model, domain_map, logo_feat_list, file_name_list, shot_pa
 #         if final_sim >= t_s:
 #             predicted_brand = brand_converter(pred_brand_list[0].split('/')[-2])
 #             predicted_domain = domain_map[predicted_brand]
-            
+
 #             ############ Debug ##############################################################
 #             print("Pass resolution alignment")
 #             ######################################################################################
@@ -223,15 +223,15 @@ def siamese_inference(model, domain_map, logo_feat_list, file_name_list, shot_pa
 #         ######################################################################################
 
 #     ## If no prediction, return None
-#     if predicted_brand is None:  
+#     if predicted_brand is None:
 #         return None, None
-    
-#     ## If there is a prediction, do aspect ratio check 
+
+#     ## If there is a prediction, do aspect ratio check
 #     else:
 #         ratio_crop = cropped.size[0]/cropped.size[1]
 #         ratio_logo = candidate_logo.size[0]/candidate_logo.size[1]
 #         # aspect ratios of matched pair must not deviate by more than factor of 2
-#         if max(ratio_crop, ratio_logo)/min(ratio_crop, ratio_logo) > 2: 
+#         if max(ratio_crop, ratio_logo)/min(ratio_crop, ratio_logo) > 2:
 #             ############# Debug #################################################################
 #             print("Not pass aspect ratio check")
 #             ######################################################################################

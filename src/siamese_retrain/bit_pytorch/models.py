@@ -108,7 +108,6 @@ class PreActBottleneck(nn.Module):
                 w = weights[f'{prefix}a/proj/{convname}/kernel']
                 self.downsample.weight.copy_(tf2th(w))
 
-
 class ResNetV2(nn.Module):
     """Implementation of Pre-activation (v2) ResNet mode."""
 
@@ -157,7 +156,7 @@ class ResNetV2(nn.Module):
     def features(self, x):
         x = self.head[:-1](self.body(self.root(x)))
 
-        return x.squeeze()
+        return x.squeeze(-1).squeeze(-1)
 
     def forward(self, x):
         x = self.head(self.body(self.root(x)))
@@ -180,7 +179,6 @@ class ResNetV2(nn.Module):
                 for uname, unit in block.named_children():
                     unit.load_from(weights, prefix=f'{prefix}{bname}/{uname}/')
 
-
 class SEModule(nn.Module):
 
     def __init__(self, channels, reduction):
@@ -201,7 +199,6 @@ class SEModule(nn.Module):
         x = self.fc2(x)
         x = self.sigmoid(x)
         return module_input * x
-
 
 class Bottleneck(nn.Module):
     """
@@ -399,7 +396,8 @@ class SENet(nn.Module):
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
-        return x
+        x = self.avg_pool(x)
+        return x.squeeze(-1).squeeze(-1)
 
     def logits(self, x):
         x = self.avg_pool(x)
