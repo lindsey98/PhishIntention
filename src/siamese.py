@@ -25,12 +25,14 @@ def phishpedia_config(num_classes:int, weights_path:str, targetlist_path:str, gr
     # Initialize model
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model = KNOWN_MODELS["BiT-M-R50x1"](head_size=num_classes, zero_head=True)
+#     model = KNOWN_MODELS["SE-R50x32"](head_size=num_classes)
 
     # Load weights
     weights = torch.load(weights_path, map_location='cpu')
     weights = weights['model'] if 'model' in weights.keys() else weights
     new_state_dict = OrderedDict()
     for k, v in weights.items():
+#         name = k[7:]
         name = k.split('module.')[1]
         new_state_dict[name]=v
         

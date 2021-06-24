@@ -27,7 +27,8 @@ def pred_siamese(img, model, imshow=False, title=None, grayscale=False):
     :param grayscale: convert image to grayscale or not
     :return feature embedding of shape (2048,)
     '''
-    img_size = 224
+#     img_size = 224
+    img_size = 128
     mean = [0.5, 0.5, 0.5]
     std = [0.5, 0.5, 0.5]
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -61,6 +62,7 @@ def pred_siamese(img, model, imshow=False, title=None, grayscale=False):
     with torch.no_grad():
         img = img_transforms(img)
         img = img[None, ...].to(device)
+#         logo_feat = model.features(img).squeeze(-1).squeeze(-1)
         logo_feat = model.features(img)
         logo_feat = l2_norm(logo_feat).squeeze(0).cpu().numpy() # L2-normalization final shape is (2048,)
         
