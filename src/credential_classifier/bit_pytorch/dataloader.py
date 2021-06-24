@@ -1,9 +1,9 @@
 import torch.utils.data as data
 import numpy as np
-from src.credential_classifier.bit_pytorch.grid_divider import read_img, coord2pixel, topo2pixel
-from src.credential_classifier.bit_pytorch.utils import read_txt, read_txt_screenshot
-from src.layout_matcher.topology import knn_matrix
-from src.layout_matcher.misc import preprocess
+from credential_classifier.bit_pytorch.grid_divider import read_img, coord2pixel, topo2pixel
+from credential_classifier.bit_pytorch.utils import read_txt, read_txt_screenshot
+from layout_matcher.topology import knn_matrix
+from layout_matcher.misc import preprocess
 import torchvision.transforms as transform
 import os
 import torch
@@ -22,8 +22,9 @@ class HybridLoaderV2(data.Dataset):
         self.num_imgs, self.labels, self.paths, self.preprocess_coordinates, self.img_classes = read_txt(annot_path)
 
         self.classes = {'credential': 0, 'noncredential': 1}
-        self.transform = transform.Compose([transform.ToTensor(),
-                                            transform.Resize((256, 512))])
+        self.transform = transform.Compose([transform.Resize((256, 512)),
+                                            transform.ToTensor(),
+                                            ])
 
     def __getitem__(self, item: int):
 
@@ -82,8 +83,8 @@ class HybridLoader(data.Dataset):
         self.num_imgs, self.labels, self.paths, self.preprocess_coordinates, self.img_classes = read_txt(annot_path)
 
         self.classes = {'credential': 0, 'noncredential': 1}
-        self.transform = transform.Compose([transform.ToTensor(),
-                                            transform.Resize((256, 512)),
+        self.transform = transform.Compose([transform.Resize((256, 512)),
+                                            transform.ToTensor(),
                                             ])
 
     def __getitem__(self, item: int):
@@ -155,8 +156,9 @@ class ImageLoader(data.Dataset):
         self.annot_path = annot_path
         self.num_imgs, self.labels, self.paths = read_txt_screenshot(annot_path)
         self.classes = {'credential': 0, 'noncredential': 1}
-        self.transform = transform.Compose([transform.ToTensor(),
-                                            transform.Resize((256, 512))])
+        self.transform = transform.Compose([transform.Resize((256, 512)),
+                                            transform.ToTensor(),
+                                            ])
 
     def __getitem__(self, item: int):
 

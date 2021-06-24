@@ -1,28 +1,12 @@
-# Copyright 2020 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#            http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
-# Lint as: python3
 """Fine-tune a BiT model on some downstream dataset."""
-#!/usr/bin/env python3
-# coding: utf-8
 from os.path import join as pjoin    # pylint: disable=g-importing-member
 import time
 
 import numpy as np
 import torch
 import torchvision as tv
-from torchsummary import summary
+# from torchsummary import summary
 
 import os
 import credential_classifier.bit_pytorch.models as models
@@ -31,7 +15,7 @@ from credential_classifier import bit_common
 from credential_classifier import bit_hyperrule
 
 from credential_classifier.bit_pytorch.dataloader import GetLoader, ImageLoader, HybridLoader, HybridLoaderV2
-from torch.utils.tensorboard import SummaryWriter
+# from torch.utils.tensorboard import SummaryWriter
 import os
 os.environ["CUDA_VISIBLE_DEVICES"]="1,0"
 
@@ -94,15 +78,12 @@ def run_eval(model, data_loader, device, logger, step):
     correct = 0
     total = 0
     for b, (x, y) in enumerate(data_loader):
-#     for b, (x, topo, y) in enumerate(data_loader):
         with torch.no_grad():
             x = x.to(device, dtype=torch.float)
-            topo = topo.to(device, dtype=torch.float)
             y = y.to(device, dtype=torch.long)
 
             # Compute output, measure accuracy
             logits = model(x)
-#             logits = model(x, topo)
             preds = torch.argmax(logits, dim=1)
             correct += preds.eq(y).sum().item()
             total += len(logits)
@@ -156,34 +137,30 @@ def main(args):
     logger.info("Moving model onto all GPUs")
     model = torch.nn.DataParallel(model)
     model = model.to(device)
-    summary(model, (8, 256, 512))
-#     summary(model, [(8, 256, 256), (12, 256, 256)])
+#     summary(model, (8, 256, 512))
+    logger.info(model)
 
     # Start training
     model.train()
     cri = torch.nn.CrossEntropyLoss().to(device)
 
     # Get initial validation acc
-    init_correct_rate = run_eval(model, valid_loader, device, logger, 0)
-    best_correct_rate = init_correct_rate
-    logger.info(f"[Initial validation accuracy {init_correct_rate}]")
-    logger.flush()
+#     init_correct_rate = run_eval(model, valid_loader, device, logger, 0)
+#     best_correct_rate = init_correct_rate
+#     logger.info(f"[Initial validation accuracy {init_correct_rate}]")
+#     logger.flush()
 
     logger.info("Starting training!")
     
     for x, y in recycle(train_loader):
-#     for x, topo, y in recycle(train_loader):
 
         print('Batch input shape:', x.shape)
-        print('Batch input (topo) shape:', topo.shape)
         print('Batch target shape:', y.shape)
 
         # Schedule sending to GPU(s)
         x = x.to(device, dtype=torch.float)
-        topo = topo.to(device, dtype=torch.float)
         y = y.to(device, dtype=torch.long)
         x.requires_grad = True
-        topo.requires_grad = True
 
         # Update learning-rate, including stop training if over.
         lr = bit_hyperrule.get_lr(step=step, dataset_size=len(train_set), base_lr=args.base_lr)
@@ -193,7 +170,6 @@ def main(args):
             param_group["lr"] = lr
 
         # Compute output
-#         logits = model(x, topo)
         logits = model(x)
         c = cri(logits, y)
         c_num = float(c.data.cpu().numpy())    # Also ensures a sync point.
@@ -213,14 +189,13 @@ def main(args):
             correct_rate = run_eval(model, valid_loader, device, logger, step)
 
             # Save model at best validation accuracy
-            if correct_rate > best_correct_rate:
-                logger.info(f'Save model at step {step} or epoch {step // (len(train_set)//args.batch)}')
-                torch.save({
-                    "step": step,
-                    "model": model.state_dict(),
-                    "optim": optim.state_dict(),
-                }, savename)
-                best_correct_rate = correct_rate
+            logger.info(f'Save model at step {step} or epoch {step // (len(train_set)//args.batch)}')
+            logger.info(f'Validation accuracy {correct_rate}')
+            torch.save({
+                "step": step,
+                "model": model.state_dict(),
+                "optim": optim.state_dict(),
+            }, savename)
 
     # Final evaluation at the end of training
     correct_rate = run_eval(model, valid_loader, device, logger, step)
