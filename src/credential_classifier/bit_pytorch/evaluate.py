@@ -131,8 +131,8 @@ if __name__ == '__main__':
     print('Training Acc : {:.4f}'.format(acc))
     logger.info('Training Acc : {:.4f}'.format(acc))
     
-    acc = evaluate(model, val_loader)
-    print('Validation Acc : {:.4f}'.format(acc))
-    logger.info('Validation Acc : {:.4f}'.format(acc))
+#     acc = evaluate(model, val_loader)
+#     print('Validation Acc : {:.4f}'.format(acc))
+#     logger.info('Validation Acc : {:.4f}'.format(acc))
 
 

@@ -1,8 +1,8 @@
 import torch
 import numpy as np
-import src.credential_classifier.bit_pytorch.models as models
-from src.credential_classifier.bit_pytorch.dataloader_debug import *
-from src.credential_classifier.HTML_heuristic.post_form import *
+import credential_classifier.bit_pytorch.models as models
+from credential_classifier.bit_pytorch.dataloader_debug import *
+from credential_classifier.HTML_heuristic.post_form import *
 import os
 import matplotlib.pyplot as plt
 from collections import OrderedDict
@@ -11,11 +11,10 @@ from tqdm import tqdm
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
-
 def html_heuristic(html_path):
     tree = read_html(html_path)
     proc_data = proc_tree(tree)
-    return check_post(proc_data, version=3)
+    return check_post(proc_data, version=2)
 
 
 def evaluate(model, train_loader, all_folder):
@@ -77,8 +76,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    #     model = models.KNOWN_MODELS['BiT-M-R50x1V2'](head_size=2)
-    model = models.KNOWN_MODELS['FCMaxV2'](head_size=2)
+    model = models.KNOWN_MODELS['BiT-M-R50x1V2'](head_size=2)
+#     model = models.KNOWN_MODELS['FCMaxV2'](head_size=2)
 
     # load weights
     checkpoint = torch.load(args.weights_path, map_location="cpu")
@@ -102,17 +101,17 @@ if __name__ == '__main__':
     test_img_folder = '/home/l/liny/ruofan/PhishIntention/datasets/val_merge_imgs'
     test_all_folder = '/home/l/liny/ruofan/PhishIntention/datasets/val_merge_folder'
 
-    #     train_set = HybridLoaderDebug(img_folder=train_img_folder,
-    #                       annot_path='/home/l/liny/ruofan/PhishIntention/datasets/train_coords.txt')
+    train_set = HybridLoaderDebug(img_folder=train_img_folder,
+                          annot_path='/home/l/liny/ruofan/PhishIntention/datasets/train_coords.txt')
 
-    #     val_set = HybridLoaderDebug(img_folder=test_img_folder,
-    #                       annot_path='/home/l/liny/ruofan/PhishIntention/datasets/val_merge_coords.txt')
+    val_set = HybridLoaderDebug(img_folder=test_img_folder,
+                          annot_path='/home/l/liny/ruofan/PhishIntention/datasets/val_merge_coords.txt')
 
-    train_set = GetLoaderDebug(img_folder=train_img_folder,
-                               annot_path='/home/l/liny/ruofan/PhishIntention/datasets/train_coords.txt')
+#     train_set = GetLoaderDebug(img_folder=train_img_folder,
+#                                annot_path='/home/l/liny/ruofan/PhishIntention/datasets/train_coords.txt')
 
-    val_set = GetLoaderDebug(img_folder=test_img_folder,
-                             annot_path='/home/l/liny/ruofan/PhishIntention/datasets/val_merge_coords.txt')
+#     val_set = GetLoaderDebug(img_folder=test_img_folder,
+#                              annot_path='/home/l/liny/ruofan/PhishIntention/datasets/val_merge_coords.txt')
 
     train_loader = torch.utils.data.DataLoader(train_set, batch_size=1, drop_last=False, shuffle=False)
     val_loader = torch.utils.data.DataLoader(val_set, batch_size=1, drop_last=False, shuffle=False)

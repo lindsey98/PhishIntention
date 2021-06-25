@@ -20,7 +20,7 @@ class HybridLoaderV2Debug(data.Dataset):
         self.num_imgs, self.labels, self.paths, self.preprocess_coordinates, self.img_classes = read_txt(annot_path)
 
         self.classes = {'credential': 0, 'noncredential': 1}
-        self.transform = transform.Compose([transform.Resize((256, 256)),
+        self.transform = transform.Compose([transform.Resize((256, 512)),
                                             transform.ToTensor()])
 
     def __getitem__(self, item: int):
@@ -78,7 +78,7 @@ class HybridLoaderDebug(data.Dataset):
         self.num_imgs, self.labels, self.paths, self.preprocess_coordinates, self.img_classes = read_txt(annot_path)
 
         self.classes = {'credential': 0, 'noncredential': 1}
-        self.transform = transform.Compose([transform.Resize((256, 256)),
+        self.transform = transform.Compose([transform.Resize((256, 512)),
                                             transform.ToTensor()])
 
     def __getitem__(self, item: int):
@@ -99,7 +99,8 @@ class HybridLoaderDebug(data.Dataset):
         # class grid tensor is of shape 5xHxW
         grid_tensor = coord2pixel(img_path=os.path.join(self.img_folder, image_file+'.png'),
                                   coords=img_coords, 
-                                  types=img_classes)
+                                  types=img_classes,
+                                  reshaped_size=(256, 512))
     
         image = torch.cat((image.double(), grid_tensor), dim=0)
 
