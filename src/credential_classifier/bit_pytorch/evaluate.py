@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from collections import OrderedDict
 import argparse
 from tqdm import tqdm
+import logging
 os.environ["CUDA_VISIBLE_DEVICES"]="1,0"
 
 def vis_helper(x):
@@ -86,6 +87,9 @@ if __name__ == '__main__':
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model = models.KNOWN_MODELS[args.model](head_size=2)
     
+    logging.basicConfig(filename='credential_classifier/evaluate_acc.log', level=logging.INFO)
+    logger = logging.getLogger('trace')
+    
     # load weights
     checkpoint = torch.load(args.weights_path, map_location="cpu")
     checkpoint = checkpoint['model'] if 'model' in checkpoint.keys() else checkpoint
@@ -106,25 +110,29 @@ if __name__ == '__main__':
         train_set = GetLoader(img_folder='../../datasets/train_merge_imgs_grid2',
                           annot_path='../../datasets/train_al_grid_merge_coords2.txt')
         val_set = GetLoader(img_folder='../../datasets/val_merge_imgs',
-                          annot_path='../../datasets/val_merge_coords.txt')        
+                          annot_path='../../datasets/val_merge_coords.txt')    
+        
     elif args.model == 'BiT-M-R50x1':
-        train_set = ImageLoader(img_folder='../../datasets/train_merge_imgs',
-                          annot_path='../../datasets/train_al_merge_coords2.txt')
-        val_set = ImageLoader(img_folder='../../datasets/val_merge_imgs',
-                          annot_path='../../datasets/val_merge_coords.txt')
+        train_set = ImageLoader(img_folder='../datasets/train_merge_imgs',
+                          annot_path='../datasets/train_al_merge_coords2.txt')
+        val_set = ImageLoader(img_folder='../datasets/val_merge_imgs',
+                          annot_path='../datasets/val_merge_coords.txt')
+        
     else:
-        train_set = HybridLoader(img_folder='../../datasets/train_imgs',
-                          annot_path='../../datasets/train_coords.txt')
-        val_set = HybridLoader(img_folder='../../datasets/val_merge_imgs',
-                          annot_path='../../datasets/val_merge_coords.txt')
+        train_set = HybridLoader(img_folder='../datasets/train_imgs',
+                          annot_path='../datasets/train_coords.txt')
+        val_set = HybridLoader(img_folder='../datasets/val_merge_imgs',
+                          annot_path='../datasets/val_merge_coords.txt')
         
     train_loader = torch.utils.data.DataLoader(train_set, batch_size=256, drop_last=False, shuffle=False)
     val_loader = torch.utils.data.DataLoader(val_set, batch_size=256, drop_last=False, shuffle=False)
     
     acc = evaluate(model, train_loader)
     print('Training Acc : {:.4f}'.format(acc))
+    logger.info('Training Acc : {:.4f}'.format(acc))
     
     acc = evaluate(model, val_loader)
     print('Validation Acc : {:.4f}'.format(acc))
+    logger.info('Validation Acc : {:.4f}'.format(acc))
 
 

@@ -107,6 +107,8 @@ def main(args):
 
     train_set, valid_set, train_loader, valid_loader = mktrainval(args, logger)
     model = models.KNOWN_MODELS[args.model](head_size=len(valid_set.classes))
+    model = torch.nn.DataParallel(model)
+    model = model.to(device)
 
     # Note: no weight-decay!
     step = 0
@@ -135,20 +137,12 @@ def main(args):
 
     # Print out the model summary
     logger.info("Moving model onto all GPUs")
-    model = torch.nn.DataParallel(model)
     model = model.to(device)
-#     summary(model, (8, 256, 512))
     logger.info(model)
 
     # Start training
     model.train()
     cri = torch.nn.CrossEntropyLoss().to(device)
-
-    # Get initial validation acc
-#     init_correct_rate = run_eval(model, valid_loader, device, logger, 0)
-#     best_correct_rate = init_correct_rate
-#     logger.info(f"[Initial validation accuracy {init_correct_rate}]")
-#     logger.flush()
 
     logger.info("Starting training!")
     

@@ -140,3 +140,4 @@ if __name__ == '__main__':
                 f.write(types[j] + '\t')
                 f.write(label + '\n')
 
+

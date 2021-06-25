@@ -129,7 +129,7 @@ if __name__ == '__main__':
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     
     val_tx = tv.transforms.Compose([
-            tv.transforms.Resize((95, 95)),
+            tv.transforms.Resize((224, 224)),
             tv.transforms.ToTensor(),
             tv.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
     ])
@@ -141,8 +141,8 @@ if __name__ == '__main__':
     
     val_loader = torch.utils.data.DataLoader(val_set, batch_size=len(val_set), drop_last=False, shuffle=False)
     
-    model = models.KNOWN_MODELS['BiT-M-R50x1'](head_size=len(val_set.classes), zero_head=True)
-    checkpoint = torch.load('/home/l/liny/ruofan/detectron2-1_website/big_transfer/output/targetlist_lr0.05/targetlist_lr0.05/bit.pth.tar', map_location="cpu")["model"]
+    model = models.KNOWN_MODELS['SE-R50x32'](head_size=len(val_set.classes))
+    checkpoint = torch.load('output/se_targetlist_lr0.01/bit.pth.tar', map_location="cpu")["model"]
     
     from collections import OrderedDict
     new_state_dict = OrderedDict()
