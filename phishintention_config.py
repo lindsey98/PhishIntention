@@ -21,7 +21,7 @@ def driver_loader():
     capabilities["unexpectedAlertBehaviour"] = "dismiss"  # handle alert
     capabilities["pageLoadStrategy"] = "eager"  # eager mode #FIXME: set eager mode, may load partial webpage
 
-    driver = webdriver.Chrome(executable_path='C:\\Users\\ruofan\\.wdm\\drivers\\chromedriver\\win32\\89.0.4389.23\\chromedriver.exe',
+    driver = webdriver.Chrome(executable_path=ChromeDriverManager().install(),
                               desired_capabilities=capabilities,
                               chrome_options=options)
     driver.set_page_load_timeout(60)  # set timeout to avoid wasting time
@@ -34,8 +34,10 @@ ele_cfg, ele_model = element_config(rcnn_weights_path = './src/element_detector/
                                     rcnn_cfg_path='./src/element_detector/configs/faster_rcnn_web.yaml')
 
 # CRP classifier -- mixed version
-cls_model = credential_config(checkpoint='./src/credential_classifier/output/hybrid/hybrid_lr0.005/BiT-M-R50x1V2_0.005.pth.tar',
-                              model_type='mixed')
+# cls_model = credential_config(checkpoint='./src/credential_classifier/output/hybrid/hybrid_lr0.005/BiT-M-R50x1V2_0.005.pth.tar',
+#                               model_type='mixed')
+
+cls_model = credential_config(checkpoint='./src/credential_classifier/output/Increase_resolution_lr0.005/BiT-M-R50x1V2_0.005.pth.tar',model_type='mixed')
 
 login_cfg, login_model = login_config(
     rcnn_weights_path='./src/dynamic/login_finder/output/lr0.001_finetune/model_final.pth',
