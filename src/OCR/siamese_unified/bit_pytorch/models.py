@@ -153,11 +153,11 @@ class ResNetV2(nn.Module):
             ('conv_add', nn.Linear(2048*wf+ocr_emb_size, head_size)),
         ]))
 
-    def features(self, x):
+    def features(self, x, ocr_emb):
         x = self.head(self.body(self.root(x)))
         x = x.view(-1, 2048*self.wf)
         x = torch.cat((x, ocr_emb), dim=1)
-        return x.squeeze()
+        return x.squeeze(-1).squeeze(-1)
 
     def forward(self, x, ocr_emb):
         x = self.head(self.body(self.root(x)))
@@ -173,13 +173,6 @@ class ResNetV2(nn.Module):
             self.root.conv.weight.copy_(tf2th(weights[f'{prefix}root_block/standardized_conv2d/kernel']))    # pylint: disable=line-too-long
             self.head.gn.weight.copy_(tf2th(weights[f'{prefix}group_norm/gamma']))
             self.head.gn.bias.copy_(tf2th(weights[f'{prefix}group_norm/beta']))
-#             if self.zero_head:
-#                 nn.init.zeros_(self.head.conv.weight)
-#                 nn.init.zeros_(self.head.conv.bias)
-#             else:
-#                 self.head.conv.weight.copy_(tf2th(weights[f'{prefix}head/conv2d/kernel']))    # pylint: disable=line-too-long
-#                 self.head.conv.bias.copy_(tf2th(weights[f'{prefix}head/conv2d/bias']))
-
             for bname, block in self.body.named_children():
                 for uname, unit in block.named_children():
                     unit.load_from(weights, prefix=f'{prefix}{bname}/{uname}/')

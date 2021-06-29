@@ -18,21 +18,21 @@ from torchvision import transforms
 
 # from config import get_args
 # from lib import datasets, evaluation_metrics, models
-from lib.models.model_builder import ModelBuilder
-from lib.datasets.dataset import LmdbDataset, AlignCollate
-from lib.loss import SequenceCrossEntropyLoss
-from lib.trainers import Trainer
-from lib.evaluators import Evaluator
-from lib.utils.logging import Logger, TFLogger
-from lib.utils.serialization import load_checkpoint, save_checkpoint
-from lib.utils.osutils import make_symlink_if_not_exists
-from lib.evaluation_metrics.metrics import get_str_list
-from lib.utils.labelmaps import get_vocabulary, labels2strs
+from .lib.models.model_builder import ModelBuilder
+# from .lib.datasets.dataset import LmdbDataset, AlignCollate
+# from .lib.loss import SequenceCrossEntropyLoss
+# from .lib.trainers import Trainer
+# from .lib.evaluators import Evaluator
+# from .lib.utils.logging import Logger, TFLogger
+from .lib.utils.serialization import load_checkpoint, save_checkpoint
+# from .lib.utils.osutils import make_symlink_if_not_exists
+# from .lib.evaluation_metrics.metrics import get_str_list
+from .lib.utils.labelmaps import get_vocabulary, labels2strs
 
-# global_args = get_args(sys.argv[1:])
 
 def image_process(image_path, imgH=32, imgW=100, keep_ratio=False, min_ratio=1):
-    img = Image.open(image_path).convert('RGB')
+    
+    img = Image.open(image_path).convert('RGB') if isinstance(image_path, str) else image_path.convert('RGB')
 
     if keep_ratio:
         w, h = img.size

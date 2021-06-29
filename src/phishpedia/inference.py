@@ -10,6 +10,7 @@ from collections import OrderedDict
 from .utils import brand_converter, resolution_alignment
 import matplotlib.pyplot as plt
 
+
 def l2_norm(x):
     '''L2 Normalization'''
     if len(x.shape):
@@ -67,6 +68,7 @@ def pred_siamese(img, model, imshow=False, title=None, grayscale=False):
         logo_feat = l2_norm(logo_feat).squeeze(0).cpu().numpy() # L2-normalization final shape is (2048,)
         
     return logo_feat
+
 
 
 
@@ -151,6 +153,9 @@ def siamese_inference(model, domain_map, logo_feat_list, file_name_list, shot_pa
                 return predicted_brand, predicted_domain, final_sim
 
     return None, None, top3_simlist[0]
+
+
+
 
 # def siamese_inference_debug(model, domain_map, logo_feat_list, file_name_list, shot_path, gt_bbox, t_s=0.83, grayscale=False):
 #     '''
