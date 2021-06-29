@@ -10,6 +10,11 @@ from src.credential import *
 from src.detectron2_pedia.inference import *
 import argparse
 import errno
+# import torch.multiprocessing as mp
+import time
+
+# torch.multiprocessing.set_start_method('spawn', force=True)# good solution !!!!
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
 
 def phishintention_eval(data_dir, mode, siamese_ts, write_txt):
@@ -77,13 +82,22 @@ def phishintention_eval(data_dir, mode, siamese_ts, write_txt):
             else:
                 # Phishpedia module
                 start_time = time.time()
-                pred_target, _, _ = phishpedia_classifier(pred_classes=pred_classes, pred_boxes=pred_boxes,
+#                 pred_target, _, _ = phishpedia_classifier(pred_classes=pred_classes, pred_boxes=pred_boxes,
+#                                                           domain_map_path=domain_map_path,
+#                                                           model=pedia_model,
+#                                                           logo_feat_list=logo_feat_list, file_name_list=file_name_list,
+#                                                           url=url,
+#                                                           shot_path=img_path,
+#                                                           ts=siamese_ts)
+                pred_target, _, _ = phishpedia_classifier_OCR(pred_classes=pred_classes, pred_boxes=pred_boxes,
                                                           domain_map_path=domain_map_path,
                                                           model=pedia_model,
+                                                          ocr_model=ocr_model,
                                                           logo_feat_list=logo_feat_list, file_name_list=file_name_list,
                                                           url=url,
                                                           shot_path=img_path,
                                                           ts=siamese_ts)
+
                 siamese_time = time.time() - start_time
 
                 # Phishpedia reports target
@@ -208,9 +222,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Evaluate trained model")
     parser.add_argument("--mode", choices=['phish', 'benign', 'discovery'], required=True,
                         help="Evaluate phishing or benign or discovery")
-    parser.add_argument("--write-txt", required=True, help="Where to save results")
+    parser.add_argument("--write-dir", required=True, help="Where to save results")
     parser.add_argument("--data-dir", required=True, help="Data Dir")
-    parser.add_argument("--ts", required=True, help="Siamese threshold")
+    parser.add_argument("--ts_range", default=[0.93, 0.95, 0.97, 0.99, 0.9999], help="Siamese threshold range")
+#     parser.add_argument("--ts_range", default=[0.81, 0.83, 0.85, 0.87, 0.9], help="Siamese threshold range")
+#     parser.add_argument("--ts_range", default=[0.4, 0.5, 0.6, 0.7], help="Siamese threshold range")
     parser.add_argument("--exp", choices=['intention', 'pedia'], required=True,
                         help="Which experiment to run")
     args = parser.parse_args()
@@ -219,8 +235,7 @@ if __name__ == '__main__':
     if not os.path.exists(data_dir):
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), data_dir)
     mode = args.mode
-    siamese_ts = float(args.ts)
-    write_txt = args.write_txt
+    os.makedirs(args.write_dir, exist_ok=True)
 
     if args.exp == 'intention':
         # Element recognition model
@@ -229,9 +244,10 @@ if __name__ == '__main__':
             rcnn_cfg_path='src/element_detector/configs/faster_rcnn_web.yaml')
 
         # CRP classifier
-        cls_model = credential_config(
-            checkpoint='src/credential_classifier/output/hybrid/hybrid_lr0.005/BiT-M-R50x1V2_0.005.pth.tar',
-            model_type='mixed')
+#         cls_model = credential_config(
+#             checkpoint='src/credential_classifier/output/hybrid/hybrid_lr0.005/BiT-M-R50x1V2_0.005.pth.tar',
+#             model_type='mixed')
+        cls_model = credential_config(checkpoint='src/credential_classifier/output/Increase_resolution_lr0.005/BiT-M-R50x1V2_0.005.pth.tar',model_type='mixed')
 
     elif args.exp == 'pedia':
 
@@ -241,9 +257,15 @@ if __name__ == '__main__':
         ele_model = config_rcnn(cfg_path, weights_path, conf_threshold=0.05)
 
     # Siamese
-    pedia_model, logo_feat_list, file_name_list = phishpedia_config(num_classes=277,
-                                                                    weights_path='src/phishpedia/resnetv2_rgb_new.pth.tar',
-                                                                    targetlist_path='src/phishpedia/expand_targetlist_copy/')
+#     pedia_model, logo_feat_list, file_name_list = phishpedia_config(num_classes=277,
+#                                                                     weights_path='src/phishpedia/resnetv2_rgb_new.pth.tar',
+#                                                                     targetlist_path='src/phishpedia/expand_targetlist_copy/')
+    
+    pedia_model, ocr_model, logo_feat_list, file_name_list = phishpedia_config_OCR(num_classes=277,
+                                                                    weights_path='src/OCR/output/targetlist_lr0.01/bit.pth.tar',
+                                                                    ocr_weights_path='src/OCR/demo.pth.tar',
+                                                                    targetlist_path='src/phishpedia/expand_targetlist/')
+
     print('Number of protected logos = {}'.format(str(len(logo_feat_list))))
 
     # Domain map path
@@ -251,7 +273,28 @@ if __name__ == '__main__':
 
     # PhishIntention
     if args.exp == 'intention':
-        phishintention_eval(data_dir, mode, siamese_ts, write_txt)
+#         processes = []
+        for siamese_ts in args.ts_range:
+            write_txt = os.path.join(args.write_dir, '{}_{}_ts{}.txt'.format(mode, args.exp, str(siamese_ts)))
+            phishintention_eval(data_dir, mode, siamese_ts, write_txt)
+#             p = mp.Process(target=phishintention_eval, args=(data_dir, mode, ts, write_txt))
+#             p.start()
+#             processes.append(p)
+#         for p in processes:
+#             p.join()
+            
     # PhishPedia
     else:
-        phishpedia_eval(data_dir, mode, siamese_ts, write_txt)
+#         processes = []
+        for siamese_ts in args.ts_range:
+            write_txt = os.path.join(args.write_dir, '{}_{}_ts{}.txt'.format(mode, args.exp, str(siamese_ts)))
+            phishpedia_eval(data_dir, mode, siamese_ts, write_txt)
+            # training each neighbor for 5 times in parallel!
+#             p = mp.Process(target=phishpedia_eval, args=(data_dir, mode, ts, write_txt))
+#             p.start()
+#             processes.append(p)
+#         for p in processes:
+#             p.join()
+
+
+

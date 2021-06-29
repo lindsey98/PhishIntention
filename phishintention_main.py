@@ -62,8 +62,14 @@ def main(url, screenshot_path):
 
         ######################## Step2: Siamese (logo matcher) ########################################
         start_time = time.time()
-        pred_target, matched_coord, siamese_conf = phishpedia_classifier(pred_classes=pred_classes, pred_boxes=pred_boxes, 
+#         pred_target, matched_coord, siamese_conf = phishpedia_classifier(pred_classes=pred_classes, pred_boxes=pred_boxes, 
+#                                         domain_map_path=domain_map_path, model=pedia_model,
+#                                         logo_feat_list=logo_feat_list, file_name_list=file_name_list,
+#                                         url=url, shot_path=screenshot_path,
+#                                         ts=siamese_ts)
+        pred_target, matched_coord, siamese_conf = phishpedia_classifier_OCR(pred_classes=pred_classes, pred_boxes=pred_boxes, 
                                         domain_map_path=domain_map_path, model=pedia_model,
+                                        ocr_model = ocr_model,
                                         logo_feat_list=logo_feat_list, file_name_list=file_name_list,
                                         url=url, shot_path=screenshot_path,
                                         ts=siamese_ts)

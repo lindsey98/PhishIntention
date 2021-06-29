@@ -1,5 +1,4 @@
 # Global configuration
-# from src.layout import *
 from src.siamese import *
 from src.element_detector import *
 from src.credential import *
@@ -45,8 +44,13 @@ login_cfg, login_model = login_config(
 
 # siamese model
 print('Load protected logo list')
-pedia_model, logo_feat_list, file_name_list = phishpedia_config(num_classes=277,
-                                                weights_path='./src/phishpedia/resnetv2_rgb_new.pth.tar',
+# pedia_model, logo_feat_list, file_name_list = phishpedia_config(num_classes=277,
+#                                                 weights_path='./src/phishpedia/resnetv2_rgb_new.pth.tar',
+#                                                 targetlist_path='./src/phishpedia/expand_targetlist/')
+
+pedia_model, ocr_model, logo_feat_list, file_name_list = phishpedia_config_OCR(num_classes=277,
+                                                weights_path='./src/OCR/output/targetlist_lr0.01/bit.pth.tar',
+                                                ocr_weights_path='./src/OCR/demo.pth.tar',
                                                 targetlist_path='./src/phishpedia/expand_targetlist/')
 print('Finish loading protected logo list')
 
