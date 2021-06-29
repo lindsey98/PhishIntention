@@ -303,6 +303,7 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
     visit_success, driver = visit_url(driver, orig_url, popup=True, sleep=True) # click popup window before proceeding
     if not visit_success:
         return url, screenshot_path, successful, 0
+
     time.sleep(5) # extra wait to translate html properly
 
     start_time = time.time()

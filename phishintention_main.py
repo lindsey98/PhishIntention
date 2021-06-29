@@ -135,17 +135,9 @@ def main(url, screenshot_path):
         
     return phish_category, pred_target, plotvis, siamese_conf, dynamic, str(ele_detector_time)+'|'+str(siamese_time)+'|'+str(crp_time)+'|'+str(dynamic_time)+'|'+str(process_time)
 
-
-
-if __name__ == "__main__":
-
-    # os.environ["CUDA_VISIBLE_DEVICES"]="1"
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-f', "--folder", help='Input folder path to parse', required=True)
-    parser.add_argument('-r', "--results", help='Input results file name', required=True)
-    args = parser.parse_args()
-    date = args.folder.split('/')[-1]    
-    directory = args.folder 
+def runit(args):
+    date = args.folder.split('/')[-1]
+    directory = args.folder
     results_path = args.results
 
     if not os.path.exists(args.results):
@@ -212,6 +204,16 @@ if __name__ == "__main__":
 
         except Exception as e:
             print(str(e))
+
+if __name__ == "__main__":
+
+    # os.environ["CUDA_VISIBLE_DEVICES"]="1"
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', "--folder", help='Input folder path to parse', required=True)
+    parser.add_argument('-r', "--results", help='Input results file name', required=True)
+    args = parser.parse_args()
+    runit(args)
+
 
 
 
