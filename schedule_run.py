@@ -16,6 +16,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     print(args)
 
-    schedule.every(5).hours.until(timedelta(hours=8)).do(runit(args)) # run it every 5 hours, kill it after running 8 hours
+    schedule.every(5).hours.until(timedelta(hours=5)).do(runit(args)) # run it every 5 hours, kill it after running 5 hours
 
 
