@@ -50,7 +50,7 @@ print('Load protected logo list')
 
 pedia_model, ocr_model, logo_feat_list, file_name_list = phishpedia_config_OCR(num_classes=277,
                                                 weights_path='./src/OCR/output/targetlist_lr0.01/bit.pth.tar',
-                                                ocr_weights_path='./src/OCR/demo.pth.tar',
+                                                ocr_weights_path='./src/OCR/demo_downgrade.pth.tar',
                                                 targetlist_path='./src/phishpedia/expand_targetlist/')
 print('Finish loading protected logo list')
 
