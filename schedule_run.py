@@ -6,6 +6,8 @@ import sys
 from datetime import datetime, timedelta, time
 import argparse
 from phishintention_main import *
+import os
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 if __name__ == '__main__':
 
