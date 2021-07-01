@@ -4,7 +4,6 @@ import pprint
 import pandas as pd
 from gspread.models import Cell
 
-
 class gwrapper():
     def __init__(self):
         scope = [
@@ -16,7 +15,7 @@ class gwrapper():
         client = gspread.authorize(creds)
 
         # Fetch the sheet
-        self.sheet = client.open('test').sheet1
+        self.sheet = client.open('discovery_label').sheet1
 
     def get_records(self):
         return self.sheet.get_all_records()

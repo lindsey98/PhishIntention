@@ -20,7 +20,6 @@ if __name__ == '__main__':
     print(args)
 
     while True:
-        # runit_pedia(args.folder, args.results)
         runit(args.folder, args.results)
         print('Process finish')
 
