@@ -135,13 +135,13 @@ def main(url, screenshot_path):
         
     return phish_category, pred_target, plotvis, siamese_conf, dynamic, str(ele_detector_time)+'|'+str(siamese_time)+'|'+str(crp_time)+'|'+str(dynamic_time)+'|'+str(process_time)
 
-def runit(args):
-    date = args.folder.split('/')[-1]
-    directory = args.folder
-    results_path = args.results
+def runit(folder, results):
+    date = folder.split('/')[-1]
+    directory = folder
+    results_path = results
 
-    if not os.path.exists(args.results):
-        with open(args.results, "w+") as f:
+    if not os.path.exists(results):
+        with open(results, "w+") as f:
             f.write("folder" + "\t")
             f.write("url" +"\t")
             f.write("phish" +"\t")
@@ -155,7 +155,7 @@ def runit(args):
 
     for item in tqdm(os.listdir(directory)):
 
-        if item in open(args.results, encoding='ISO-8859-1').read():
+        if item in open(results, encoding='ISO-8859-1').read():
             continue # have been predicted
 
         try:
@@ -189,7 +189,7 @@ def runit(args):
                         vt_result = "error"
 
                 # write results as well as predicted image
-                with open(args.results, "a+", encoding='ISO-8859-1') as f:
+                with open(results, "a+", encoding='ISO-8859-1') as f:
                     f.write(item + "\t")
                     f.write(url +"\t")
                     f.write(str(phish_category) +"\t")

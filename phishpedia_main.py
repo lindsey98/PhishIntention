@@ -67,16 +67,11 @@ def main(url, screenshot_path):
     return phish_category, pred_target, plotvis, siamese_conf
 
 
-if __name__ == "__main__":
+def runit_pedia(folder, results):
 
-    # os.environ["CUDA_VISIBLE_DEVICES"]="1"
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-f', "--folder", help='Input folder path to parse', required=True)
-    parser.add_argument('-r', "--results", help='Input results file name', required=True)
-    args = parser.parse_args()
-    date = args.folder.split('/')[-1]
-    directory = args.folder
-    results_path = args.results.split('.txt')[0] + "_pedia.txt"
+    date = folder.split('/')[-1]
+    directory = folder
+    results_path = results.split('.txt')[0] + "_pedia.txt"
 
     if not os.path.exists(results_path):
         with open(results_path, "w+") as f:
@@ -142,3 +137,11 @@ if __name__ == "__main__":
 
 
 
+
+if __name__ == "__main__":
+
+    # os.environ["CUDA_VISIBLE_DEVICES"]="1"
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', "--folder", help='Input folder path to parse', required=True)
+    parser.add_argument('-r', "--results", help='Input results file name', required=True)
+    args = parser.parse_args()
