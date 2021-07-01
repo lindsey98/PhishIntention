@@ -133,7 +133,7 @@ token = '[token for telebot]'
 folder = "[the folder you want to label]"
 ```
 [How do I find token for telebot?](https://core.telegram.org/bots#botfather)
-- 4. Run **tele/tele.py**
+- 4. Go to **tele/**, Run **tele.py**
 
 ## Miscellaneous
 - In our paper, we also implement several phishing detection and identification baselines, see [here](https://github.com/lindsey98/PhishingBaseline)
