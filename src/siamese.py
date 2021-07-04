@@ -103,7 +103,7 @@ def phishpedia_classifier(pred_classes, pred_boxes,
             # domain matcher to avoid FP
             if (target_this is not None) and (tldextract.extract(url).domain not in domain_this):
                 # avoid fp due to godaddy domain parking, ignore webmail provider (ambiguous)
-                if target_this == 'GoDaddy' or target_this == "Webmail Provider" or tldextract.extract(url).domain.endswith('.gov.uk'):
+                if target_this == 'GoDaddy' or target_this == "Webmail Provider" or target_this == "Government of the United Kingdom":
                     target_this = None # ignore the prediction
                     this_conf = None
                 pred_target = target_this
@@ -216,7 +216,7 @@ def phishpedia_classifier_OCR(pred_classes, pred_boxes,
             # domain matcher to avoid FP
             if (target_this is not None) and (tldextract.extract(url).domain not in domain_this):
                 # avoid fp due to godaddy domain parking, ignore webmail provider (ambiguous)
-                if target_this == 'GoDaddy' or target_this == "Webmail Provider" or tldextract.extract(url).domain.endswith('.gov.uk'):
+                if target_this == 'GoDaddy' or target_this == "Webmail Provider" or target_this == "Government of the United Kingdom":
                     target_this = None # ignore the prediction
                     this_conf = None
                 pred_target = target_this
@@ -268,7 +268,7 @@ def phishpedia_classifier_logo(logo_boxes,
             # domain matcher to avoid FP
             if (target_this is not None) and (tldextract.extract(url).domain not in domain_this):
                 # avoid fp due to godaddy domain parking, ignore webmail provider (ambiguous)
-                if target_this == 'GoDaddy' or target_this == "Webmail Provider" or tldextract.extract(url).domain.endswith('.gov.uk'):
+                if target_this == 'GoDaddy' or target_this == "Webmail Provider" or target_this == "Government of the United Kingdom":
                     target_this = None  # ignore the prediction
                     this_conf = None
                 pred_target = target_this
