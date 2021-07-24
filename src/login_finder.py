@@ -296,13 +296,12 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
 
     # FIXME: load twice because google translate not working the first time it visits a website
     # FIXME: Tricks: If webdriver is not working, try 1) enable/diable google translate 2) enable/disable click popup window 3) switch on/off headless mode
-    visit_success, driver = visit_url(driver, orig_url)
+    visit_success, driver = visit_url(driver, orig_url, popup=True)
     if not visit_success:
         return url, screenshot_path, successful, 0
-    # visit_success, driver = visit_url(driver, orig_url)
-    visit_success, driver = visit_url(driver, orig_url, popup=True, sleep=True) # click popup window before proceeding
-    if not visit_success:
-        return url, screenshot_path, successful, 0
+    # visit_success, driver = visit_url(driver, orig_url, popup=True, sleep=True) # click popup window before proceeding
+    # if not visit_success:
+    #     return url, screenshot_path, successful, 0
 
     time.sleep(5) # extra wait to translate html properly
 
