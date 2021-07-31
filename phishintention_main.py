@@ -158,7 +158,7 @@ def runit(folder, results):
         if item in open(results, encoding='ISO-8859-1').read():
             continue # have been predicted
 
-        if item in ['tools-delivery5.dev.appslatam.com', 'amazon.test.sieval.com', 'ruwhatsapp.ru']:
+        if item in ['tools-delivery5.dev.appslatam.com', 'amazon.test.sieval.com', 'ruwhatsapp.ru', 'membership.sydneyswans.atomix.dev', 'amazon.information-top.space']:
             continue
 
         try:

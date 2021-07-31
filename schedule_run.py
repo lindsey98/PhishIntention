@@ -4,8 +4,8 @@ import datetime
 import sys
 from datetime import datetime, timedelta, time
 import argparse
-from phishintention_main import *
-# from phishpedia_main import *
+# from phishintention_main import *
+from phishpedia_main import *
 import os
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
@@ -13,8 +13,8 @@ os.environ['KMP_DUPLICATE_LIB_OK']='True'
 if __name__ == '__main__':
 
     while True:
-        # date = '2021-07-21'
-        date = datetime.today().strftime('%Y-%m-%d')
+        date = '2021-07-28'
+        # date = datetime.today().strftime('%Y-%m-%d')
         print('Today is:', date)
         parser = argparse.ArgumentParser()
         parser.add_argument('-f', "--folder",
@@ -24,7 +24,7 @@ if __name__ == '__main__':
                             help='Input results file name')
         args = parser.parse_args()
         print(args)
-        runit(args.folder, args.results) # if running phishintention
-        # runit_pedia(args.folder, args.results) # if running phishpedia
+        # runit(args.folder, args.results) # if running phishintention
+        runit_pedia(args.folder, args.results) # if running phishpedia
         print('Process finish')
 
