@@ -9,7 +9,9 @@ import numpy as np
 import copy
 
 
-def deepfool(model, num_classes, image, label, I, overshoot=0.02, max_iter=100, clip_min=-1.0, clip_max=1.0):
+def deepfool(model, num_classes, image, label, I, overshoot=0.02, max_iter=100, 
+             clip_min=-1.0, clip_max=1.0,
+             use_ocr=False, ocr_emb=None):
     '''
     https://github.com/LTS4/DeepFool/tree/master/Python
     DeepFool attack
@@ -22,6 +24,8 @@ def deepfool(model, num_classes, image, label, I, overshoot=0.02, max_iter=100, 
     :param max_iter: maximum iterations allowed
     :param clip_min: clip image into legal range
     :param clip_max: clip image into legal range
+    :param use_ocr: with ocr embedding or not
+    :param ocr_emb: the ocr embedding
     :return: perturbed image
     '''
 
@@ -32,7 +36,11 @@ def deepfool(model, num_classes, image, label, I, overshoot=0.02, max_iter=100, 
     loop_i = 0
 
     x = Variable(pert_image, requires_grad=True)
-    fs = model(x)
+    if use_ocr:
+        ocr_emb.requires_grad = False
+        fs = model(x, ocr_emb)
+    else:
+        fs = model(x)
     fs_list = [fs[0, I[k]] for k in range(num_classes)]
     k_i = label
 
@@ -77,7 +85,10 @@ def deepfool(model, num_classes, image, label, I, overshoot=0.02, max_iter=100, 
         pert_image = torch.clamp(pert_image, clip_min, clip_max)
 
         x = Variable(pert_image, requires_grad=True)
-        fs = model(x)
+        if use_ocr:
+            fs = model(x, ocr_emb)
+        else:
+            fs = model(x)
         k_i = np.argmax(fs.data.detach().cpu().numpy().flatten())
 
         loop_i += 1

@@ -2,6 +2,7 @@ from .FGSM import fgsm
 from .JSMA import jsma
 from .DeepFool import deepfool
 from .CWL2 import cw
+from src.OCR.demo import *
 
 import os
 import numpy as np
@@ -9,13 +10,16 @@ import numpy as np
 import torch
 import torch.nn as nn
 from tqdm import tqdm
+from typing import Any
 
 
 class adversarial_attack():
     '''
     Perform adversarial attack
     '''
-    def __init__(self, method, model, dataloader, device, num_classes=10, save_data=False):
+    def __init__(self, method, model, 
+                 dataloader, device, num_classes=10, save_data=False, 
+                 use_ocr: bool = False, ocr_model: Any = None):
         '''
         :param method: Which attack method to use
         :param model: subject model to attack
@@ -30,91 +34,157 @@ class adversarial_attack():
         self.device = device
         self.num_classes = num_classes
         self.save_data = save_data
+        self.use_ocr = use_ocr
+        self.ocr_model = ocr_model
+
         
     def batch_attack(self):
         '''
-        Run attack on a batch of data
-        
+        Run attack on a batch if using ocr_model, batch size should be 1 
         '''
         # Accuracy counter
         correct = 0
         total = 0
         adv_examples = []
         ct_save = 0
-#         adv_cat = torch.tensor([])
 
         # Loop over all examples in test set
-        for ct, (data, label) in tqdm(enumerate(self.dataloader)):
-            data = data.to(self.device, dtype=torch.float) 
-            label = label.to(self.device, dtype=torch.long)
-            
-            # Forward pass the data through the model
-            output = self.model(data)
-            self.model.zero_grad()
-            init_pred = output.max(1, keepdim=True)[1]  # get the index of the max log-probability
+        if self.use_ocr:
+            for ct, (data, label, data_path) in tqdm(enumerate(self.dataloader)):
+                data = data.to(self.device, dtype=torch.float) 
+                label = label.to(self.device, dtype=torch.long)
+                data.requires_grad = True
 
-            if init_pred.item() != label.item():  # initially was incorrect --> no need to generate adversary
+                ocr_emb = ocr_main(image_path=data_path[0], 
+                                   model=self.ocr_model, 
+                                   height=None, width=None)
+                ocr_emb = ocr_emb[0]
+                ocr_emb = ocr_emb[None, ...]
+                ocr_emb = ocr_emb.to(self.device)
+                ocr_emb.requires_grad = False
+
+                # Forward pass the data through the model
+                output = self.model(data, ocr_emb)
+                self.model.zero_grad()
+                init_pred = output.max(1, keepdim=True)[1]  # get the index of the max log-probability
+
+                if init_pred.item() != label.item():  # initially was incorrect --> no need to generate adversary
+                    total += 1
+                    print(ct)
+                    continue
+
+                # Call Attack
+                if self.method in ['fgsm', 'stepll']:
+                    criterion = nn.CrossEntropyLoss()
+                    perturbed_data = fgsm(self.model, self.method, data, label, criterion, use_ocr=True, ocr_emb=ocr_emb)
+
+                elif self.method == 'jsma':
+                    # randomly select a target class
+                    target_class = init_pred
+                    while target_class == init_pred:
+                        target_class = torch.randint(0, self.num_classes, (1,)).to(self.device)
+                    print(target_class)
+                    perturbed_data = jsma(self.model, self.num_classes, data, target_class, use_ocr=True, ocr_emb=ocr_emb)
+
+                elif self.method == 'deepfool':
+                    f_image = output.detach().cpu().numpy().flatten()
+                    I = (np.array(f_image)).flatten().argsort()[::-1]
+                    perturbed_data = deepfool(self.model, self.num_classes, data, label, I, use_ocr=True, ocr_emb=ocr_emb)
+
+                elif self.method == 'cw':
+                    target_class = init_pred
+                    while target_class == init_pred:
+                        target_class = torch.randint(0, self.num_classes, (1,)).to(self.device)
+                    print(target_class)
+                    perturbed_data = cw(self.model, self.device, data, label, target_class, use_ocr=True, ocr_emb=ocr_emb)
+
+                else:
+                    print('Attack method is not supported， please choose your attack from [fgsm|stepll|jsma|deepfool|cw]')
+
+                # Re-classify the perturbed image
+                self.model.zero_grad()
+                self.model.eval()
+                with torch.no_grad():
+                    output = self.model(perturbed_data, ocr_emb)
+
+                # Check for success
+                final_pred = output.max(1, keepdim=True)[1]
+                if final_pred.item() == init_pred.item():
+                    correct += 1  # still correct
+                else:# save successful attack
+                    print(final_pred)
+                    print(init_pred)
+
+                adv_ex = perturbed_data.squeeze().detach().cpu().numpy()
+                adv_examples.append((init_pred.item(), final_pred.item(), adv_ex))
                 total += 1
                 print(ct)
-                continue
+                print("Test Accuracy = {}".format(correct/float(total)))
+                
+                
+        else:
+            for ct, (data, label) in tqdm(enumerate(self.dataloader)):
+                data = data.to(self.device, dtype=torch.float) 
+                label = label.to(self.device, dtype=torch.long)
 
-            # Call Attack
-            if self.method in ['fgsm', 'stepll']:
-                criterion = nn.CrossEntropyLoss()
-                perturbed_data = fgsm(self.model, self.method, data, label, criterion)
-                
-            elif self.method == 'jsma':
-                # randomly select a target class
-                target_class = init_pred
-                while target_class == init_pred:
-                    target_class = torch.randint(0, self.num_classes, (1,)).to(self.device)
-                print(target_class)
-                perturbed_data = jsma(self.model, self.num_classes, data, target_class)
-                
-            elif self.method == 'deepfool':
-                f_image = output.detach().cpu().numpy().flatten()
-                I = (np.array(f_image)).flatten().argsort()[::-1]
-                perturbed_data = deepfool(self.model, self.num_classes, data, label, I)
-                
-            elif self.method == 'cw':
-                target_class = init_pred
-                while target_class == init_pred:
-                    target_class = torch.randint(0, self.num_classes, (1,)).to(self.device)
-                print(target_class)
-                perturbed_data = cw(self.model, self.device, data, label, target_class)
-                
-            else:
-                print('Attack method is not supported， please choose your attack from [fgsm|stepll|jsma|deepfool|cw]')
-                
-                
-            # Re-classify the perturbed image
-            self.model.zero_grad()
-            self.model.eval()
-            with torch.no_grad():
-                output = self.model(perturbed_data)
+                # Forward pass the data through the model
+                output = self.model(data)
+                self.model.zero_grad()
+                init_pred = output.max(1, keepdim=True)[1]  # get the index of the max log-probability
 
-            # Check for success
-            final_pred = output.max(1, keepdim=True)[1]
-            if final_pred.item() == init_pred.item():
-                correct += 1  # still correct
-            else:# save successful attack
-                print(final_pred)
-                print(init_pred)
-                if self.save_data:
-                    os.makedirs('./data/normal_{}'.format(self.method), exist_ok=True)
-                    os.makedirs('./data/adversarial_{}'.format(self.method), exist_ok=True)
-                    # Save the original instance
-                    torch.save((data.detach().cpu(), init_pred.detach().cpu()),
-                               './data/normal_{}/{}.pt'.format(self.method, ct_save))
-                    # Save the adversarial example
-                    torch.save((perturbed_data.detach().cpu(), final_pred.detach().cpu()),
-                               './data/adversarial_{}/{}.pt'.format(self.method, ct_save))
+                if init_pred.item() != label.item():  # initially was incorrect --> no need to generate adversary
+                    total += 1
+                    print(ct)
+                    continue
 
-            adv_ex = perturbed_data.squeeze().detach().cpu().numpy()
-            adv_examples.append((init_pred.item(), final_pred.item(), adv_ex))
-            total += 1
-            print(ct)
-            print("Test Accuracy = {}".format(correct/float(total)))
+                # Call Attack
+                if self.method in ['fgsm', 'stepll']:
+                    criterion = nn.CrossEntropyLoss()
+                    perturbed_data = fgsm(self.model, self.method, data, label, criterion)
+
+                elif self.method == 'jsma':
+                    # randomly select a target class
+                    target_class = init_pred
+                    while target_class == init_pred:
+                        target_class = torch.randint(0, self.num_classes, (1,)).to(self.device)
+                    print(target_class)
+                    perturbed_data = jsma(self.model, self.num_classes, data, target_class)
+
+                elif self.method == 'deepfool':
+                    f_image = output.detach().cpu().numpy().flatten()
+                    I = (np.array(f_image)).flatten().argsort()[::-1]
+                    perturbed_data = deepfool(self.model, self.num_classes, data, label, I)
+
+                elif self.method == 'cw':
+                    target_class = init_pred
+                    while target_class == init_pred:
+                        target_class = torch.randint(0, self.num_classes, (1,)).to(self.device)
+                    print(target_class)
+                    perturbed_data = cw(self.model, self.device, data, label, target_class)
+
+                else:
+                    print('Attack method is not supported， please choose your attack from [fgsm|stepll|jsma|deepfool|cw]')
+
+                # Re-classify the perturbed image
+                self.model.zero_grad()
+                self.model.eval()
+                with torch.no_grad():
+                    output = self.model(perturbed_data)
+
+                # Check for success
+                final_pred = output.max(1, keepdim=True)[1]
+                if final_pred.item() == init_pred.item():
+                    correct += 1  # still correct
+                else:# save successful attack
+                    print(final_pred)
+                    print(init_pred)
+
+                adv_ex = perturbed_data.squeeze().detach().cpu().numpy()
+                adv_examples.append((init_pred.item(), final_pred.item(), adv_ex))
+                total += 1
+                print(ct)
+                print("Test Accuracy = {}".format(correct/float(total)))
+
 
         # Calculate final accuracy
         final_acc = correct / float(len(self.dataloader))
@@ -123,37 +193,3 @@ class adversarial_attack():
         # Return the accuracy and an adversarial example
         return final_acc, adv_examples
             
-    
-# if __name__ == '__main__':
-    
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument("--method", help="Attack method you want to use", required=True)
-#     parser.add_argument("--save", help="Whether to save adversarial and normal data", default='False')
-#     args = parser.parse_args()
-    
-#     '''load cifar10 dataset'''
-#     trainloader, testloader, classes = load_cifar_data()
-
-#     '''define model'''
-#     print("CUDA Available: ", torch.cuda.is_available())
-#     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-#     criterion = nn.CrossEntropyLoss()
-
-#     # Initialize the network
-#     model = VGG11()
-#     model.to(device)
-
-#     '''load saved model'''
-#     model.load_state_dict(torch.load('./checkpoints/model.th')['state_dict'])
-#     model = model.eval()
-#     print("Successfully load pre-trained model")
-    
-#     print("Start attack with method: {}".format(args.method))
-#     if args.save == 'True':
-#         check = adversarial_attack(method=args.method, model=model, dataloader=testloader, device=device, num_classes=10, save_data=True)
-#     else:
-#         check = adversarial_attack(method=args.method, model=model, dataloader=testloader, device=device, num_classes=10)
-        
-#     check.batch_attack()
-    
-#     print("Finish attack")

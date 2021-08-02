@@ -10,7 +10,9 @@ import copy
 
 
 
-def fgsm(model, method, image, label, criterion, max_iter=100, epsilon=0.05, clip_min=-1.0, clip_max=1.0):
+def fgsm(model, method, image, label, criterion, max_iter=100, epsilon=0.05, 
+         clip_min=-1.0, clip_max=1.0,
+         use_ocr=False, ocr_emb=None):
     '''
     https://pytorch.org/tutorials/beginner/fgsm_tutorial.html
     FGSM attack
@@ -23,14 +25,19 @@ def fgsm(model, method, image, label, criterion, max_iter=100, epsilon=0.05, cli
     :param epsilon: perturbation strength
     :param clip_min:  minimum/maximum value a pixel can take
     :param clip_max:
+    :param use_ocr: with ocr embedding or not
+    :param ocr_emb: the ocr embedding
     :return: perturbed images
     '''
 
     # initialize perturbed image
     pert_image = copy.deepcopy(image)
     x = Variable(pert_image, requires_grad=True)
-
-    output = model(x)
+    if use_ocr:
+        ocr_emb.requires_grad = False
+        output = model(x, ocr_emb)
+    else:
+        output = model(x)
     pred = output.max(1, keepdim=True)[1]
     iter_ct = 0
 
@@ -59,7 +66,10 @@ def fgsm(model, method, image, label, criterion, max_iter=100, epsilon=0.05, cli
         # Adding clipping to maintain [0,1] range
 
         x.data = torch.clamp(x.data, clip_min, clip_max)
-        output = model(x)
+        if use_ocr:
+             output = model(x, ocr_emb)
+        else:
+            output = model(x)
         pred = output.max(1, keepdim=True)[1]
 
         iter_ct += 1

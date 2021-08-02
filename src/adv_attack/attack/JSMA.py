@@ -55,7 +55,9 @@ def saliency_map(jacobian, search_space, target_index):
     return row_idx, col_idx
 
 
-def jsma(model, num_classes, image, target, max_iter=100, clip_min=-1.0, clip_max=1.0):
+def jsma(model, num_classes, image, target, max_iter=100, 
+         clip_min=-1.0, clip_max=1.0,
+         use_ocr=False, ocr_emb=None):
     '''
     https://github.com/ast0414/adversarial-example/blob/master/craft.py
     Saliency map attack
@@ -67,14 +69,20 @@ def jsma(model, num_classes, image, target, max_iter=100, clip_min=-1.0, clip_ma
     :param max_iter: maximum iteration allowed
     :param clip_min: clip image into legal range
     :param clip_max:
+    :param use_ocr: with ocr embedding or not
+    :param ocr_emb: the ocr embedding
     :return:
     '''
 
     # Make a clone since we will alter the values
     pert_image = copy.deepcopy(image)
     x = Variable(pert_image, requires_grad=True)
-
-    output = model(x)
+    
+    if use_ocr:
+        ocr_emb.requires_grad = False
+        output = model(x, ocr_emb)
+    else:
+        output = model(x)
     label = output.max(1, keepdim=True)[1]
 
     count = 0
@@ -95,7 +103,10 @@ def jsma(model, num_classes, image, target, max_iter=100, clip_min=-1.0, clip_ma
         x.data[0, :, row_idx, col_idx] = clip_max
 
         # recompute prediction
-        output = model(x)
+        if use_ocr:
+            output = model(x, ocr_emb)
+        else:
+            output = model(x)
         label = output.max(1, keepdim=True)[1]
 
         count += 1

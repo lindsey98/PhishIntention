@@ -4,7 +4,10 @@ import torch.optim as optim
 
 
 
-def cw(model, device, image, label, target_cls, c=1, kappa=0, max_iter=1000, learning_rate=0.05, verbose=1) :
+def cw(model, device, image, label, target_cls, c=1, kappa=0, 
+       max_iter=1000, learning_rate=0.05, verbose=1, 
+       use_ocr=False, ocr_emb=None) :
+    
     '''
     Implementation of C&W L2 targeted attack, Modified from https://github.com/Harry24k/CW-pytorch
     :param model: subject model
@@ -17,13 +20,18 @@ def cw(model, device, image, label, target_cls, c=1, kappa=0, max_iter=1000, lea
     :param max_iter: maximimum iterations in optimization
     :param learning_rate: learning rate of optimizer
     :param verbose: print intermediate results or not
+    :param use_ocr: with ocr embedding or not
+    :param ocr_emb: the ocr embedding
     :return: perturbed image
     '''
     
     # Get loss2
     def f(x) :
         
-        output = model(x)
+        if use_ocr:
+            output = model(x, ocr_emb)
+        else:
+            output = model(x)
         one_hot_label = torch.eye(len(output[0]))[label].to(device)
         one_hot_target = torch.eye(len(output[0]))[target_cls].to(device)
 
@@ -37,6 +45,8 @@ def cw(model, device, image, label, target_cls, c=1, kappa=0, max_iter=1000, lea
     # initialize w : the noise
     w = torch.zeros_like(image, requires_grad=True).to(device)
     optimizer = optim.Adam([w], lr=learning_rate) # an optimizer specifically for w
+    if use_ocr:
+        ocr_emb.requires_grad = False
 
     for step in range(max_iter) :
         # w is the noise added to the original image, restricted to be [-1, 1]
@@ -54,7 +64,10 @@ def cw(model, device, image, label, target_cls, c=1, kappa=0, max_iter=1000, lea
         
         # New prediction
         with torch.no_grad():
-            pred_new = model(a)
+            if use_ocr:
+                pred_new = model(a, ocr_emb)
+            else:
+                pred_new = model(a)
             
         # Stop when ... 
         # successfully flip the label
