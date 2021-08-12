@@ -2,10 +2,6 @@ from .credential_classifier.bit_pytorch.models import KNOWN_MODELS
 from .credential_classifier.bit_pytorch.grid_divider import read_img_reverse, coord2pixel_reverse, topo2pixel
 from .credential_classifier.HTML_heuristic.post_form import *
 
-# from .layout_matcher.heuristic import layout_heuristic
-# from .layout_matcher.topology import knn_matrix
-# from .layout_matcher.misc import preprocess
-
 import torch
 import torch.nn.functional as F
 from PIL import Image

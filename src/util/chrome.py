@@ -50,7 +50,12 @@ def vt_scan(url_test):
     :return: # positive engines, # total engines
     '''
     retry = 0
-    api_key = "2b93fae94a62662be089e9aa067e672ac242e3276b0f6a1e44e298b4858d4cf8"
+    api_key = "f4529166d6daa0fe9f9ee8d9762ce20e6fb11edfac4fd5aa7598259b5e126bad"
+    # api_key = "ef976ea79e64b4a1c75d835da83f20e7d059bbf934a2d8bf740f1c071280bfdf"
+    # api_key = "3e9ba0fb7e33652a9ce6622c35dcf8bf7f49a8b710e60fdf7045f1ba1d222bcc"
+    # api_key = "64835b81030035855b9c5dffeb39e90befa3c07538879e1c44372be26c0adfae"
+    # api_key = "76d947105d47a73cc9fa20f1a1a5905f75ca4bb83fc0ff2f41b6cd14daa798e5"
+    # api_key = "2b93fae94a62662be089e9aa067e672ac242e3276b0f6a1e44e298b4858d4cf8"
     # FIXME: my public API: 76d947105d47a73cc9fa20f1a1a5905f75ca4bb83fc0ff2f41b6cd14daa798e5
     url = 'https://www.virustotal.com/vtapi/v2/url/report'
 
