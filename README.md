@@ -1,6 +1,6 @@
-# PHIND
+# PhishIntention
 
-## PHIND
+## PhishIntention
 - This is the official implementation of "Intention Matters: Extracting Static and Dynamic WebpageIntention for Identifying and Explaining Phishing Attacks"
     
 ## Framework
