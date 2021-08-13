@@ -114,17 +114,16 @@ please run evaluation scripts
 ```
 python -m src.pipeline_eval --data-dir [data folder] \
                             --mode [phish|benign] \
-                            --write-txt [output_file.txt] \
-                            --exp [pedia|intention] \ # evaluate Phishpedia or PHIND
-                            --ts [threshold for siamese, suggested to be 0.83]
+                            --write-txt output.txt \
+                            --exp intention \ # evaluate Phishpedia or PHIND
+                            --ts 0.83
 ```
 
 - For phish discovery experiment, the data folder should be organized in [this format](https://github.com/lindsey98/Phishpedia/tree/main/datasets/test_sites):
 
-If you want to run PHIND
 ```
 python phishintention_main.py --folder [data folder] \
-                              --results [output_file.txt]
+                              --results output_discover.txt
 ```
 
 <!-- If you want to run Phishpedia instead
