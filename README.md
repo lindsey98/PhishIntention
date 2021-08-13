@@ -5,7 +5,7 @@
     
 ## Framework
     
-<img src="big_pic/overall_flow.pdf" style="width:2000px;height:350px"/>
+<img src="big_pic/overall-flow.pdf" style="width:2000px;height:350px"/>
 
 ```Input```: a screenshot, ```Output```: Phish/Benign, Phishing target
 - Step 1: Enter <b>Abstract Layout detector</b>, get predicted elements
