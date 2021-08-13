@@ -30,15 +30,33 @@
 ## Project structure
 ```
 src
-    |___ credential_classifier: scripts for CRP classifier
-    |___ dynamic: scripts for CRP locator 
-    |___ element_detector: scripts for abstract layout detector 
-    |___ siamese_OCR: scripts for logo matcher
-    |___ util: other scripts (chromedriver utilities)
+    |___ element_detector/: scripts for abstract layout detector 
+        |__ output/
+            |__ website_lr0.001/
+                |__ model_final.pth
+    |___ credential_classifier/: scripts for CRP classifier
+        |__ credential_classifier/
+            |__ output/
+                |__ Increase_resolution_lr0.005/
+                    |__ BiT-M-R50x1V2_0.005.pth.tar
+    |___ dynamic/: scripts for CRP locator 
+        |__ login_finder/
+            |__ output/
+                |__ lr0.001_finetune/
+                    |__ model_final.pth
+
+    |___ siamese_OCR/: scripts for logo matcher
+        |__ demo_downgrade.pth.tar
+        |__ output/
+            |__ targetlist_lr0.01/
+                |__ bit.pth.tar
+    |___ util/: other scripts (chromedriver utilities)
     
-    |___ detectron2_pedia: training script for logo detector (for Phishpedia not PhishIntention)
-    |___ siamese_pedia: inference script for siamese (for Phishpedia not PhishIntention)
-    |___ adv_attack: adversarial attacking scripts
+    |___ detectron2_pedia/: training script for logo detector (for Phishpedia not PhishIntention)
+    |___ siamese_pedia/: inference script for siamese (for Phishpedia not PhishIntention)
+        |__ domain_map.pkl
+        |__ expand_targetlist/
+    |___ adv_attack/: adversarial attacking scripts
     
     |___ element_detector.py: inference script for abstract layout detector
     |___ credential.py: inference script for CRP classifier
