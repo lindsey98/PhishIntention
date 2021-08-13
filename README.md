@@ -35,7 +35,6 @@ src
             |__ website_lr0.001/
                 |__ model_final.pth
     |___ credential_classifier/: scripts for CRP classifier
-        |__ credential_classifier/
             |__ output/
                 |__ Increase_resolution_lr0.005/
                     |__ BiT-M-R50x1V2_0.005.pth.tar
