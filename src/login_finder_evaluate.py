@@ -5,11 +5,12 @@ import time
 from tqdm import tqdm
 from selenium.common.exceptions import TimeoutException, NoAlertPresentException
 import json
-from src.login_finder import login_config, login_recognition, keyword_heuristic, cv_heuristic, dynamic_analysis
+from src.login_finder import login_config, login_recognition, dynamic_analysis
 from src.element_detector import vis
 import cv2
-from src.element_detector import *
-from src.credential import *
+from src.element_detector import element_config
+from src.credential import credential_config
+import numpy as np
 
 def temporal_driver(lang_txt:str):
     '''
@@ -35,7 +36,7 @@ def temporal_driver(lang_txt:str):
     options.add_experimental_option("prefs", prefs)
     options.add_argument('--ignore-certificate-errors') # ignore errors
     options.add_argument('--ignore-ssl-errors')
-    options.add_argument("--headless") # disable browser (have some issues: https://github.com/mherrmann/selenium-python-helium/issues/47)
+    # options.add_argument("--headless") # disable browser (have some issues: https://github.com/mherrmann/selenium-python-helium/issues/47)
     options.add_argument('--no-proxy-server')
     options.add_argument("--proxy-server='direct://'")
     options.add_argument("--proxy-bypass-list=*")
@@ -199,16 +200,30 @@ if __name__ == '__main__':
     #     urldict = json.load(handle)
     # print(urldict)
 
+
+
     for kk, folder in tqdm(enumerate(os.listdir(legitimate_folder))):
+        if kk < 117:
+            continue
+        print(folder)
         screenshot_path = os.path.join(legitimate_folder, folder, 'shot.png')
         info_path = screenshot_path.replace('shot.png', 'info.txt')
         url = open(info_path, encoding='utf-8').read()
+        start_time = time.time()
         _, _, successful, process_time = dynamic_analysis(url=url, screenshot_path=screenshot_path,
                                                           cls_model=cls_model, ele_model=ele_model,
                                                           login_model=login_model,
                                                           driver=driver)
-        print(process_time)
-        break
+        total_time = time.time() - start_time
+        with open('./datasets/600_legitimate_runtime.txt', 'a+') as f:
+            f.write(folder+'\t'+str(process_time)+'\t'+str(total_time)+'\n')
+
+    dynamic_total = [float(x.split('\t')[-1]) for x in open('./datasets/600_legitimate_runtime.txt').readlines()]
+    dynamic_partial = [float(x.split('\t')[-2]) for x in open('./datasets/600_legitimate_runtime.txt').readlines()]
+    print(np.min(dynamic_total), np.median(dynamic_total), np.mean(dynamic_total), np.max(dynamic_total))
+    print(np.min(dynamic_partial), np.median(dynamic_partial),  np.mean(dynamic_partial), np.max(dynamic_partial))
+
+        # break
     # for kk, folder in tqdm(enumerate(os.listdir(legitimate_folder))):
     #
     #     old_screenshot_path = os.path.join(legitimate_folder, folder, 'shot.png')

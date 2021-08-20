@@ -96,6 +96,7 @@ def keyword_heuristic(driver, orig_url, page_text,
     print(page_text)
 
     # URL after loading might be different from orig_url
+    start_time = time.time()
     try:
         orig_url = driver.current_url
     except TimeoutException as e:
@@ -104,11 +105,14 @@ def keyword_heuristic(driver, orig_url, page_text,
     except WebDriverException as e:
         print(e)
         pass
+    time_deduct += time.time() - start_time
 
     for i in page_text: # iterate over html text
         # looking for keyword
+        start_time = time.time()
         keyword_finder = re.findall('(login)|(log in)|(log on)|(signup)|(sign up)|(sign in)|(sign on)|(submit)|(register)|(create.*account)|(open an account)|(get free.*now)|(join now)|(new user)|(my account)|(come in)|(check in)|(personal area)|(logg inn)|(Log-in)|(become a member)|(customer centre)|(登入)|(登录)|(登錄)|(登録)|(注册)|(Anmeldung)|(iniciar sesión)|(identifier)|(ログインする)|(サインアップ)|(ログイン)|(로그인)|(가입하기)|(시작하기)|(регистрация)|(войти)|(вход)|(accedered)|(gabung)|(daftar)|(masuk)|(girişi)|(Giriş)|(สมัครสม)|(üye ol)|(وارد)|(عضویت)|(regístrate)|(acceso)|(acessar)|(entrar )|(giriş)|(เข้าสู่ระบบ)|(สมัครสมาชิก)|(Přihlásit)|(mein konto)|(registrati)|(anmelden)|(me connecter)|(ingresa)|(mon allociné)|(accedi)|(мой профиль)|(حسابي)|(administrer)|(next)|(entre )|(cadastre-se)|(είσοδος)|(entrance)|(start now)|(accessibilité)|(accéder)|(zaloguj)|(otwórz konto osobiste)|(đăng nhập)|(devam)|(your account)',
                                         i, re.IGNORECASE)
+        time_deduct += time.time() - start_time
         if len(keyword_finder) > 0:
             ct += 1
             found_kw = [y for x in keyword_finder for y in x if len(y) > 0]
@@ -296,14 +300,15 @@ def dynamic_analysis(url, screenshot_path, login_model, ele_model, cls_model, dr
 
     # FIXME: load twice because google translate not working the first time it visits a website
     # FIXME: Tricks: If webdriver is not working, try 1) enable/diable google translate 2) enable/disable click popup window 3) switch on/off headless mode
-    visit_success, driver = visit_url(driver, orig_url, popup=True)
+    # visit_success, driver = visit_url(driver, orig_url, popup=True)
+    visit_success, driver = visit_url(driver, orig_url, popup=False)
     if not visit_success:
         return url, screenshot_path, successful, 0
     # visit_success, driver = visit_url(driver, orig_url, popup=True, sleep=True) # click popup window before proceeding
     # if not visit_success:
     #     return url, screenshot_path, successful, 0
 
-    time.sleep(5) # extra wait to translate html properly
+    time.sleep(1) # extra wait to translate html properly
 
     start_time = time.time()
     print("Getting url")
