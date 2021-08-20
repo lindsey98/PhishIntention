@@ -9,12 +9,12 @@ import torchvision as tv
 # from torchsummary import summary
 
 import os
-import credential_classifier.bit_pytorch.models as models
+import src.credential_classifier.bit_pytorch.models as models
 
-from credential_classifier import bit_common
-from credential_classifier import bit_hyperrule
+from src.credential_classifier import bit_common
+from src.credential_classifier import bit_hyperrule
 
-from credential_classifier.bit_pytorch.dataloader import GetLoader, ImageLoader, HybridLoader, HybridLoaderV2
+from src.credential_classifier.bit_pytorch.dataloader import GetLoader, ImageLoader, HybridLoader, HybridLoaderV2
 # from torch.utils.tensorboard import SummaryWriter
 import os
 os.environ["CUDA_VISIBLE_DEVICES"]="1,0"

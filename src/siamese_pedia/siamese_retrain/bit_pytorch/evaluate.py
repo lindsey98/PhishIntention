@@ -1,8 +1,8 @@
 
 import torch
 import numpy as np
-import bit_pytorch.models as models
-from bit_pytorch.dataloader import GetLoader
+import src.siamese_pedia.siamese_retrain.bit_pytorch.models as models
+from src.siamese_pedia.siamese_retrain.bit_pytorch.dataloader import GetLoader
 import torch.nn.functional as F
 import os
 import cv2

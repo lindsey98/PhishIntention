@@ -23,12 +23,12 @@ import numpy as np
 import torch
 import torchvision as tv
 
-import siamese_unified.bit_pytorch.fewshot as fs
-import siamese_unified.bit_pytorch.lbtoolbox as lb
-import siamese_unified.bit_pytorch.models as models
+import src.siamese_OCR.siamese_unified.bit_pytorch.fewshot as fs
+import src.siamese_OCR.siamese_unified.bit_pytorch.lbtoolbox as lb
+import src.siamese_OCR.siamese_unified.bit_pytorch.models as models
 
-import siamese_unified.bit_common as bit_common
-import siamese_unified.bit_hyperrule as bit_hyperrule
+import src.siamese_OCR.siamese_unified.bit_common as bit_common
+import src.siamese_OCR.siamese_unified.bit_hyperrule as bit_hyperrule
 from demo import *
 
 from .dataloader import GetLoader

@@ -19,7 +19,7 @@ import argparse
 import logging
 import logging.config
 import os
-from credential_classifier import bit_hyperrule
+from src.credential_classifier import bit_hyperrule
 
 
 def argparser(known_models):

@@ -1,8 +1,8 @@
 import torch
 import numpy as np
-import credential_classifier.bit_pytorch.models as models
-from credential_classifier.bit_pytorch.dataloader_debug import *
-from credential_classifier.HTML_heuristic.post_form import *
+import src.credential_classifier.bit_pytorch.models as models
+from src.credential_classifier.bit_pytorch.dataloader_debug import *
+from src.credential_classifier.HTML_heuristic.post_form import *
 import os
 import matplotlib.pyplot as plt
 from collections import OrderedDict

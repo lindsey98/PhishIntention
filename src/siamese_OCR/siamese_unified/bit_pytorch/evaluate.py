@@ -1,8 +1,8 @@
 
-from siamese_unified.bit_pytorch.train import run_eval, mktrainval
-import siamese_unified.bit_common as bit_common
+from src.siamese_OCR.siamese_unified.bit_pytorch.train import run_eval, mktrainval
+import src.siamese_OCR.siamese_unified.bit_common as bit_common
 import logging
-import siamese_unified.bit_pytorch.models as models
+import src.siamese_OCR.siamese_unified.bit_pytorch.models as models
 import torch
 from os.path import join as pjoin
 
