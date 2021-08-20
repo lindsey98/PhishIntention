@@ -109,7 +109,7 @@ unzip and move them to **datasets/**
 ### 3. Run experiment 
 - For general experiment on Phish 25K nonCRP and Benign 25K:
 please run evaluation scripts
-```
+```bash
 python -m src.pipeline_eval --data-dir [data folder] \
                             --mode [phish|benign] \
                             --write-txt output.txt \
@@ -119,7 +119,7 @@ python -m src.pipeline_eval --data-dir [data folder] \
 
 - For phish discovery experiment, the data folder should be organized in [this format](https://github.com/lindsey98/Phishpedia/tree/main/datasets/test_sites):
 
-```
+```bash
 python phishintention_main.py --folder [data folder] \
                               --results output_discover.txt
 ```
