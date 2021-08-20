@@ -5,7 +5,7 @@
     
 ## Framework
     
-<img src="big_pic/pic.jpg" style="width:2000px;height:350px"/>
+<img src="big_pic/Screenshot 2021-08-13 at 9.15.56 PM.png" style="width:2000px;height:350px"/>
 
 ```Input```: a screenshot, ```Output```: Phish/Benign, Phishing target
 - Step 1: Enter <b>Abstract Layout detector</b>, get predicted elements
@@ -43,7 +43,6 @@ src
             |__ output/
                 |__ lr0.001_finetune/
                     |__ model_final.pth
-
     |___ siamese_OCR/: scripts for logo matcher
         |__ demo_downgrade.pth.tar
         |__ output/
@@ -65,9 +64,6 @@ src
 
 phishintention_config.py: phish-discovery experiment config file for PhishIntention
 phishintention_main.py: phish-discovery experiment evaluation script for PhishIntention
-phishpedia_config.py: phish-discovery experiment config file for Phishpedia
-phishpedia_main.py: phish-discovery experiment evaluation script for Phishpedia
-
 ```
 
 ## Requirements
