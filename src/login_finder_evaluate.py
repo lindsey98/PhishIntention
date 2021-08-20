@@ -203,7 +203,7 @@ if __name__ == '__main__':
 
 
     for kk, folder in tqdm(enumerate(os.listdir(legitimate_folder))):
-        if kk < 117:
+        if kk < 138:
             continue
         print(folder)
         screenshot_path = os.path.join(legitimate_folder, folder, 'shot.png')
