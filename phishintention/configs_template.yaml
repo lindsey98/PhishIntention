@@ -1,0 +1,21 @@
+
+AWL_MODEL: # element recognition model -- logo only
+  CFG_PATH: CONDA_ENV_PATH_PLACEHOLDER/src/AWL_detector_utils/configs/faster_rcnn_web.yaml
+  WEIGHTS_PATH: CONDA_ENV_PATH_PLACEHOLDER/src/AWL_detector_utils/output/website_lr0.001/model_final.pth
+
+CRP_CLASSIFIER:
+  WEIGHTS_PATH: CONDA_ENV_PATH_PLACEHOLDER/src/crp_classifier_utils/output/Increase_resolution_lr0.005/BiT-M-R50x1V2_0.005.pth.tar
+  MODEL_TYPE: 'mixed'
+
+CRP_LOCATOR: # element recognition model -- logo only
+  CFG_PATH: CONDA_ENV_PATH_PLACEHOLDER/src/crp_locator_utils/login_finder/configs/faster_rcnn_login_lr0.001_finetune.yaml
+  WEIGHTS_PATH: CONDA_ENV_PATH_PLACEHOLDER/src/crp_locator_utils/login_finder/output/lr0.001_finetune/model_final.pth
+
+SIAMESE_MODEL:
+  NUM_CLASSES: 277 # number of brands, users don't need to modify this even the targetlist is expanded
+  WEIGHTS_PATH: CONDA_ENV_PATH_PLACEHOLDER/src/OCR_siamese_utils/output/targetlist_lr0.01/bit.pth.tar
+  OCR_WEIGHTS_PATH: CONDA_ENV_PATH_PLACEHOLDER/src/OCR_siamese_utils/demo_downgrade.pth.tar
+  TARGETLIST_PATH: CONDA_ENV_PATH_PLACEHOLDER/src/phishpedia_siamese/expand_targetlist.zip
+  MATCH_THRE: 0.87 # FIXME: threshold is 0.87 in phish-discovery?
+  DOMAIN_MAP_PATH: CONDA_ENV_PATH_PLACEHOLDER/src/phishpedia_siamese/domain_map.pkl
+

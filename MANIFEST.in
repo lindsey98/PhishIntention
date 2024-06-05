@@ -1,0 +1,10 @@
+include LICENSE
+include README.md
+recursive-include phishintention/src/AWL_detector_utils/configs/*
+include phishintention/src/AWL_detector_utils/output/website_lr0.001/model_final.pth
+include phishintention/src/crp_classifier_utils/output/Increase_resolution_lr0.005/BiT-M-R50x1V2_0.005.pth.tar
+include phishintention/src/crp_locator_utils/login_finder/output/lr0.001_finetune/model_final.pth
+include phishintention/src/crp_locator_utils/login_finder/configs/faster_rcnn_login_lr0.001_finetune.yaml
+include phishintention/src/OCR_siamese_utils/output/targetlist_lr0.01/bit.pth.tar
+include phishintention/src/OCR_siamese_utils/demo_downgrade.pth.tar
+include phishintention/src/phishpedia_siamese/expand_targetlist.zip
