@@ -1,0 +1,61 @@
+
+
+MODEL:
+  META_ARCHITECTURE: "GeneralizedRCNN"
+  BACKBONE:
+    NAME: "build_resnet_fpn_backbone"
+    FREEZE_AT: 2 # Default 2
+  RESNETS:
+    OUT_FEATURES: [ "res2", "res3", "res4", "res5" ]
+    DEPTH: 50 # ResNet50
+  FPN:
+    IN_FEATURES: [ "res2", "res3", "res4", "res5" ]
+  ANCHOR_GENERATOR:
+    SIZES: [ [ 32 ], [ 64 ], [ 128 ], [ 256 ], [ 512 ] ] # One size for each in feature map
+    ASPECT_RATIOS: [ [ 0.5, 1.0, 2.0 ] ] # Three aspect ratios (same for all in feature maps)
+  RPN:
+    IN_FEATURES: [ "p2", "p3", "p4", "p5", "p6" ]
+    PRE_NMS_TOPK_TRAIN: 2000 # Per FPN level
+    PRE_NMS_TOPK_TEST: 1000 # Per FPN level
+    # Detectron1 uses 2000 proposals per-batch,
+    # (See "modeling/rpn/rpn_outputs.py" for details of this legacy issue)
+    # which is approximately 1000 proposals per-image since the default batch size for FPN is 2.
+    POST_NMS_TOPK_TRAIN: 1000
+    POST_NMS_TOPK_TEST: 1000
+  ROI_HEADS:
+    NAME: "StandardROIHeads"
+    IN_FEATURES: [ "p2", "p3", "p4", "p5" ]
+    NUM_CLASSES: 1 # Change to suit own task
+    # Can reduce this for lower memory/faster training; Default 512
+    BATCH_SIZE_PER_IMAGE: 512
+  ROI_BOX_HEAD:
+    NAME: "FastRCNNConvFCHead"
+    NUM_FC: 2
+    POOLER_RESOLUTION: 7
+  ROI_MASK_HEAD:
+    NAME: "MaskRCNNConvUpsampleHead"
+    NUM_CONV: 4
+    POOLER_RESOLUTION: 14
+  # COCO ResNet50 weights
+  WEIGHTS: "https://dl.fbaipublicfiles.com/detectron2/COCO-Detection/faster_rcnn_R_50_FPN_3x/137849458/model_final_280758.pkl"
+  MASK_ON: False # Not doing segmentation
+
+DATASETS:
+  TRAIN: ("login_train",)
+  TEST: ("login_test",)
+DATALOADER:
+  NUM_WORKERS: 0
+SOLVER:
+  IMS_PER_BATCH: 8 # Batch size; Default 16
+  BASE_LR: 0.001
+  # (2/3, 8/9)
+  STEPS: (12000, 16000) # The iteration number to decrease learning rate by GAMMA.
+  MAX_ITER: 18000 # Number of training iterations
+  CHECKPOINT_PERIOD: 4000 # Saves checkpoint every number of steps
+INPUT:
+  MIN_SIZE_TRAIN: (640, 672, 704, 736, 768, 800) # Image input sizes
+TEST:
+  # The period (in terms of steps) to evaluate the model during training.
+  # Set to 0 to disable.
+  EVAL_PERIOD: 2000
+

@@ -1,0 +1,10 @@
+phishintention/src/phishpedia_siamese/expand_targetlist/
+src/tele/
+discovery_results/
+*.pkl
+*.zip
+*/__pycache__/*
+*.pth*
+models/*
+*.DS_Store
+*.pyc
