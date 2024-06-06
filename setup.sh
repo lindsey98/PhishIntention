@@ -40,7 +40,7 @@ else
 fi
 
 # Install other requirements
-conda run -n "$ENV_NAME" python -m pip install -r requirements.txt 
+# conda run -n "$ENV_NAME" python -m pip install -r requirements.txt 
 
 # Install the package with verbose output using conda run
 echo "Installing the package..."
