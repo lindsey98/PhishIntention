@@ -96,14 +96,14 @@ Requirements:
 
 1. Create a local clone of PhishIntention
 ```bash
-git clone https://github.com/lindsey98/PhishIntention.git
+git clone -b development --single-branch https://github.com/lindsey98/PhishIntention.git
 ```
 
 Run setup 
 ```bash
 cd PhishIntention
 chmod +x setup.sh
-./setup.sh
+export ENV_NAME="phishintention" && ./setup.sh
 ```
 If you encounter any problem in downloading the models, you can download them manually from here https://huggingface.co/Kelsey98/PhishIntention.
 
@@ -111,7 +111,7 @@ If you encounter any problem in downloading the models, you can download them ma
 To test a single site
 
 ```bash
-conda activate myenv
+conda activate phishintention
 ```
 
 ```python
