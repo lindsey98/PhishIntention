@@ -1,4 +1,10 @@
 #!/bin/bash
+# Check if ENV_NAME is set
+if [ -z "$ENV_NAME" ]; then
+  echo "ENV_NAME is not set. Please set the environment name and try again."
+  exit 1
+fi
+
 retry_count=3  # Number of retries
 
 download_with_retry() {
@@ -8,14 +14,15 @@ download_with_retry() {
 
   until [ $count -ge $retry_count ]
   do
-    gdown --id "$file_id" -O "$file_name" && break  # attempt to download and break if successful
+    conda run -n "$ENV_NAME" gdown --id "$file_id" -O "$file_name" && break  # attempt to download and break if successful
     count=$((count+1))
     echo "Retry $count of $retry_count..."
-    sleep 1  # wait for 5 seconds before retrying
+    sleep 1  # wait for 1 second before retrying
   done
 
   if [ $count -ge $retry_count ]; then
     echo "Failed to download $file_name after $retry_count attempts."
+    exit 1
   fi
 }
 
@@ -55,9 +62,6 @@ fi
 
 # Install additional packages
 conda run -n "$ENV_NAME" python -m pip install -r requirements.txt
-conda run -n "$ENV_NAME" python -m pip install helium
-conda run -n "$ENV_NAME" python -m pip install webdriver-manager
-conda run -n "$ENV_NAME" python -m pip install gdown
 
 ## Download models
 echo "Going to the directory of package Phishpedia in Conda environment myenv."
