@@ -20,44 +20,42 @@ download_with_retry() {
 }
 
 FILEDIR=$(pwd)
-CONDA_BASE=$(conda info --base)
-source "$CONDA_BASE/etc/profile.d/conda.sh"
 
-conda info --envs | grep -w "phishintention" > /dev/null
-
+# Check if Conda environment exists
+conda info --envs | grep -q "^$ENV_NAME "
 if [ $? -eq 0 ]; then
-   echo "Activating Conda environment phishintention"
-   conda activate phishintention
+   echo "Activating existing Conda environment $ENV_NAME"
+   conda activate "$ENV_NAME"
 else
-   echo "Creating and activating new Conda environment phishintention with Python 3.8"
-   conda create -n phishintention python=3.8
-   conda activate phishintention
+   echo "Creating and activating new Conda environment with Python 3.8"
+   conda create -n "$ENV_NAME" python=3.8 -y
+   conda activate "$ENV_NAME"
 fi
-
 
 OS=$(uname -s)
 
 if [[ "$OS" == "Darwin" ]]; then
   echo "Installing PyTorch and torchvision for macOS."
-  pip install torch==1.9.0 torchvision==0.10.0 torchaudio==0.9.0
-  python -m pip install detectron2 -f "https://dl.fbaipublicfiles.com/detectron2/wheels/cpu/torch1.9/index.html"
+  conda run -n "$ENV_NAME" pip install torch==1.9.0 torchvision==0.10.0 torchaudio==0.9.0
+  conda run -n "$ENV_NAME" python -m pip install detectron2 -f "https://dl.fbaipublicfiles.com/detectron2/wheels/cpu/torch1.9/index.html"
 else
   # Check if NVIDIA GPU is available for Linux and Windows
-  if command -v nvcc || command -v nvidia-smi &> /dev/null; then
+  if command -v nvcc &> /dev/null || command -v nvidia-smi &> /dev/null; then
     echo "CUDA is detected, installing GPU-supported PyTorch and torchvision."
-    pip install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 -f "https://download.pytorch.org/whl/torch_stable.html"
-    python -m pip install detectron2 -f "https://dl.fbaipublicfiles.com/detectron2/wheels/cu111/torch1.9/index.html"
+    conda run -n "$ENV_NAME" pip install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 -f "https://download.pytorch.org/whl/torch_stable.html"
+    conda run -n "$ENV_NAME" python -m pip install detectron2 -f "https://dl.fbaipublicfiles.com/detectron2/wheels/cu111/torch1.9/index.html"
   else
     echo "No CUDA detected, installing CPU-only PyTorch and torchvision."
-    pip install torch==1.9.0+cpu torchvision==0.10.0+cpu torchaudio==0.9.0 -f "https://download.pytorch.org/whl/torch_stable.html"
-    python -m pip install detectron2 -f "https://dl.fbaipublicfiles.com/detectron2/wheels/cpu/torch1.9/index.html"
+    conda run -n "$ENV_NAME" pip install torch==1.9.0+cpu torchvision==0.10.0+cpu torchaudio==0.9.0 -f "https://download.pytorch.org/whl/torch_stable.html"
+    conda run -n "$ENV_NAME" python -m pip install detectron2 -f "https://dl.fbaipublicfiles.com/detectron2/wheels/cpu/torch1.9/index.html"
   fi
 fi
 
-python -m pip install -r requirements.txt
-python -m pip install helium
-python -m pip install webdriver-manager
-python -m pip install gdown
+# Install additional packages
+conda run -n "$ENV_NAME" python -m pip install -r requirements.txt
+conda run -n "$ENV_NAME" python -m pip install helium
+conda run -n "$ENV_NAME" python -m pip install webdriver-manager
+conda run -n "$ENV_NAME" python -m pip install gdown
 
 ## Download models
 echo "Going to the directory of package Phishpedia in Conda environment myenv."
