@@ -7,39 +7,42 @@ OS=$(uname -s)
 
 if [[ "$OS" == "Darwin" ]]; then
   echo "Installing PyTorch and torchvision for macOS."
-  pip install torch==1.9.0 torchvision==0.10.0 torchaudio==0.9.0
-  python -m pip install detectron2 -f "https://dl.fbaipublicfiles.com/detectron2/wheels/cpu/torch1.9/index.html"
+  conda run -n "$ENV_NAME" pip install torch==1.9.0 torchvision==0.10.0 torchaudio==0.9.0
+  conda run -n "$ENV_NAME" python -m pip install detectron2 -f "https://dl.fbaipublicfiles.com/detectron2/wheels/cpu/torch1.9/index.html"
 else
   # Check if NVIDIA GPU is available for Linux and Windows
   if command -v nvcc || command -v nvidia-smi &> /dev/null; then
     echo "CUDA is detected, installing GPU-supported PyTorch and torchvision."
-    pip install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 -f "https://download.pytorch.org/whl/torch_stable.html"
-    python -m pip install detectron2 -f "https://dl.fbaipublicfiles.com/detectron2/wheels/cu111/torch1.9/index.html"
+    conda run -n "$ENV_NAME" pip install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 -f "https://download.pytorch.org/whl/torch_stable.html"
+    conda run -n "$ENV_NAME" python -m pip install detectron2 -f "https://dl.fbaipublicfiles.com/detectron2/wheels/cu111/torch1.9/index.html"
   else
     echo "No CUDA detected, installing CPU-only PyTorch and torchvision."
-    pip install torch==1.9.0+cpu torchvision==0.10.0+cpu torchaudio==0.9.0 -f "https://download.pytorch.org/whl/torch_stable.html"
-    python -m pip install detectron2 -f "https://dl.fbaipublicfiles.com/detectron2/wheels/cpu/torch1.9/index.html"
+    conda run -n "$ENV_NAME" pip install torch==1.9.0+cpu torchvision==0.10.0+cpu torchaudio==0.9.0 -f "https://download.pytorch.org/whl/torch_stable.html"
+    conda run -n "$ENV_NAME" python -m pip install detectron2 -f "https://dl.fbaipublicfiles.com/detectron2/wheels/cpu/torch1.9/index.html"
   fi
 fi
 
 # Install other requirements
-python -m pip install -r requirements.txt
-python -m pip install helium
-python -m pip install webdriver-manager
-python -m pip install gdown
+conda run -n "$ENV_NAME" python -m pip install -r requirements.txt
+conda run -n "$ENV_NAME" python -m pip install helium
+conda run -n "$ENV_NAME" python -m pip install webdriver-manager
+conda run -n "$ENV_NAME" python -m pip install gdown
 
-# Install PhishIntention as a package
-pip install -v .
-package_location=$(pip show phishintention | grep Location | awk '{print $2}')
+# Install the package with verbose output using conda run
+conda run -n "$ENV_NAME" pip install -v .
 
-if [ -z "PhishIntention" ]; then
-  echo "Package PhishIntention not found in the Conda environment myenv."
+# Get the package location
+package_location=$(conda run -n "$ENV_NAME" pip show phishintention | grep Location | awk '{print $2}')
+
+# Check if the package location is found and not empty
+if [ -z "$package_location" ]; then
+  echo "Package phishintention not found in the Conda environment $ENV_NAME."
   exit 1
 else
-  echo "Going to the directory of package PhishIntention in Conda environment myenv."
+  echo "Going to the directory of package phishintention in Conda environment $ENV_NAME."
   cd "$package_location/phishintention" || exit
-  pip install gdown
-  gdown --id 1zw2MViLSZRemrEsn2G-UzHRTPTfZpaEd
+  conda run -n "$ENV_NAME" pip install gdown
+  conda run -n "$ENV_NAME" gdown --id 1zw2MViLSZRemrEsn2G-UzHRTPTfZpaEd
   sudo apt-get install unzip
   unzip src.zip
 fi
