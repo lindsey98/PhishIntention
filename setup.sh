@@ -1,6 +1,44 @@
 #!/bin/bash
+if [ -z "$ENV_NAME" ]; then
+  echo "ENV_NAME is not set. Please set the environment name and try again."
+  exit 1
+fi
+
+retry_count=3  # Number of retries
+
+download_with_retry() {
+  local file_id=$1
+  local file_name=$2
+  local count=0
+
+  until [ $count -ge $retry_count ]
+  do
+    conda run -n "$ENV_NAME" gdown --id "$file_id" -O "$file_name" && break  # attempt to download and break if successful
+    count=$((count+1))
+    echo "Retry $count of $retry_count..."
+    sleep 1  # wait for 1 second before retrying
+  done
+
+  if [ $count -ge $retry_count ]; then
+    echo "Failed to download $file_name after $retry_count attempts."
+    exit 1
+  fi
+}
 
 FILEDIR=$(pwd)
+CONDA_BASE=$(conda info --base)
+source "$CONDA_BASE/etc/profile.d/conda.sh"
+
+# Check if Conda environment exists
+conda info --envs | grep -q "^$ENV_NAME "
+if [ $? -eq 0 ]; then
+   echo "Activating existing Conda environment $ENV_NAME"
+   conda activate "$ENV_NAME"
+else
+   echo "Creating and activating new Conda environment with Python 3.8"
+   conda create -n "$ENV_NAME" python=3.8 -y
+   conda activate "$ENV_NAME"
+fi
 
 # Install pytorch, torchvision, detectron2
 OS=$(uname -s)
