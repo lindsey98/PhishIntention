@@ -20,6 +20,8 @@ download_with_retry() {
 }
 
 FILEDIR=$(pwd)
+CONDA_BASE=$(conda info --base)
+source "$CONDA_BASE/etc/profile.d/conda.sh"
 
 # Check if Conda environment exists
 conda info --envs | grep -q "^$ENV_NAME "
