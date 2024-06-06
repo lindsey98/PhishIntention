@@ -23,10 +23,8 @@ else
 fi
 
 # Install other requirements
-conda run -n "$ENV_NAME" python -m pip install -r requirements.txt
-conda run -n "$ENV_NAME" python -m pip install helium
-conda run -n "$ENV_NAME" python -m pip install webdriver-manager
-conda run -n "$ENV_NAME" python -m pip install gdown
+conda run -n "$ENV_NAME" python -m pip install -r requirements.txt 
+
 
 # Install the package with verbose output using conda run
 conda run -n "$ENV_NAME" pip install -v .
