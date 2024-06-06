@@ -70,7 +70,7 @@ cd PhishIntention
 2. Setup
 ```bash
 chmod +x setup.sh
-./setup.sh
+export ENV_NAME="phishintention" && ./setup.sh
 ```
 
 3. 
