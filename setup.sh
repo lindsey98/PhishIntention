@@ -25,8 +25,8 @@ fi
 # Install other requirements
 conda run -n "$ENV_NAME" python -m pip install -r requirements.txt 
 
-
 # Install the package with verbose output using conda run
+echo "Installing the package..."
 conda run -n "$ENV_NAME" pip install -v .
 
 # Get the package location
@@ -39,9 +39,11 @@ if [ -z "$package_location" ]; then
 else
   echo "Going to the directory of package phishintention in Conda environment $ENV_NAME."
   cd "$package_location/phishintention" || exit
-  conda run -n "$ENV_NAME" pip install gdown
   conda run -n "$ENV_NAME" gdown --id 1zw2MViLSZRemrEsn2G-UzHRTPTfZpaEd
-  sudo apt-get install unzip
+  if ! command -v unzip &> /dev/null; then
+    echo "unzip could not be found, installing it..."
+    sudo apt-get install unzip -y
+  fi
   unzip src.zip
 fi
 
