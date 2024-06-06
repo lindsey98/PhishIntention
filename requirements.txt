@@ -20,3 +20,6 @@ h2
 hyperframe
 selenium==4.0.0
 selenium-wire
+helium 
+webdriver-manager 
+gdown
