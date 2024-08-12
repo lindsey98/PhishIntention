@@ -13,6 +13,7 @@ from modules.crp_locator import crp_locator
 from utils.web_utils import driver_loader
 from tqdm import tqdm
 import re
+# from memory_profiler import profile
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
@@ -29,6 +30,7 @@ class PhishIntentionWrapper:
         print(f'Length of reference list = {len(self.LOGO_FEATS)}')
 
     '''PhishIntention'''
+    @profile
     def test_orig_phishintention(self, url, screenshot_path):
 
         waive_crp_classifier = False
@@ -184,8 +186,10 @@ if __name__ == '__main__':
         if not os.path.exists(screenshot_path):
             continue
 
-        # url = eval(open(info_path).read())['url']
-        url = open(info_path).read()
+        if os.path.exists(info_path):
+            url = open(info_path).read()
+        else:
+            url = "https://" + folder
 
         if os.path.exists(result_txt) and url in open(result_txt, encoding='ISO-8859-1').read():
             continue

@@ -61,7 +61,8 @@ else
 fi
 
 # Install additional packages
-conda run -n "$ENV_NAME" python -m pip install -r requirements.txt
+conda run -n "$ENV_NAME" python -m pip install helium
+conda run -n "$ENV_NAME" pip install --upgrade pip setuptools wheel
 
 ## Download models
 echo "Going to the directory of package Phishpedia in Conda environment myenv."
@@ -98,13 +99,11 @@ if [ -f "ocr_pretrained.pth.tar" ]; then
 else
   download_with_retry 15pfVWnZR-at46gqxd50cWhrXemP8oaxp ocr_pretrained.pth.tar
 fi
-
 if [ -f "ocr_siamese.pth.tar" ]; then
   echo "OCR-siamese weights exists... skip"
 else
   download_with_retry 1BxJf5lAcNEnnC0In55flWZ89xwlYkzPk ocr_siamese.pth.tar
 fi
-
 
 # Reference list
 if [ -f "expand_targetlist.zip" ]; then
