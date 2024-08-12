@@ -67,10 +67,14 @@ git clone https://github.com/lindsey98/PhishIntention.git
 cd PhishIntention
 ```
 
-2. Setup
+2. Setup.
+In this step, we would be installing the core dependencies of PhishIntention such as pytorch, and detectron2. 
+In addition, we would also download the model checkpoints and brand reference list.
+This step may take some time.
 ```bash
 chmod +x setup.sh
-export ENV_NAME="phishintention" && ./setup.sh
+export ENV_NAME="phishintention"
+./setup.sh
 ```
 
 3. 

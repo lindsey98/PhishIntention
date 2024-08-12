@@ -18,8 +18,9 @@ httpcore==0.15.0
 h11
 h2
 hyperframe
-selenium==4.0.0
 selenium-wire
-helium 
-webdriver-manager 
+blinker==1.7.0
+webdriver-manager
 gdown
+memory-profiler
+psutil

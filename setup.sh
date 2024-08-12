@@ -46,7 +46,7 @@ OS=$(uname -s)
 if [[ "$OS" == "Darwin" ]]; then
   echo "Installing PyTorch and torchvision for macOS."
   conda run -n "$ENV_NAME" pip install torch==1.9.0 torchvision==0.10.0 torchaudio==0.9.0
-  conda run -n "$ENV_NAME" python -m pip install detectron2 -f "https://dl.fbaipublicfiles.com/detectron2/wheels/cpu/torch1.9/index.html"
+  conda run -n "$ENV_NAME"  python -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
 else
   # Check if NVIDIA GPU is available for Linux and Windows
   if command -v nvcc &> /dev/null || command -v nvidia-smi &> /dev/null; then
