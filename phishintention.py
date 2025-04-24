@@ -30,7 +30,7 @@ class PhishIntentionWrapper:
         print(f'Length of reference list = {len(self.LOGO_FEATS)}')
 
     '''PhishIntention'''
-    @profile
+    # @profile
     def test_orig_phishintention(self, url, screenshot_path):
 
         waive_crp_classifier = False
