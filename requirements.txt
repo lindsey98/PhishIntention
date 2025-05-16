@@ -21,6 +21,5 @@ hyperframe
 selenium-wire
 blinker==1.7.0
 webdriver-manager
-gdown
 memory-profiler
 psutil

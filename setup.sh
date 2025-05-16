@@ -61,8 +61,8 @@ else
 fi
 
 # Install additional packages
-conda run -n "$ENV_NAME" python -m pip install helium
-conda run -n "$ENV_NAME" pip install --upgrade pip setuptools wheel
+conda run -n "$ENV_NAME" python -m pip install -r requirements.txt
+#conda run -n "$ENV_NAME" pip install --upgrade pip setuptools wheel
 
 ## Download models
 echo "Going to the directory of package Phishpedia in Conda environment myenv."
