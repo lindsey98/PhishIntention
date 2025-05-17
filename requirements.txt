@@ -20,7 +20,7 @@ h2
 hyperframe
 selenium-wire
 blinker==1.7.0
+helium
 webdriver-manager
-gdown
 memory-profiler
 psutil

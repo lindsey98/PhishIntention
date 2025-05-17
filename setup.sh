@@ -61,7 +61,7 @@ else
 fi
 
 # Install additional packages
-conda run -n "$ENV_NAME" python -m pip install helium
+conda run -n "$ENV_NAME" python -m pip install -r requirements.txt
 conda run -n "$ENV_NAME" pip install --upgrade pip setuptools wheel
 
 ## Download models
@@ -111,6 +111,34 @@ if [ -f "expand_targetlist.zip" ]; then
 else
   download_with_retry 1fr5ZxBKyDiNZ_1B6rRAfZbAHBBoUjZ7I expand_targetlist.zip
 fi
+
+# Unzip the file
+unzip expand_targetlist.zip -d expand_targetlist
+
+# Change to the extracted directory
+cd expand_targetlist || exit 1  # Exit if the directory doesn't exist
+
+# Check if there's a nested 'expand_targetlist/' directory
+if [ -d "expand_targetlist" ]; then
+  echo "Nested directory 'expand_targetlist/' detected. Moving contents up..."
+
+  # Enable dotglob to include hidden files
+  shopt -s dotglob
+
+  # Move everything from the nested directory to the current directory
+  mv expand_targetlist/* .
+
+  # Disable dotglob to revert back to normal behavior
+  shopt -u dotglob
+
+  # Remove the now-empty nested directory
+  rmdir expand_targetlist
+  cd ../
+else
+  echo "No nested 'expand_targetlist/' directory found. No action needed."
+fi
+
+echo "Extraction completed successfully."
 
 # Domain map
 if [ -f "domain_map.pkl" ]; then
