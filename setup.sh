@@ -22,8 +22,8 @@ if [ $? -eq 0 ]; then
    echo "Activating existing Conda environment $ENV_NAME"
    conda activate "$ENV_NAME"
 else
-   echo "Creating and activating new Conda environment with Python 3.9"
-   conda create -n "$ENV_NAME" python=3.9 -y
+   echo "Creating and activating new Conda environment with Python 3.8"
+   conda create -n "$ENV_NAME" python=3.8 -y
    conda activate "$ENV_NAME"
 fi
 
