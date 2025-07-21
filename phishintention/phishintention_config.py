@@ -5,7 +5,7 @@ from phishintention.src.AWL_detector import *
 from phishintention.src.crp_classifier import *
 from phishintention.src.util.chrome import *
 from phishintention.src.crp_locator import *
-import helium
+#ihelmport helium
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from webdriver_manager.chrome import ChromeDriverManager
 from typing import Union
@@ -30,7 +30,7 @@ def driver_loader():
                               chrome_options=options)
     driver.set_page_load_timeout(60)  # set timeout to avoid wasting time
     driver.set_script_timeout(60)  # set timeout to avoid wasting time
-    helium.set_driver(driver)
+    #helium.set_driver(driver)
     return driver
 
 
