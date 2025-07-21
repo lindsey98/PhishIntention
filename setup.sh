@@ -35,16 +35,9 @@ if [[ "$OS" == "Darwin" ]]; then
   conda run -n "$ENV_NAME" pip install torch==1.9.0 torchvision==0.10.0 torchaudio==0.9.0
   conda run -n "$ENV_NAME" pip install 'git+https://github.com/facebookresearch/detectron2.git'
 else
-  # Check for NVIDIA GPU by looking for 'nvcc' or 'nvidia-smi'
-  if command -v nvcc > /dev/null 2>&1 || command -v nvidia-smi > /dev/null 2>&1; then
-    echo "CUDA detected. Installing GPU-supported PyTorch and torchvision..."
-    conda run -n "$ENV_NAME" pip install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 -f "https://download.pytorch.org/whl/torch_stable.html"
-    conda run -n "$ENV_NAME" pip install detectron2 -f "https://dl.fbaipublicfiles.com/detectron2/wheels/cu111/torch1.9/index.html"
-  else
-    echo "No CUDA detected. Installing CPU-only PyTorch and torchvision..."
-    conda run -n "$ENV_NAME" pip install torch==1.9.0+cpu torchvision==0.10.0+cpu torchaudio==0.9.0 -f "https://download.pytorch.org/whl/torch_stable.html"
-    conda run -n "$ENV_NAME" pip install detectron2 -f "https://dl.fbaipublicfiles.com/detectron2/wheels/cpu/torch1.9/index.html"
-  fi
+  echo "Installing CPU-only PyTorch and torchvision..."
+  conda run -n "$ENV_NAME" pip install torch==1.9.0+cpu torchvision==0.10.0+cpu torchaudio==0.9.0 -f "https://download.pytorch.org/whl/torch_stable.html"
+  conda run -n "$ENV_NAME" pip install detectron2 -f "https://dl.fbaipublicfiles.com/detectron2/wheels/cpu/torch1.9/index.html"
 fi
 
 # 6. Ensure gdown is installed in the environment
