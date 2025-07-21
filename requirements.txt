@@ -21,6 +21,7 @@ hyperframe
 selenium-wire
 blinker==1.7.0
 helium
+selenium==4.9.0
 webdriver-manager
 memory-profiler
 psutil
