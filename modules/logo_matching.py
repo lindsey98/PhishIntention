@@ -443,6 +443,17 @@ def get_ocr_aided_siamese_embedding(img, model, ocr_model, grayscale=False):
 
     return logo_feat
 
+def chunked_dot(logo_feat_list, img_feat, chunk_size=128):
+    sim_list = []
+
+    for start in range(0, logo_feat_list.shape[0], chunk_size):
+        end = start + chunk_size
+        chunk = logo_feat_list[start:end]
+        sim_chunk = np.dot(chunk, img_feat.T)  # shape: (chunk_size, M)
+        sim_list.extend(sim_chunk)
+
+    return sim_list
+
 def pred_brand(model, ocr_model, domain_map, logo_feat_list, file_name_list, shot_path: str, pred_bbox, t_s, grayscale=False):
     '''
     Return predicted brand for one cropped image
@@ -468,7 +479,7 @@ def pred_brand(model, ocr_model, domain_map, logo_feat_list, file_name_list, sho
     img_feat = get_ocr_aided_siamese_embedding(cropped, model, ocr_model, grayscale=grayscale)
 
     ## get cosine similarity with every protected logo
-    sim_list = logo_feat_list @ img_feat.T  # take dot product for every pair of embeddings (Cosine Similarity)
+    sim_list = chunked_dot(logo_feat_list, img_feat)  # take dot product for every pair of embeddings (Cosine Similarity)
     pred_brand_list = file_name_list
 
     assert len(sim_list) == len(pred_brand_list)
