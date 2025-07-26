@@ -30,7 +30,6 @@ class PhishIntentionWrapper:
         print(f'Length of reference list = {len(self.LOGO_FEATS)}')
 
     '''PhishIntention'''
-    # @profile
     def test_orig_phishintention(self, url, screenshot_path):
 
         waive_crp_classifier = False
@@ -153,16 +152,6 @@ class PhishIntentionWrapper:
                     pred_boxes, pred_classes
 
 if __name__ == '__main__':
-
-    '''update domain map'''
-    # with open('./lib/phishpedia/models/domain_map.pkl', "rb") as handle:
-    #     domain_map = pickle.load(handle)
-    #
-    # domain_map['weibo'] = ['sina', 'weibo']
-    #
-    # with open('./lib/phishpedia/models/domain_map.pkl', "wb") as handle:
-    #     pickle.dump(domain_map, handle)
-    # exit()
 
     '''run'''
     today = datetime.now().strftime('%Y%m%d')
