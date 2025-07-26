@@ -1,12 +1,12 @@
 from selenium.common.exceptions import NoSuchElementException, TimeoutException, MoveTargetOutOfBoundsException, StaleElementReferenceException
-from seleniumwire import webdriver
+from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from webdriver_manager.chrome import ChromeDriverManager
 import helium
 import time
 import re
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service as ChromeService
 
 def initialize_chrome_settings():
     '''
@@ -131,29 +131,14 @@ def visit_url(driver, orig_url):
 
 
 def driver_loader():
-    '''
-    load chrome driver
-    '''
-
-    seleniumwire_options = {
-        'seleniumwire_options': {
-            'enable_console_log': True,
-            'log_level': 'DEBUG',
-        }
-    }
 
     options = initialize_chrome_settings()
-    capabilities = DesiredCapabilities.CHROME
-    capabilities["goog:loggingPrefs"] = {"performance": "ALL"}  # chromedriver 75+
-    capabilities["unexpectedAlertBehaviour"] = "dismiss"  # handle alert
-    capabilities["pageLoadStrategy"] = "eager"  # eager mode #FIXME: set eager mode, may load partial webpage
-
-    # driver = webdriver.Chrome(ChromeDriverManager().install())
-    service = Service(executable_path=ChromeDriverManager().install())
-    driver = webdriver.Chrome(options=options, service=service, seleniumwire_options=seleniumwire_options)
+    service = ChromeService(executable_path="./chromedriver-linux64/chromedriver")
+    driver = webdriver.Chrome(service=service, options=options)
     driver.set_page_load_timeout(60)  # set timeout to avoid wasting time
     driver.set_script_timeout(60)  # set timeout to avoid wasting time
     helium.set_driver(driver)
+
     return driver
 
 

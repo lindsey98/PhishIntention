@@ -58,9 +58,11 @@ phishintention">Website</a> •
 
 ## Setup
 
-Prerequisite: [Pixi installed](https://pixi.sh/latest/)
+### Step 1: Install dependencies:
 
-For Linux/Mac,
+- Prerequisite: [Pixi installed](https://pixi.sh/latest/)
+
+- For Linux/Mac,
 
   ```bash
   export KMP_DUPLICATE_LIB_OK=TRUE
@@ -71,7 +73,7 @@ For Linux/Mac,
   ./setup.sh
   ```
 
-For Windows, in PowerShell,
+- For Windows,
 
   ```bash
   git clone https://github.com/lindsey98/PhishIntention.git
@@ -79,6 +81,11 @@ For Windows, in PowerShell,
   pixi install
   setup.bat
   ```
+
+### Step 2: Install chromedriver:
+- Check your chrome binary version, you can do so by typing ``chrome://version/`` in your browser, or type ``google-chrome --version`` from the command line.
+- Download the corresponding chromedriver from this [repository](https://github.com/dreamshao/chromedriver/tree/main). For example, if you are using ``135.0.7049.42`` on Linux, then you should look for ``135.0.7049.42 chromedriver-linux64.zip``.
+- Unzip the downloaded zip, put the ``chromedriver.exe`` under ``./chromedriver-linux64/``.
 
 ## Running PhishIntention from Command Line
 
