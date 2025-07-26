@@ -56,39 +56,41 @@ phishintention">Website</a> •
 |_ phishintention.py: main script
 ```
 
-## Instructions
-Requirements: 
-- Anaconda installed, please refer to the official installation guide: https://docs.anaconda.com/free/anaconda/install/index.html
-- CUDA >= 11
-  
-1. Create a local clone of PhishIntention
+## Setup
+
+Prerequisite: [Pixi installed](https://pixi.sh/latest/)
+
+For Linux/Mac,
+
+  ```bash
+  export KMP_DUPLICATE_LIB_OK=TRUE
+  git clone https://github.com/lindsey98/PhishIntention.git
+  cd PhishIntention
+  pixi install
+  chmod +x setup.sh
+  ./setup.sh
+  ```
+
+For Windows, in PowerShell,
+
+  ```bash
+  git clone https://github.com/lindsey98/PhishIntention.git
+  cd Phishpedia
+  pixi install
+  setup.bat
+  ```
+
+## Running PhishIntention from Command Line
+
+When you run the scripts for the 1st time, the reference list needs to be loaded, this may take some time.
+
 ```bash
-git clone https://github.com/lindsey98/PhishIntention.git
-cd PhishIntention
+pixi run python phishintention.py --folder <folder you want to test e.g. datasets/test_sites> --output_txt <where you want to save the results e.g. test.txt>
 ```
 
-2. Setup.
-In this step, we would be installing the core dependencies of PhishIntention such as pytorch, and detectron2. 
-In addition, we would also download the model checkpoints and brand reference list.
-This step may take some time.
-```bash
-chmod +x setup.sh
-export ENV_NAME="phishintention"
-./setup.sh
-```
-
-3. 
-```bash
-conda activate phishintention
-```
-
-4. Run
-```bash
-python phishintention.py --folder <folder you want to test e.g. datasets/test_sites> --output_txt <where you want to save the results e.g. test.txt>
-```
 The testing folder should be in the structure of:
 
-```
+```text
 test_site_1
 |__ info.txt (Write the URL)
 |__ shot.png (Save the screenshot)
