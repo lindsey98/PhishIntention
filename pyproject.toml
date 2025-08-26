@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "phishintention"
+version = "0.1.0"
+description = "Phishing detection via visual similarity and brand identity recognition"
+requires-python = ">=3.8"
+dependencies = [
+    "numpy==1.23.0",
+    "requests",
+    "scikit-learn",
+    "spacy",
+    "beautifulsoup4",
+    "matplotlib",
+    "pandas",
+    "nltk",
+    "tqdm",
+    "unidecode",
+    "gdown",
+    "tldextract",
+    "scipy",
+    "pathlib",
+    "fvcore",
+    "lxml",
+    "psutil",
+    "Pillow==8.4.0",
+    "editdistance",
+    "cryptography==38.0.4",
+    "httpcore==0.15.0",
+    "h11",
+    "h2",
+    "blinker==1.7.0",
+    "hyperframe",
+    "selenium-wire",
+    "helium",
+    "selenium",
+    "webdriver-manager",
+    "flask",
+    "flask-cors",
+    "pycocotools",
+    "opencv-python",
+    "opencv-contrib-python",
+    "torch>=1.9.0",
+    "torchvision>=0.10.0",
+]
