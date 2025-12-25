@@ -3,8 +3,12 @@ from selenium import webdriver
 import helium
 import time
 import re
+import logging
+import traceback
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service as ChromeService
+
+logger = logging.getLogger(__name__)
 
 def initialize_chrome_settings():
     '''
@@ -43,7 +47,7 @@ def click_button(button_text):
         helium.click(helium.Button(button_text))
         return True
     except Exception as e:
-        print(e)
+        logger.error(f'Failed to click button "{button_text}": {str(e)}', exc_info=True)
         return False
 
 def get_page_text(driver):
@@ -55,11 +59,11 @@ def get_page_text(driver):
     try:
         body = driver.find_element(By.TAG_NAME, value='body').text
     except NoSuchElementException as e: # if no body tag, just get all text
-        print(e)
+        logger.warning(f'No body tag found, using page_source instead: {str(e)}')
         try:
             body = driver.page_source
         except Exception as e:
-            print(e)
+            logger.error(f'Failed to get page source: {str(e)}', exc_info=True)
             body = ''
     return body
 
@@ -79,11 +83,11 @@ def click_text(text):
             helium.click(text)
             time.sleep(2) # wait until website is completely loaded
     except TimeoutException as e:
-        print(e)
+        logger.warning(f'Timeout when clicking text "{text}": {str(e)}')
     except LookupError as e:
-        print(e)
+        logger.warning(f'Text "{text}" not found: {str(e)}')
     except Exception as e:
-        print(e)
+        logger.error(f'Error clicking text "{text}": {str(e)}', exc_info=True)
 
 def click_point(x, y):
     '''
@@ -99,15 +103,15 @@ def click_point(x, y):
         time.sleep(2) # wait until website is completely loaded
         # click_popup()
     except TimeoutException as e:
-        print(e)
+        logger.warning(f'Timeout when clicking point ({x}, {y}): {str(e)}')
     except MoveTargetOutOfBoundsException as e:
-        print(e)
+        logger.warning(f'Point ({x}, {y}) is out of bounds: {str(e)}')
     except LookupError as e:
-        print(e)
+        logger.warning(f'Lookup error when clicking point ({x}, {y}): {str(e)}')
     except AttributeError as e:
-        print(e)
+        logger.error(f'Attribute error when clicking point ({x}, {y}): {str(e)}', exc_info=True)
     except Exception as e:
-        print(e)
+        logger.error(f'Error clicking point ({x}, {y}): {str(e)}', exc_info=True)
 
 def visit_url(driver, orig_url):
     '''
@@ -119,19 +123,18 @@ def visit_url(driver, orig_url):
     :return: load url successful or not
     '''
     try:
-        print("try get url")
+        logger.info(f"Attempting to visit URL: {orig_url}")
         driver.get(orig_url)
-        print("get url success!")
+        logger.info(f"Successfully loaded URL: {orig_url}")
         time.sleep(2)
-        print("try switch to alert")
+        logger.debug("Attempting to dismiss alert if present")
         driver.switch_to.alert.dismiss()
         return True, driver
     except TimeoutException as e:
-        print(str(e))
+        logger.warning(f'Timeout when visiting URL {orig_url}: {str(e)}')
         return False, driver
     except Exception as e:
-        print(str(e))
-        print("no alert")
+        logger.debug(f'No alert present for URL {orig_url}: {str(e)}')
         return True, driver
 
 
