@@ -3,13 +3,8 @@ setlocal enabledelayedexpansion
 
 :: ------------------------------------------------------------------------------
 :: Install Detectron2
+pixi run pip install --extra-index-url https://miropsota.github.io/torch_packages_builder detectron2==0.6+18f6958pt2.8.0cpu
 :: ------------------------------------------------------------------------------
-echo [%DATE% %TIME%] Installing detectron2...
-pixi run pip install --no-build-isolation git+https://github.com/facebookresearch/detectron2.git
-if errorlevel 1 (
-    echo [ERROR] Failed to install detectron2.
-    exit /b 1
-)
 
 REM Create models directory and change into it
 if not exist models (

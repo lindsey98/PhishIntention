@@ -4,7 +4,7 @@ set -euo pipefail  # Safer bash behavior
 IFS=$'\n\t'
 
 # Install Detectron2
-pixi run pip install --no-build-isolation git+https://github.com/facebookresearch/detectron2.git
+pixi run pip install --extra-index-url https://miropsota.github.io/torch_packages_builder detectron2==0.6+18f6958pt2.8.0cpu
 
 # Set up model directory
 FILEDIR="$(pwd)"

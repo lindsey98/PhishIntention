@@ -224,7 +224,7 @@ def crp_locator(url, screenshot_path, login_model, ele_model, cls_model, driver)
             return url, screenshot_path, successful, total_time  # load URL unsucessful
         try:
             driver.save_screenshot(screenshot_path.replace('shot.png', 'shot4cv.png'))
-        except Exception as e:
+        except Exception:
             return url, screenshot_path, successful, total_time  # save updated screenshot unsucessful
 
         start_time = time.time()

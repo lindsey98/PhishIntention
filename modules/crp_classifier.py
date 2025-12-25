@@ -8,11 +8,7 @@ from lxml import html
 import io
 import os
 import numpy as np
-from utils.utils import read_img_reverse, coord2pixel_reverse, topo2pixel
-from collections import OrderedDict  # pylint: disable=g-importing-member
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+from utils.utils import coord2pixel_reverse
 from modules.models import KNOWN_MODELS
 
 def credential_config(checkpoint, model_type='mixed'):
@@ -110,7 +106,7 @@ def read_html(html_path):
             tree = html.fromstring(page)
             tree_list = tree
             done = True
-    except Exception as e:
+    except Exception:
         pass
 
     # try another encoding
@@ -121,7 +117,7 @@ def read_html(html_path):
                 tree = html.fromstring(page)
                 tree_list = tree
                 done = True
-        except Exception as e:
+        except Exception:
             pass
 
     # try another encoding
@@ -132,7 +128,7 @@ def read_html(html_path):
                 tree = html.fromstring(page)
                 tree_list = tree
                 done = True
-        except Exception as e:
+        except Exception:
             pass
 
     return tree_list
@@ -157,7 +153,8 @@ def proc_tree(tree, obfuscate=False):
                     try:
                         if input.get('type') == "password":
                             input.attrib['type'] = "passw0rd"
-                    except:
+                    except Exception as e:
+                        print(e)
                         pass
 
         methods = []
@@ -166,7 +163,6 @@ def proc_tree(tree, obfuscate=False):
         count_username = []
 
         for form in forms:
-            count = 0
             methods.append(form.get('method'))  # get method of form "post"/"get"
 
             inputs = form.xpath('.//input')
