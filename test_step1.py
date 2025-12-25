@@ -19,8 +19,8 @@ class TestStep1LayoutDetectorSimple(unittest.TestCase):
     
     def test_output_format_with_detections(self):
         """测试有检测结果时的输出格式"""
-        with patch('phishintention_wrapper.pred_rcnn') as mock_pred, \
-             patch('phishintention_wrapper.vis') as mock_vis:
+        with patch('phishintention.pred_rcnn') as mock_pred, \
+             patch('phishintention.vis') as mock_vis:
             
             # 设置模拟返回值
             mock_pred.return_value = (
@@ -53,8 +53,8 @@ class TestStep1LayoutDetectorSimple(unittest.TestCase):
     
     def test_output_format_no_detections(self):
         """测试无检测结果时的输出格式"""
-        with patch('phishintention_wrapper.pred_rcnn') as mock_pred, \
-             patch('phishintention_wrapper.vis') as mock_vis:
+        with patch('phishintention.pred_rcnn') as mock_pred, \
+             patch('phishintention.vis') as mock_vis:
             
             # 设置无检测结果
             mock_pred.return_value = (None, None, None)
@@ -75,8 +75,8 @@ class TestStep1LayoutDetectorSimple(unittest.TestCase):
     
     def test_tensor_to_numpy_conversion(self):
         """验证tensor到numpy的转换"""
-        with patch('phishintention_wrapper.pred_rcnn') as mock_pred, \
-             patch('phishintention_wrapper.vis') as mock_vis:
+        with patch('phishintention.pred_rcnn') as mock_pred, \
+             patch('phishintention.vis') as mock_vis:
             
             # 创建测试tensor
             test_boxes = torch.tensor([[0, 0, 100, 100], [50, 50, 150, 150]])

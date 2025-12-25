@@ -19,8 +19,8 @@ class TestStep4DynamicAnalysis(unittest.TestCase):
     
     def test_output_format_successful_analysis(self):
         """测试动态分析成功找到CRP的情况"""
-        with patch('phishintention_wrapper.driver_loader') as mock_loader, \
-             patch('phishintention_wrapper.crp_locator') as mock_locator:
+        with patch('phishintention.driver_loader') as mock_loader, \
+             patch('phishintention.crp_locator') as mock_locator:
             
             # 模拟driver
             mock_driver = MagicMock()
@@ -81,8 +81,8 @@ class TestStep4DynamicAnalysis(unittest.TestCase):
     
     def test_output_format_unsuccessful_analysis(self):
         """测试动态分析未找到CRP的情况"""
-        with patch('phishintention_wrapper.driver_loader') as mock_loader, \
-             patch('phishintention_wrapper.crp_locator') as mock_locator:
+        with patch('phishintention.driver_loader') as mock_loader, \
+             patch('phishintention.crp_locator') as mock_locator:
             
             # 模拟driver
             mock_driver = MagicMock()
@@ -125,8 +125,8 @@ class TestStep4DynamicAnalysis(unittest.TestCase):
     
     def test_driver_lifecycle(self):
         """测试driver的完整生命周期"""
-        with patch('phishintention_wrapper.driver_loader') as mock_loader, \
-             patch('phishintention_wrapper.crp_locator') as mock_locator:
+        with patch('phishintention.driver_loader') as mock_loader, \
+             patch('phishintention.crp_locator') as mock_locator:
             
             # 跟踪driver使用
             mock_driver = MagicMock()
@@ -153,8 +153,8 @@ class TestStep4DynamicAnalysis(unittest.TestCase):
     
     def test_time_measurement(self):
         """测试时间测量包含在返回中"""
-        with patch('phishintention_wrapper.driver_loader') as mock_loader, \
-             patch('phishintention_wrapper.crp_locator') as mock_locator:
+        with patch('phishintention.driver_loader') as mock_loader, \
+             patch('phishintention.crp_locator') as mock_locator:
             
             mock_driver = MagicMock()
             mock_loader.return_value = mock_driver

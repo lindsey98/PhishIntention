@@ -75,8 +75,10 @@ jobs:
       - name: Install detectron2 and download models
         run: .\setup.bat
 
+      - name: Run pytest
+        run: pixi run python test_all_steps.py
+
       - name: Run test
         run: pixi run python phishintention.py --folder datasets/test_sites --output_txt test_1125.txt
 
-      - name: Run pytest
-        run: pixi run python test_all_steps.py
+      

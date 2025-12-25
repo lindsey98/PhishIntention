@@ -18,8 +18,8 @@ class TestStep3CrpClassifier(unittest.TestCase):
     
     def test_output_format_html_heuristic_noncrp(self):
         """测试HTML启发式返回nonCRP时的情况"""
-        with patch('phishintention_wrapper.html_heuristic') as mock_html, \
-             patch('phishintention_wrapper.credential_classifier_mixed') as mock_classifier:
+        with patch('phishintention.html_heuristic') as mock_html, \
+             patch('phishintention.credential_classifier_mixed') as mock_classifier:
             
             # 模拟HTML启发式返回1（nonCRP）
             mock_html.return_value = 1
@@ -59,8 +59,8 @@ class TestStep3CrpClassifier(unittest.TestCase):
     
     def test_output_format_html_heuristic_crp(self):
         """测试HTML启发式返回CRP时的情况"""
-        with patch('phishintention_wrapper.html_heuristic') as mock_html, \
-             patch('phishintention_wrapper.credential_classifier_mixed') as mock_classifier:
+        with patch('phishintention.html_heuristic') as mock_html, \
+             patch('phishintention.credential_classifier_mixed') as mock_classifier:
             
             # 模拟HTML启发式返回0（CRP）
             mock_html.return_value = 0
@@ -102,8 +102,8 @@ class TestStep3CrpClassifier(unittest.TestCase):
         
         for html_result, classifier_result, description in test_cases:
             with self.subTest(description=description):
-                with patch('phishintention_wrapper.html_heuristic') as mock_html, \
-                     patch('phishintention_wrapper.credential_classifier_mixed') as mock_classifier:
+                with patch('phishintention.html_heuristic') as mock_html, \
+                     patch('phishintention.credential_classifier_mixed') as mock_classifier:
                     
                     mock_html.return_value = html_result
                     if classifier_result is not None:
@@ -132,8 +132,8 @@ class TestStep3CrpClassifier(unittest.TestCase):
         """测试时间测量功能"""
         import time
         
-        with patch('phishintention_wrapper.html_heuristic') as mock_html, \
-             patch('phishintention_wrapper.credential_classifier_mixed') as mock_classifier:
+        with patch('phishintention.html_heuristic') as mock_html, \
+             patch('phishintention.credential_classifier_mixed') as mock_classifier:
             
             # 模拟需要时间的处理
             def delayed_html(*args, **kwargs):

@@ -23,7 +23,7 @@ class TestStep2LogoMatcher(unittest.TestCase):
     
     def test_output_format_with_match(self):
         """测试匹配到品牌时的输出格式"""
-        with patch('phishintention_wrapper.check_domain_brand_inconsistency') as mock_check:
+        with patch('phishintention.check_domain_brand_inconsistency') as mock_check:
             # 设置模拟返回值
             mock_check.return_value = (
                 "Microsoft",          # pred_target
@@ -77,7 +77,7 @@ class TestStep2LogoMatcher(unittest.TestCase):
     
     def test_output_format_no_match(self):
         """测试没有匹配到品牌时的输出格式"""
-        with patch('phishintention_wrapper.check_domain_brand_inconsistency') as mock_check:
+        with patch('phishintention.check_domain_brand_inconsistency') as mock_check:
             # 设置模拟返回值（没有匹配）
             mock_check.return_value = (None, None, None, None)
             
@@ -110,7 +110,7 @@ class TestStep2LogoMatcher(unittest.TestCase):
         """测试时间测量功能"""
         import time
         
-        with patch('phishintention_wrapper.check_domain_brand_inconsistency') as mock_check:
+        with patch('phishintention.check_domain_brand_inconsistency') as mock_check:
             # 模拟需要时间的处理
             def delayed_check(*args, **kwargs):
                 time.sleep(0.05)  # 50ms延迟
