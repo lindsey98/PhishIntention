@@ -2,7 +2,6 @@ import time
 from datetime import datetime
 import argparse
 import os
-import csv
 import json
 import torch
 import cv2
@@ -109,10 +108,10 @@ class PhishIntentionWrapper:
 
     def _step5_result_processing(self, plotvis, pred_target, siamese_conf, matched_coord):
         """Step 5: Final result processing and visualization"""
-        phish_category = 0
+        phish_category = "benign"
         if pred_target is not None:
             logger.warning('Phishing is found!')
-            phish_category = 1
+            phish_category = "phish"
             # Visualize, add annotations
             cv2.putText(plotvis, 
                        f"Target: {pred_target} with confidence {siamese_conf:.4f}",
@@ -124,7 +123,7 @@ class PhishIntentionWrapper:
     def test_orig_phishintention(self, url, screenshot_path):
         """Main method to run PhishIntention pipeline"""
         waive_crp_classifier = False
-        phish_category = 0  # 0 for benign, 1 for phish, default is benign
+        phish_category = "benign"  # "benign" or "phish", default is benign
         pred_target = None
         matched_domain = None
         matched_coord = None
@@ -253,77 +252,76 @@ def _parse_runtime_breakdown(runtime_breakdown):
     return tuple(times)
 
 
-def _append_json_result(result_txt, payload):
-    """Append result as JSONL next to the CSV output."""
-    jsonl_path = os.path.splitext(result_txt)[0] + ".jsonl"
-    with open(jsonl_path, "a", encoding="utf-8") as jf:
-        jf.write(json.dumps(payload, ensure_ascii=False) + "\n")
-
-
-def _write_result_to_file(result_txt, folder, url, phish_category, pred_target, 
+def _write_result_to_file(result_json, folder, url, phish_category, pred_target, 
                          matched_domain, siamese_conf, runtime_breakdown):
-    """Write result to structured CSV and JSONL with headers and metadata."""
+    """Write result to JSON format with metadata."""
     awl_time, logo_time, crp_class_time, crp_locator_time = _parse_runtime_breakdown(runtime_breakdown)
-
-    headers = [
-        "folder",
-        "url",
-        "phish_category",
-        "pred_target",
-        "matched_domain",
-        "siamese_conf",
-        "awl_detect_time",
-        "logo_match_time",
-        "crp_class_time",
-        "crp_locator_time",
-        "processed_at",
-        "version",
-    ]
-
+    
     processed_at = datetime.utcnow().isoformat()
-    row = [
-        folder,
-        url,
-        phish_category,
-        pred_target or "",
-        matched_domain or "",
-        f"{siamese_conf:.4f}" if siamese_conf is not None else "",
-        f"{awl_time:.4f}",
-        f"{logo_time:.4f}",
-        f"{crp_class_time:.4f}",
-        f"{crp_locator_time:.4f}",
-        processed_at,
-        RESULT_VERSION,
-    ]
-
-    os.makedirs(os.path.dirname(result_txt) or ".", exist_ok=True)
-    needs_header = (not os.path.exists(result_txt)) or os.path.getsize(result_txt) == 0
-
-    with open(result_txt, "a", encoding="utf-8", newline="") as f:
-        writer = csv.writer(f)
-        if needs_header:
-            writer.writerow(headers)
-        writer.writerow(row)
-
-    _append_json_result(result_txt, {
+    
+    os.makedirs(os.path.dirname(result_json) or ".", exist_ok=True)
+    
+    # Read existing results or create new file
+    file_exists = os.path.exists(result_json)
+    results = []
+    file_created_at = None
+    
+    if file_exists:
+        try:
+            with open(result_json, "r", encoding="utf-8") as f:
+                content = f.read().strip()
+                if content:
+                    data = json.loads(content)
+                    # Handle both list format and dict format
+                    if isinstance(data, list):
+                        results = data
+                        # Try to get file_created_at from first entry's metadata
+                        if results and isinstance(results[0], dict) and "metadata" in results[0]:
+                            file_created_at = results[0]["metadata"].get("file_created_at")
+                    elif isinstance(data, dict):
+                        results = [data]
+                        if "metadata" in data:
+                            file_created_at = data["metadata"].get("file_created_at")
+        except (json.JSONDecodeError, IOError):
+            results = []
+    
+    # Set file_created_at only if file is new
+    if file_created_at is None:
+        file_created_at = datetime.utcnow().isoformat()
+    
+    # Build result entry
+    result_entry = {
         "folder": folder,
         "url": url,
         "phish_category": phish_category,
         "pred_target": pred_target,
         "matched_domain": matched_domain,
         "siamese_conf": siamese_conf,
-        "awl_detect_time": awl_time,
-        "logo_match_time": logo_time,
-        "crp_class_time": crp_class_time,
-        "crp_locator_time": crp_locator_time,
+        "runtime": {
+            "awl_detect_time": awl_time,
+            "logo_match_time": logo_time,
+            "crp_class_time": crp_class_time,
+            "crp_locator_time": crp_locator_time,
+            "total_time": awl_time + logo_time + crp_class_time + crp_locator_time
+        },
         "processed_at": processed_at,
-        "version": RESULT_VERSION,
-    })
+        "metadata": {
+            "version": RESULT_VERSION,
+            "file_created_at": file_created_at
+        }
+    }
+    
+    # Append new result
+    results.append(result_entry)
+    
+    # Write all results back to file
+    with open(result_json, "w", encoding="utf-8") as f:
+        json.dump(results, f, ensure_ascii=False, indent=2)
 
 
 def _save_visualization_if_phishing(phish_category, plotvis, request_dir, folder):
     """Save visualization image if phishing is detected"""
-    if phish_category:
+    if phish_category == "phish":
         os.makedirs(os.path.join(request_dir, folder), exist_ok=True)
         cv2.imwrite(os.path.join(request_dir, folder, "predict.png"), plotvis)
 
@@ -340,9 +338,18 @@ def _process_single_folder(folder, request_dir, phishintention_cls, result_txt):
     
     # Check if URL already processed
     if os.path.exists(result_txt):
-        with open(result_txt, encoding="utf-8", errors="ignore") as f:
-            if url in f.read():
-                return
+        try:
+            with open(result_txt, "r", encoding="utf-8") as f:
+                content = f.read().strip()
+                if content:
+                    results = json.loads(content)
+                    if isinstance(results, list):
+                        if any(entry.get("url") == url for entry in results):
+                            return
+                    elif isinstance(results, dict) and results.get("url") == url:
+                        return
+        except (json.JSONDecodeError, IOError):
+            pass
     
     # Check for forbidden URL suffixes
     if _is_forbidden_url(url):
@@ -365,7 +372,7 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
     parser.add_argument("--folder", required=True, type=str)
-    parser.add_argument("--output_txt", default=f'{today}_results.csv', help="Output CSV path")
+    parser.add_argument("--output_txt", default=f'{today}_results.json', help="Output JSON path")
     args = parser.parse_args()
 
     request_dir = args.folder
