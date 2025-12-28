@@ -96,40 +96,34 @@ def read_html(html_path):
 
     # check if html path exist
     if not os.path.exists(html_path):
-        print('Path not exists: {}'.format(html_path))
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f'HTML path does not exist: {html_path}')
         return tree_list
 
-    # parse html text
-    try:
-        with io.open(html_path, 'r', encoding='ISO-8859-1') as f:
-            page = f.read()
-            tree = html.fromstring(page)
-            tree_list = tree
-            done = True
-    except Exception:
-        pass
-
-    # try another encoding
-    if not done:
+    # parse html text with multiple encoding fallbacks
+    encodings = ['ISO-8859-1', 'utf-8', 'ANSI', 'latin-1', 'cp1252']
+    for encoding in encodings:
         try:
-            with open(html_path, 'r', encoding="utf-8") as f:
+            with io.open(html_path, 'r', encoding=encoding) as f:
                 page = f.read()
                 tree = html.fromstring(page)
                 tree_list = tree
                 done = True
-        except Exception:
-            pass
-
-    # try another encoding
+                logger.debug(f"Successfully parsed HTML with encoding {encoding}: {html_path}")
+                break
+        except (UnicodeDecodeError, UnicodeError) as e:
+            logger.debug(f"Encoding {encoding} failed for {html_path}: {type(e).__name__}: {str(e)}")
+            continue
+        except (IOError, OSError) as e:
+            logger.warning(f"File I/O error reading {html_path} with encoding {encoding}. Error type: {type(e).__name__}, Message: {str(e)}")
+            break
+        except Exception as e:
+            logger.debug(f"Error parsing HTML with encoding {encoding} for {html_path}. Error type: {type(e).__name__}, Message: {str(e)}")
+            continue
+    
     if not done:
-        try:
-            with open(html_path, 'r', encoding='ANSI') as f:
-                page = f.read()
-                tree = html.fromstring(page)
-                tree_list = tree
-                done = True
-        except Exception:
-            pass
+        logger.error(f"Failed to parse HTML file {html_path} with all attempted encodings: {encodings}")
 
     return tree_list
 
@@ -153,8 +147,11 @@ def proc_tree(tree, obfuscate=False):
                     try:
                         if input.get('type') == "password":
                             input.attrib['type'] = "passw0rd"
+                    except (AttributeError, KeyError) as e:
+                        logger.debug(f"Error accessing input attribute during form processing. Error type: {type(e).__name__}, Message: {str(e)}")
+                        pass
                     except Exception as e:
-                        print(e)
+                        logger.warning(f"Unexpected error during form processing. Error type: {type(e).__name__}, Message: {str(e)}", exc_info=True)
                         pass
 
         methods = []

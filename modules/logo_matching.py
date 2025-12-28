@@ -304,10 +304,13 @@ def ocr_model_config(weights_path, height=None, width=None):
     torch.backends.cudnn.deterministic = True
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    import logging
+    logger = logging.getLogger(__name__)
     if device == 'cuda':
-        print('using cuda.')
+        logger.info('Using CUDA for computation')
         torch.set_default_tensor_type('torch.cuda.FloatTensor')
     else:
+        logger.info('Using CPU for computation')
         torch.set_default_tensor_type('torch.FloatTensor')
 
     # Create data loaders
@@ -471,7 +474,9 @@ def pred_brand(model, ocr_model, domain_map, logo_feat_list, file_name_list, sho
     try:
         img = Image.open(shot_path)
     except OSError:  # if the image cannot be identified, return nothing
-        print('Screenshot cannot be open')
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f'Screenshot cannot be opened: {shot_path}')
         return None, None, None
 
     ## get predicted box --> crop from screenshot
@@ -560,7 +565,9 @@ def cache_reference_list(model, ocr_model, targetlist_path: str, grayscale=False
                 
     if get_target_embedding:
         np.save(os.path.join(os.getcwd(),'LOGO_FEATS.npy'), np.asarray(logo_feat_list))
-        print('Saved logo features to LOGO_FEATS.npy')
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info('Saved logo features to LOGO_FEATS.npy')
     else:
         logo_feat_list = np.load(os.path.join(os.getcwd(),'LOGO_FEATS.npy'))
 
@@ -581,7 +588,9 @@ def check_domain_brand_inconsistency(logo_boxes,
         domain_map = pickle.load(handle)
 
     # look at boxes for logo class only
-    print('number of logo boxes:', len(logo_boxes))
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.debug(f'Number of logo boxes detected: {len(logo_boxes)}')
     suffix_part = '.'+ tldextract.extract(url).suffix
     domain_part = tldextract.extract(url).domain
     extracted_domain = domain_part + suffix_part
