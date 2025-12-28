@@ -221,6 +221,7 @@ class PhishIntentionWrapper:
                             pred_boxes, pred_classes):
         """Helper method to build the return result tuple"""
         runtime_breakdown = f"{awl_detect_time:.4f}|{logo_match_time:.4f}|{crp_class_time:.4f}|{crp_locator_time:.4f}"
+        runtime_breakdown = f"{awl_detect_time:.4f}|{logo_match_time:.4f}|{crp_class_time:.4f}|{crp_locator_time:.4f}"
         return (phish_category, pred_target, matched_domain, plotvis, siamese_conf,
                 runtime_breakdown, pred_boxes, pred_classes)
 
@@ -240,6 +241,19 @@ def _load_url_from_info(folder, request_dir):
         return "https://" + folder
 
 
+def _parse_runtime_breakdown(runtime_breakdown):
+    """Split runtime string into numeric components."""
+    parts = str(runtime_breakdown).split("|") if runtime_breakdown else []
+    times = [0.0, 0.0, 0.0, 0.0]
+    for idx, part in enumerate(parts[:4]):
+        try:
+            times[idx] = float(part)
+        except (TypeError, ValueError):
+            continue
+    return tuple(times)
+
+
+def _write_result_to_file(result_json, folder, url, phish_category, pred_target, 
 def _parse_runtime_breakdown(runtime_breakdown):
     """Split runtime string into numeric components."""
     parts = str(runtime_breakdown).split("|") if runtime_breakdown else []
