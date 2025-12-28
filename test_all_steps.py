@@ -1,12 +1,12 @@
 '''
-使用unittest测试
+Using unittest for testing
 python -m unittest test_step2_logo_matcher.py
 python -m unittest discover -p "test_*.py"
 '''
 import unittest
 import sys
 
-# 导入所有测试类
+# Import all test classes
 from test_step1 import TestStep1LayoutDetectorSimple
 from test_step2 import TestStep2LogoMatcher
 from test_step3 import TestStep3CrpClassifier
@@ -14,11 +14,11 @@ from test_step4 import TestStep4DynamicAnalysis
 
 
 def run_all_tests():
-    """运行所有步骤的测试"""
-    # 创建测试套件
+    """Run tests for all steps"""
+    # Create a test suite
     test_suite = unittest.TestSuite()
     
-    # 添加所有测试类
+    # Add all test classes
     test_classes = [
         TestStep1LayoutDetectorSimple,
         TestStep2LogoMatcher,
@@ -30,30 +30,30 @@ def run_all_tests():
         tests = unittest.TestLoader().loadTestsFromTestCase(test_class)
         test_suite.addTests(tests)
     
-    # 运行测试
+    # Run tests
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(test_suite)
     
-    # 输出总结
+    # Print summary
     print("\n" + "="*60)
-    print("测试总结:")
-    print(f"运行测试: {result.testsRun}")
-    print(f"成功: {result.testsRun - len(result.failures) - len(result.errors)}")
-    print(f"失败: {len(result.failures)}")
-    print(f"错误: {len(result.errors)}")
+    print("Test Summary:")
+    print(f"Tests Run: {result.testsRun}")
+    print(f"Passed: {result.testsRun - len(result.failures) - len(result.errors)}")
+    print(f"Failures: {len(result.failures)}")
+    print(f"Errors: {len(result.errors)}")
     print("="*60)
     
     return result.wasSuccessful()
 
 
 if __name__ == '__main__':
-    # 确保能导入被测试的模块
+    # Ensure the tested modules can be imported
     import os
     import sys
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     
-    # 运行所有测试
+    # Run all tests
     success = run_all_tests()
     
-    # 根据测试结果退出
+    # Exit based on test results
     sys.exit(0 if success else 1)
