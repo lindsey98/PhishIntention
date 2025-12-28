@@ -55,7 +55,7 @@ jobs:
         run: docker run --rm phishintention pixi run python phishintention.py --folder datasets/test_sites --output_txt test_1202.txt
         #run: docker run --rm phishintention pixi run python test_driver.py
 
-  windows_test and pytest:
+  windows_test_and_pytest:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
