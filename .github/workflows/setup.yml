@@ -41,7 +41,7 @@ jobs:
         run: chmod +x setup.sh && ./setup.sh
 
       - name: Run test
-        run: pixi run python phishintention.py --folder datasets/test_sites --output_txt test_1202.txt
+        run: pixi run python phishintention.py --folder datasets/test_sites --output_fn test_1228.json
 
   linux_test:
     runs-on: ubuntu-latest
@@ -52,7 +52,7 @@ jobs:
         run: docker build -t phishintention .
 
       - name: Run test
-        run: docker run --rm phishintention pixi run python phishintention.py --folder datasets/test_sites --output_txt test_1202.txt
+        run: docker run --rm phishintention pixi run python phishintention.py --folder datasets/test_sites --output_fn test_1228.json
         #run: docker run --rm phishintention pixi run python test_driver.py
 
   windows_test_and_pytest:
@@ -79,6 +79,6 @@ jobs:
         run: pixi run python test_all_steps.py
 
       - name: Run test
-        run: pixi run python phishintention.py --folder datasets/test_sites --output_txt test_1125.txt
+        run: pixi run python phishintention.py --folder datasets/test_sites --output_fn test_1228.json
 
       
