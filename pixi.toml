@@ -26,6 +26,7 @@ fvcore = "*"
 lxml = "*"
 psutil = "*"
 Pillow  = "8.4.0"
+coverage = "*"
 
 [pypi-dependencies]
 "editdistance" = "*"
