@@ -99,8 +99,6 @@ def read_html(html_path):
 
     # check if html path exist
     if not os.path.exists(html_path):
-        import logging
-        logger = logging.getLogger(__name__)
         logger.warning(f'HTML path does not exist: {html_path}')
         return tree_list
 
