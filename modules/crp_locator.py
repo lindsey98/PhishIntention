@@ -44,10 +44,10 @@ def keyword_heuristic(driver, orig_url, page_text,
             ct += 1
             found_kw = [y for x in keyword_finder for y in x if len(y) > 0]
             if len(found_kw) == 1: # find only 1 keyword
-                 found_kw = found_kw[0]
-                 if len(i) <= 2*len(found_kw): # if the text is not long, click on text
-                     start_time = time.time()
-                     click_text(i)
+                found_kw = found_kw[0]
+                if len(i) <= 2*len(found_kw): # if the text is not long, click on text
+                    start_time = time.time()
+                    click_text(i)
                     try:
                         current_url = driver.current_url
                         if current_url == orig_url:  # if page is not redirected, try clicking the keyword instead
@@ -62,7 +62,7 @@ def keyword_heuristic(driver, orig_url, page_text,
                     except Exception as e:
                         logger.error(f"Unexpected error after clicking text. Text: {i[:50]}..., Keyword: {found_kw}, Error type: {type(e).__name__}, Message: {str(e)}", exc_info=True)
                     logger.debug(f"Successfully clicked on text element: {i[:50]}... (URL: {driver.current_url if hasattr(driver, 'current_url') else 'unknown'})")
-                     time_deduct += time.time() - start_time
+                    time_deduct += time.time() - start_time
 
                 else: # otherwise click on keyword
                     start_time = time.time()
@@ -71,11 +71,11 @@ def keyword_heuristic(driver, orig_url, page_text,
                     time_deduct += time.time() - start_time
 
             else: # find at least 2 keywords in same bulk of text
-                 found_kw = found_kw[0] # only click the first keyword
-                 start_time = time.time()
-                 click_text(found_kw)
-                 logger.debug(f"Successfully clicked on keyword (multiple matches): {found_kw}")
-                 time_deduct += time.time() - start_time
+                found_kw = found_kw[0] # only click the first keyword
+                start_time = time.time()
+                click_text(found_kw)
+                logger.debug(f"Successfully clicked on keyword (multiple matches): {found_kw}")
+                time_deduct += time.time() - start_time
 
             # save redirected url
             try:
