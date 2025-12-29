@@ -10,6 +10,9 @@ import os
 import numpy as np
 from utils.utils import coord2pixel_reverse
 from modules.models import KNOWN_MODELS
+import logging
+
+logger = logging.getLogger(__name__)
 
 def credential_config(checkpoint, model_type='mixed'):
     '''
