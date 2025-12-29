@@ -4,7 +4,6 @@ import helium
 import time
 import re
 import logging
-import traceback
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service as ChromeService
 
