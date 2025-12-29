@@ -43,12 +43,10 @@ RUN export KMP_DUPLICATE_LIB_OK=TRUE \
 ENV PATH="/opt/google/chrome:/usr/local/bin:/root/.pixi/bin:$PATH"
 ENV CHROME_BIN="/opt/google/chrome/chrome"
 
-RUN echo "=== test Chrome installation ===" && \
-    which google-chrome-stable && \
-    google-chrome-stable --version
-# 安装pixi环境
-RUN pixi install
-
-RUN dos2unix setup.sh \
+RUN echo "=== test Chrome installation ===" \
+    && which google-chrome-stable \
+    && google-chrome-stable --version \
+    && pixi install \
+    && dos2unix setup.sh \
     && chmod +x setup.sh \
     && ./setup.sh

@@ -58,7 +58,7 @@ phishintention">Website</a> •
 
 ## Automatic Setup (New)
 We now provide a fully automatic setup pipeline for Linux, Windows and MacOS, including installation of pixi, chrome, chromedriver etc.
-### Install with Dockerfile
+### Setup with Docker
 For Linux and Windows, we recommend using Docker.
   ```bash
   git clone https://github.com/lindsey98/PhishIntention.git
@@ -70,8 +70,9 @@ You can run from command line with
   docker run --rm phishintention pixi run python phishintention.py --folder <folder you want to test e.g. datasets/test_sites> --output_fn <where you want to save the results e.g. test.json>
   ```
 
-### Install without Docker
+### Non-Docker Setup
 We also provide non-docker installation pipeline for Windows and MacOS.
+
 For Windows,
   ```bash
   git clone https://github.com/lindsey98/PhishIntention.git
@@ -107,7 +108,6 @@ For MacOS,
   # Install dependencies and download models
   pixi install
   chmod +x setup.sh && ./setup.sh
-  # Run from command line
   ```
 
 You can run from command line with
