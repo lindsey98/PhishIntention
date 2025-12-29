@@ -113,7 +113,7 @@ def read_html(html_path):
                 done = True
                 logger.debug(f"Successfully parsed HTML with encoding {encoding}: {html_path}")
                 break
-        except (UnicodeDecodeError, UnicodeError) as e:
+        except UnicodeError as e:
             logger.debug(f"Encoding {encoding} failed for {html_path}: {type(e).__name__}: {str(e)}")
             continue
         except (IOError, OSError) as e:
