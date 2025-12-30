@@ -47,11 +47,8 @@ class TestStep2LogoMatcher(unittest.TestCase):
             screenshot_path = "test.png"
             
             # 执行测试
-            result = wrapper._step2_logo_matcher(logo_pred_boxes, url, screenshot_path)
-            
-            # 验证返回结构
-            self.assertEqual(len(result), 5)
-            pred_target, matched_domain, matched_coord, siamese_conf, logo_match_time = result
+            pred_target, matched_domain, matched_coord, siamese_conf, logo_match_time = \
+                wrapper._step2_logo_matcher(logo_pred_boxes, url, screenshot_path)
             
             # 验证类型
             self.assertIsInstance(pred_target, str)
@@ -201,11 +198,15 @@ class TestStep2LogoMatcher(unittest.TestCase):
             screenshot_path = "test.png"
             
             # 执行测试
-            result = wrapper._step2_logo_matcher(logo_pred_boxes, url, screenshot_path)
+            pred_target, matched_domain, matched_coord, siamese_conf, logo_match_time = \
+                wrapper._step2_logo_matcher(logo_pred_boxes, url, screenshot_path)
             
-            # 验证返回结果
-            self.assertIsNotNone(result)
-            pred_target, matched_domain, matched_coord, siamese_conf, logo_match_time = result
+            # 验证返回结果不为None
+            self.assertIsNotNone(pred_target)
+            self.assertIsNotNone(matched_domain)
+            self.assertIsNotNone(matched_coord)
+            self.assertIsNotNone(siamese_conf)
+            self.assertIsInstance(logo_match_time, float)
             
             # 验证mock被调用，并检查参数格式
             mock_check.assert_called_once()
@@ -241,7 +242,15 @@ class TestStep2LogoMatcher(unittest.TestCase):
             screenshot_path = "test.png"
             
             # 执行测试
-            result = wrapper._step2_logo_matcher(logo_pred_boxes, url, screenshot_path)
+            pred_target, matched_domain, matched_coord, siamese_conf, logo_match_time = \
+                wrapper._step2_logo_matcher(logo_pred_boxes, url, screenshot_path)
+            
+            # 验证返回结果不为None
+            self.assertIsNotNone(pred_target)
+            self.assertIsNotNone(matched_domain)
+            self.assertIsNotNone(matched_coord)
+            self.assertIsNotNone(siamese_conf)
+            self.assertIsInstance(logo_match_time, float)
             
             # 验证mock被调用，并检查参数
             mock_check.assert_called_once()
