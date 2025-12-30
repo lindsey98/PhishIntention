@@ -1,5 +1,5 @@
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 import argparse
 import os
 import json
@@ -257,7 +257,7 @@ def _write_result_to_file(result_json, folder, url, phish_category, pred_target,
     """Write result to JSON format with metadata."""
     awl_time, logo_time, crp_class_time, crp_locator_time = _parse_runtime_breakdown(runtime_breakdown)
     
-    processed_at = datetime.utcnow().isoformat()
+    processed_at = datetime.now(timezone.utc).isoformat()
     
     os.makedirs(os.path.dirname(result_json) or ".", exist_ok=True)
     
@@ -287,7 +287,7 @@ def _write_result_to_file(result_json, folder, url, phish_category, pred_target,
     
     # Set file_created_at only if file is new
     if file_created_at is None:
-        file_created_at = datetime.utcnow().isoformat()
+        file_created_at = datetime.now(timezone.utc).isoformat()
     
     # Convert numpy types to Python native types for JSON serialization
     def convert_to_native(obj):
@@ -339,7 +339,7 @@ def _save_visualization_if_phishing(phish_category, plotvis, request_dir, folder
 
 def _process_single_folder(folder, request_dir, phishintention_cls, output_fn, stats):
     """Process a single folder with PhishIntention"""
-    html_path = os.path.join(request_dir, folder, "html.txt")
+    #html_path = os.path.join(request_dir, folder, "html.txt")
     screenshot_path = os.path.join(request_dir, folder, "shot.png")
     
     if not os.path.exists(screenshot_path):
@@ -427,7 +427,7 @@ if __name__ == '__main__':
     stats['total'] = len(folders)
     
     logger.info("=" * 60)
-    logger.info(f"PhishIntention Processing Started")
+    logger.info("PhishIntention Processing Started")
     logger.info(f"Input directory: {request_dir}")
     logger.info(f"Output file: {output_fn}")
     logger.info(f"Total folders to process: {stats['total']}")
@@ -444,7 +444,7 @@ if __name__ == '__main__':
     logger.info(f"Total folders: {stats['total']}")
     logger.info(f"  ├─ Processed: {stats['processed']}")
     logger.info(f"  ├─ Skipped: {stats['skipped']}")
-    logger.info(f"Results:")
+    logger.info("Results:")
     logger.info(f"  ├─ Phishing sites: {stats['phish']}")
     logger.info(f"  └─ Benign sites: {stats['benign']}")
     if stats['processed'] > 0:

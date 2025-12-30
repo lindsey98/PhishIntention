@@ -5,6 +5,9 @@ from modules.awl_detector import pred_rcnn
 import os
 import re
 import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 def keyword_heuristic(driver, orig_url, page_text,
                       new_screenshot_path, new_html_path, new_info_path,
@@ -20,12 +23,15 @@ def keyword_heuristic(driver, orig_url, page_text,
     start_time = time.time()
     try:
         orig_url = driver.current_url
+        logger.debug(f"Current URL retrieved: {orig_url}")
     except TimeoutException as e:
-        print(e)
-        pass
+        logger.warning(f"TimeoutException when getting current URL. Error: {str(e)}. Using original URL: {orig_url}")
+        # Keep original URL if we can't get current URL
     except WebDriverException as e:
-        print(e)
-        pass
+        logger.warning(f"WebDriverException when getting current URL. Error type: {type(e).__name__}, Message: {str(e)}. Using original URL: {orig_url}")
+        # Keep original URL if we can't get current URL
+    except Exception as e:
+        logger.error(f"Unexpected error getting current URL. Error type: {type(e).__name__}, Message: {str(e)}. Using original URL: {orig_url}", exc_info=True)
     time_deduct += time.time() - start_time
 
     for i in page_text: # iterate over html text
@@ -38,62 +44,91 @@ def keyword_heuristic(driver, orig_url, page_text,
             ct += 1
             found_kw = [y for x in keyword_finder for y in x if len(y) > 0]
             if len(found_kw) == 1: # find only 1 keyword
-                 found_kw = found_kw[0]
-                 if len(i) <= 2*len(found_kw): # if the text is not long, click on text
-                     start_time = time.time()
-                     click_text(i)
-                     try:
-                         current_url = driver.current_url
-                         if current_url == orig_url:  # if page is not redirected, try clicking the keyword instead
-                             print(found_kw)
-                             click_text(found_kw)
-                     except TimeoutException as e:
-                         print(e)
-                         pass
-                     except WebDriverException as e:
-                         print(e)
-                         pass
-                     print('Successfully click')
-                     time_deduct += time.time() - start_time
+                found_kw = found_kw[0]
+                if len(i) <= 2*len(found_kw): # if the text is not long, click on text
+                    start_time = time.time()
+                    click_text(i)
+                    try:
+                        current_url = driver.current_url
+                        if current_url == orig_url:  # if page is not redirected, try clicking the keyword instead
+                            logger.debug(f"Page not redirected after clicking text, trying keyword: {found_kw} (URL: {current_url})")
+                            click_success = click_text(found_kw)
+                            if not click_success:
+                                logger.warning(f"Failed to click keyword {found_kw} after text click failed (URL: {current_url})")
+                    except TimeoutException as e:
+                        logger.warning(f"TimeoutException getting current URL after click. Text: {i[:50]}..., Keyword: {found_kw}, Error: {str(e)}")
+                    except WebDriverException as e:
+                        logger.warning(f"WebDriverException getting current URL after click. Text: {i[:50]}..., Keyword: {found_kw}, Error type: {type(e).__name__}, Message: {str(e)}")
+                    except Exception as e:
+                        logger.error(f"Unexpected error after clicking text. Text: {i[:50]}..., Keyword: {found_kw}, Error type: {type(e).__name__}, Message: {str(e)}", exc_info=True)
+                    logger.debug(f"Successfully clicked on text element: {i[:50]}... (URL: {driver.current_url if hasattr(driver, 'current_url') else 'unknown'})")
+                    time_deduct += time.time() - start_time
 
-                 else: # otherwise click on keyword
-                     start_time = time.time()
-                     click_text(found_kw)
-                     print('Successfully click')
-                     time_deduct += time.time() - start_time
+                else: # otherwise click on keyword
+                    start_time = time.time()
+                    click_text(found_kw)
+                    logger.debug(f"Successfully clicked on keyword: {found_kw}")
+                    time_deduct += time.time() - start_time
 
             else: # find at least 2 keywords in same bulk of text
-                 found_kw = found_kw[0] # only click the first keyword
-                 start_time = time.time()
-                 click_text(found_kw)
-                 print('Successfully click')
-                 time_deduct += time.time() - start_time
+                found_kw = found_kw[0] # only click the first keyword
+                start_time = time.time()
+                click_text(found_kw)
+                logger.debug(f"Successfully clicked on keyword (multiple matches): {found_kw}")
+                time_deduct += time.time() - start_time
 
             # save redirected url
             try:
                 start_time = time.time()
                 current_url = driver.current_url
-                driver.save_screenshot(new_screenshot_path)
-                with open(new_html_path, 'w', encoding='utf-8') as fw:
-                    fw.write(driver.page_source)
-                with open(new_info_path, 'w', encoding='utf-8') as fw:
-                    fw.write(str(current_url))
+                logger.debug(f"Saving redirected page data (URL: {current_url}, Keyword: {found_kw})")
+                
+                try:
+                    driver.save_screenshot(new_screenshot_path)
+                except (TimeoutException, WebDriverException) as e:
+                    logger.warning(f"Failed to save screenshot (URL: {current_url}, Path: {new_screenshot_path}). Error type: {type(e).__name__}, Message: {str(e)}")
+                    # Continue without screenshot
+                except Exception as e:
+                    logger.error(f"Unexpected error saving screenshot (URL: {current_url}, Path: {new_screenshot_path}). Error type: {type(e).__name__}, Message: {str(e)}", exc_info=True)
+                
+                try:
+                    with open(new_html_path, 'w', encoding='utf-8') as fw:
+                        fw.write(driver.page_source)
+                except (IOError, OSError) as e:
+                    logger.warning(f"Failed to save HTML (URL: {current_url}, Path: {new_html_path}). Error type: {type(e).__name__}, Message: {str(e)}")
+                except Exception as e:
+                    logger.error(f"Unexpected error saving HTML (URL: {current_url}, Path: {new_html_path}). Error type: {type(e).__name__}, Message: {str(e)}", exc_info=True)
+                
+                try:
+                    with open(new_info_path, 'w', encoding='utf-8') as fw:
+                        fw.write(str(current_url))
+                except (IOError, OSError) as e:
+                    logger.warning(f"Failed to save info file (URL: {current_url}, Path: {new_info_path}). Error type: {type(e).__name__}, Message: {str(e)}")
+                
                 time_deduct += time.time() - start_time
 
                 # Call CRP classifier
-                # CRP HTML heuristic
-                cre_pred = html_heuristic(new_html_path)
-                # Credential classifier module
-                if cre_pred == 1:  # if HTML heuristic report as nonCRP
-                    pred_boxes, pred_classes, _ = pred_rcnn(im=new_screenshot_path, predictor=ele_model)
-                    cre_pred = credential_classifier_mixed(img=new_screenshot_path, coords=pred_boxes,
-                                                            types=pred_classes, model=cls_model)
-                if cre_pred == 0:  # this is an CRP
-                    reach_crp = True
-                    break  # stop when reach an CRP already
+                try:
+                    # CRP HTML heuristic
+                    cre_pred = html_heuristic(new_html_path)
+                    # Credential classifier module
+                    if cre_pred == 1:  # if HTML heuristic report as nonCRP
+                        pred_boxes, pred_classes, _ = pred_rcnn(im=new_screenshot_path, predictor=ele_model)
+                        cre_pred = credential_classifier_mixed(img=new_screenshot_path, coords=pred_boxes,
+                                                                types=pred_classes, model=cls_model)
+                    if cre_pred == 0:  # this is an CRP
+                        logger.info(f"CRP detected via keyword heuristic (URL: {current_url}, Keyword: {found_kw})")
+                        reach_crp = True
+                        break  # stop when reach an CRP already
+                except FileNotFoundError as e:
+                    logger.warning(f"Required file not found for CRP classification (URL: {current_url}). Error: {str(e)}")
+                except Exception as e:
+                    logger.error(f"Error during CRP classification (URL: {current_url}). Error type: {type(e).__name__}, Message: {str(e)}", exc_info=True)
 
+            except (TimeoutException, WebDriverException) as e:
+                logger.error(f"WebDriver error during CRP detection (Keyword: {found_kw}). Error type: {type(e).__name__}, Message: {str(e)}", exc_info=True)
             except Exception as e:
-                print(e)
+                logger.error(f"Unexpected error during CRP detection (Keyword: {found_kw}). Error type: {type(e).__name__}, Message: {str(e)}", exc_info=True)
 
             # Back to the original site if CRP not found
             start_time = time.time()
@@ -151,28 +186,54 @@ def cv_heuristic(driver, orig_url, old_screenshot_path,
         try:
             start_time = time.time()
             current_url = driver.current_url
-            driver.save_screenshot(new_screenshot_path) # save new screenshot
-            with open(new_html_path, 'w', encoding='utf-8') as fw:
-                fw.write(driver.page_source)
-            with open(new_info_path, 'w', encoding='utf-8') as fw:
-                fw.write(str(current_url))
+            logger.debug(f"Saving CV-based redirected page data (URL: {current_url}, BBox: {bbox})")
+            
+            try:
+                driver.save_screenshot(new_screenshot_path) # save new screenshot
+            except (TimeoutException, WebDriverException) as e:
+                logger.warning(f"Failed to save screenshot (URL: {current_url}, Path: {new_screenshot_path}). Error type: {type(e).__name__}, Message: {str(e)}")
+            except Exception as e:
+                logger.error(f"Unexpected error saving screenshot (URL: {current_url}, Path: {new_screenshot_path}). Error type: {type(e).__name__}, Message: {str(e)}", exc_info=True)
+            
+            try:
+                with open(new_html_path, 'w', encoding='utf-8') as fw:
+                    fw.write(driver.page_source)
+            except (IOError, OSError) as e:
+                logger.warning(f"Failed to save HTML (URL: {current_url}, Path: {new_html_path}). Error type: {type(e).__name__}, Message: {str(e)}")
+            except Exception as e:
+                logger.error(f"Unexpected error saving HTML (URL: {current_url}, Path: {new_html_path}). Error type: {type(e).__name__}, Message: {str(e)}", exc_info=True)
+            
+            try:
+                with open(new_info_path, 'w', encoding='utf-8') as fw:
+                    fw.write(str(current_url))
+            except (IOError, OSError) as e:
+                logger.warning(f"Failed to save info file (URL: {current_url}, Path: {new_info_path}). Error type: {type(e).__name__}, Message: {str(e)}")
+            
             time_deduct += time.time() - start_time
 
             # Call CRP classifier
-            # CRP HTML heuristic
-            cre_pred = html_heuristic(new_html_path)
-            # Credential classifier module
-            if cre_pred == 1:  # if HTML heuristic report as nonCRP
-                pred_boxes, pred_classes, _ = pred_rcnn(im=new_screenshot_path, predictor=ele_model)
-                cre_pred = credential_classifier_mixed(img=new_screenshot_path, coords=pred_boxes,
-                                                       types=pred_classes, model=cls_model)
-            # stop when reach an CRP already
-            if cre_pred == 0:  # this is an CRP already
-                reach_crp = True
-                break
+            try:
+                # CRP HTML heuristic
+                cre_pred = html_heuristic(new_html_path)
+                # Credential classifier module
+                if cre_pred == 1:  # if HTML heuristic report as nonCRP
+                    pred_boxes, pred_classes, _ = pred_rcnn(im=new_screenshot_path, predictor=ele_model)
+                    cre_pred = credential_classifier_mixed(img=new_screenshot_path, coords=pred_boxes,
+                                                           types=pred_classes, model=cls_model)
+                # stop when reach an CRP already
+                if cre_pred == 0:  # this is an CRP already
+                    logger.info(f"CRP detected via CV heuristic (URL: {current_url}, BBox: {bbox})")
+                    reach_crp = True
+                    break
+            except FileNotFoundError as e:
+                logger.warning(f"Required file not found for CRP classification (URL: {current_url}). Error: {str(e)}")
+            except Exception as e:
+                logger.error(f"Error during CV-based CRP classification (URL: {current_url}). Error type: {type(e).__name__}, Message: {str(e)}", exc_info=True)
 
+        except (TimeoutException, WebDriverException) as e:
+            logger.error(f"WebDriver error during CV-based CRP detection (BBox: {bbox}). Error type: {type(e).__name__}, Message: {str(e)}", exc_info=True)
         except Exception as e:
-            print(e)
+            logger.error(f"Unexpected error during CV-based CRP detection (BBox: {bbox}). Error type: {type(e).__name__}, Message: {str(e)}", exc_info=True)
 
         # Back to the original site if CRP not found
         start_time = time.time()
@@ -203,17 +264,18 @@ def crp_locator(url, screenshot_path, login_model, ele_model, cls_model, driver)
         return url, screenshot_path, successful, 0
 
     start_time = time.time()
-    print("Getting url")
+    logger.info("Starting dynamic analysis: extracting page text")
     page_text = get_page_text(driver).split('\n')  # tokenize by \n
 
     # HTML heuristic based login finder
+    logger.info("Running HTML keyword-based login finder")
     reach_crp, time_deduct_html = keyword_heuristic(driver=driver, orig_url=orig_url, page_text=page_text,
                                                       new_screenshot_path=new_screenshot_path, new_html_path=new_html_path,
                                                       new_info_path=new_info_path,
                                                     ele_model=ele_model,
                                                     cls_model=cls_model)
 
-    print('After HTML keyword finder:', reach_crp)
+    logger.info(f"HTML keyword finder result: {'CRP found' if reach_crp else 'No CRP found'}")
     total_time = time.time() - start_time - time_deduct_html
 
     # If HTML login finder did not find CRP, call CV-based login finder
@@ -233,7 +295,7 @@ def crp_locator(url, screenshot_path, login_model, ele_model, cls_model, driver)
                                                  new_screenshot_path=new_screenshot_path, new_html_path=new_html_path,
                                                  new_info_path=new_info_path, login_model=login_model, ele_model=ele_model, cls_model=cls_model)
         total_time += time.time() - start_time - time_deduct_cv
-        print('After CV finder', reach_crp)
+        logger.info(f"CV finder result: {'CRP found' if reach_crp else 'No CRP found'}")
 
     # Final URL
     if os.path.exists(new_info_path):

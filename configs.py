@@ -40,7 +40,9 @@ def load_config(reload_targetlist=False):
     # siamese model
     SIAMESE_THRE = configs['SIAMESE_MODEL']['MATCH_THRE']
 
-    print('Load protected logo list')
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info('Loading protected logo list')
     targetlist_zip_path = configs['SIAMESE_MODEL']['TARGETLIST_PATH']
     targetlist_dir = os.path.dirname(targetlist_zip_path)
     zip_file_name = os.path.basename(targetlist_zip_path)
@@ -57,7 +59,7 @@ def load_config(reload_targetlist=False):
                                                       targetlist_path=full_targetlist_folder_dir,
                                                       reload_targetlist=reload_targetlist)    
         
-    print('Finish loading protected logo list')
+    logger.info('Finished loading protected logo list')
 
     DOMAIN_MAP_PATH = configs['SIAMESE_MODEL']['DOMAIN_MAP_PATH']
 

@@ -1,10 +1,9 @@
-from selenium.common.exceptions import NoSuchElementException, TimeoutException, MoveTargetOutOfBoundsException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException, MoveTargetOutOfBoundsException, WebDriverException
 from selenium import webdriver
 import helium
 import time
 import re
 import logging
-import traceback
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service as ChromeService
 
@@ -40,15 +39,39 @@ def initialize_chrome_settings():
 
     return options
 
-def click_button(button_text):
+def click_button(button_text, max_retries=2):
+    '''
+    Click a button with retry mechanism
+    :param button_text: text of the button to click
+    :param max_retries: maximum number of retry attempts
+    :return: True if successful, False otherwise
+    '''
     helium.Config.implicit_wait_secs = 2 # this is the implicit timeout for helium
-    helium.get_driver().implicitly_wait(2)
-    try:
-        helium.click(helium.Button(button_text))
-        return True
-    except Exception as e:
-        logger.error(f'Failed to click button "{button_text}": {str(e)}', exc_info=True)
-        return False
+    driver = helium.get_driver()
+    driver.implicitly_wait(2)
+    current_url = None
+    
+    for attempt in range(max_retries + 1):
+        try:
+            current_url = driver.current_url
+            helium.click(helium.Button(button_text))
+            logger.debug(f'Successfully clicked button "{button_text}" (URL: {current_url})')
+            return True
+        except (TimeoutException, NoSuchElementException) as e:
+            if attempt < max_retries:
+                logger.debug(f'Retry {attempt + 1}/{max_retries} for button "{button_text}" (URL: {current_url}). Error: {type(e).__name__}: {str(e)}')
+                time.sleep(1)
+                continue
+            else:
+                logger.warning(f'Failed to click button "{button_text}" after {max_retries + 1} attempts (URL: {current_url}). Error type: {type(e).__name__}, Message: {str(e)}')
+                return False
+        except WebDriverException as e:
+            logger.error(f'WebDriver error clicking button "{button_text}" (URL: {current_url}). Error type: {type(e).__name__}, Message: {str(e)}', exc_info=True)
+            return False
+        except Exception as e:
+            logger.error(f'Unexpected error clicking button "{button_text}" (URL: {current_url}). Error type: {type(e).__name__}, Message: {str(e)}', exc_info=True)
+            return False
+    return False
 
 def get_page_text(driver):
     '''
@@ -56,38 +79,79 @@ def get_page_text(driver):
     :param driver: chromdriver
     :return: text
     '''
+    current_url = None
     try:
+        current_url = driver.current_url
         body = driver.find_element(By.TAG_NAME, value='body').text
     except NoSuchElementException as e: # if no body tag, just get all text
-        logger.warning(f'No body tag found, using page_source instead: {str(e)}')
+        logger.warning(f'No body tag found (URL: {current_url}), using page_source instead. Error: {str(e)}')
         try:
             body = driver.page_source
+        except (TimeoutException, WebDriverException) as e:
+            logger.error(f'Failed to get page source (URL: {current_url}). Error type: {type(e).__name__}, Message: {str(e)}', exc_info=True)
+            body = ''
         except Exception as e:
-            logger.error(f'Failed to get page source: {str(e)}', exc_info=True)
+            logger.error(f'Unexpected error getting page source (URL: {current_url}). Error type: {type(e).__name__}, Message: {str(e)}', exc_info=True)
+            body = ''
+    except (TimeoutException, WebDriverException) as e:
+        current_url = getattr(driver, 'current_url', 'unknown')
+        logger.error(f'WebDriver error getting body text (URL: {current_url}). Error type: {type(e).__name__}, Message: {str(e)}', exc_info=True)
+        try:
+            body = driver.page_source
+        except Exception as fallback_e:
+            logger.error(f'Fallback to page_source also failed (URL: {current_url}). Error: {str(fallback_e)}', exc_info=True)
             body = ''
     return body
 
-def click_text(text):
+def click_text(text, max_retries=1):
     '''
-    click the text's region
-    :param text:
-    :return:
+    click the text's region with retry mechanism
+    :param text: text to click
+    :param max_retries: maximum number of retry attempts
+    :return: True if successful, False otherwise
     '''
     helium.Config.implicit_wait_secs = 2 # this is the implicit timeout for helium
-    helium.get_driver().implicitly_wait(2) # this is the implicit timeout for selenium
-    body = get_page_text(helium.get_driver())
+    driver = helium.get_driver()
+    driver.implicitly_wait(2) # this is the implicit timeout for selenium
+    current_url = None
+    
     try:
-        helium.highlight(text) # highlight text for debugging
-        time.sleep(1)
-        if re.search(text, body, flags=re.I):
-            helium.click(text)
-            time.sleep(2) # wait until website is completely loaded
-    except TimeoutException as e:
-        logger.warning(f'Timeout when clicking text "{text}": {str(e)}')
-    except LookupError as e:
-        logger.warning(f'Text "{text}" not found: {str(e)}')
+        current_url = driver.current_url
+        body = get_page_text(driver)
     except Exception as e:
-        logger.error(f'Error clicking text "{text}": {str(e)}', exc_info=True)
+        logger.error(f'Failed to get page text before clicking "{text}" (URL: {current_url or "unknown"}). Error: {type(e).__name__}: {str(e)}', exc_info=True)
+        return False
+    
+    for attempt in range(max_retries + 1):
+        try:
+            helium.highlight(text) # highlight text for debugging
+            time.sleep(1)
+            if re.search(text, body, flags=re.I):
+                helium.click(text)
+                time.sleep(2) # wait until website is completely loaded
+                logger.debug(f'Successfully clicked text "{text}" (URL: {current_url})')
+                return True
+            else:
+                logger.debug(f'Text "{text}" not found in page body (URL: {current_url})')
+                return False
+        except TimeoutException as e:
+            if attempt < max_retries:
+                logger.debug(f'Retry {attempt + 1}/{max_retries} for text "{text}" (URL: {current_url}). Timeout: {str(e)}')
+                time.sleep(1)
+                continue
+            else:
+                logger.warning(f'Timeout when clicking text "{text}" after {max_retries + 1} attempts (URL: {current_url}). Error: {str(e)}')
+                return False
+        except LookupError as e:
+            logger.warning(f'Text "{text}" not found (URL: {current_url}). Error: {str(e)}')
+            return False
+        except WebDriverException as e:
+            logger.error(f'WebDriver error clicking text "{text}" (URL: {current_url}). Error type: {type(e).__name__}, Message: {str(e)}', exc_info=True)
+            return False
+        except Exception as e:
+            logger.error(f'Unexpected error clicking text "{text}" (URL: {current_url}). Error type: {type(e).__name__}, Message: {str(e)}', exc_info=True)
+            return False
+    return False
 
 def click_point(x, y):
     '''
@@ -113,29 +177,55 @@ def click_point(x, y):
     except Exception as e:
         logger.error(f'Error clicking point ({x}, {y}): {str(e)}', exc_info=True)
 
-def visit_url(driver, orig_url):
+def visit_url(driver, orig_url, max_retries=2):
     '''
-    Visit a URL
+    Visit a URL with retry mechanism
     :param driver: chromedriver
     :param orig_url: URL to visit
-    :param popup: click popup window or not
-    :param sleep: need sleep time or not
-    :return: load url successful or not
+    :param max_retries: maximum number of retry attempts
+    :return: (success: bool, driver)
     '''
-    try:
-        logger.info(f"Attempting to visit URL: {orig_url}")
-        driver.get(orig_url)
-        logger.info(f"Successfully loaded URL: {orig_url}")
-        time.sleep(2)
-        logger.debug("Attempting to dismiss alert if present")
-        driver.switch_to.alert.dismiss()
-        return True, driver
-    except TimeoutException as e:
-        logger.warning(f'Timeout when visiting URL {orig_url}: {str(e)}')
-        return False, driver
-    except Exception as e:
-        logger.debug(f'No alert present for URL {orig_url}: {str(e)}')
-        return True, driver
+    for attempt in range(max_retries + 1):
+        try:
+            if attempt > 0:
+                logger.info(f"Retry {attempt}/{max_retries} visiting URL: {orig_url}")
+            else:
+                logger.info(f"Attempting to visit URL: {orig_url}")
+            
+            driver.get(orig_url)
+            logger.info(f"Successfully loaded URL: {orig_url}")
+            time.sleep(2)
+            
+            # Try to dismiss alert if present
+            try:
+                logger.debug(f"Attempting to dismiss alert if present (URL: {orig_url})")
+                driver.switch_to.alert.dismiss()
+                logger.debug(f"Alert dismissed successfully (URL: {orig_url})")
+            except NoSuchElementException:
+                # No alert present, this is normal
+                logger.debug(f"No alert present (URL: {orig_url})")
+            except TimeoutException:
+                # Alert timeout, continue
+                logger.debug(f"Alert timeout (URL: {orig_url})")
+            
+            return True, driver
+            
+        except TimeoutException as e:
+            if attempt < max_retries:
+                logger.warning(f'Timeout when visiting URL {orig_url} (attempt {attempt + 1}/{max_retries + 1}). Retrying... Error: {str(e)}')
+                time.sleep(2)
+                continue
+            else:
+                logger.error(f'Timeout when visiting URL {orig_url} after {max_retries + 1} attempts. Error: {str(e)}', exc_info=True)
+                return False, driver
+        except WebDriverException as e:
+            logger.error(f'WebDriver error visiting URL {orig_url}. Error type: {type(e).__name__}, Message: {str(e)}', exc_info=True)
+            return False, driver
+        except Exception as e:
+            logger.error(f'Unexpected error visiting URL {orig_url}. Error type: {type(e).__name__}, Message: {str(e)}', exc_info=True)
+            return False, driver
+    
+    return False, driver
 
 
 def driver_loader():

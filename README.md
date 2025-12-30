@@ -56,6 +56,65 @@ phishintention">Website</a> •
 |_ phishintention.py: main script
 ```
 
+## Automatic Setup (New)
+We now provide a fully automatic setup pipeline for Linux, Windows and MacOS, including installation of pixi, chrome, chromedriver etc.
+### Setup with Docker
+For Linux and Windows, we recommend using Docker.
+  ```bash
+  git clone https://github.com/lindsey98/PhishIntention.git
+  cd PhishIntention
+  docker build -t phishintention .
+  ```
+You can run from command line with
+  ```bash
+  docker run --rm phishintention pixi run python phishintention.py --folder <folder you want to test e.g. datasets/test_sites> --output_fn <where you want to save the results e.g. test.json>
+  ```
+
+### Non-Docker Setup
+We also provide non-docker installation pipeline for Windows and MacOS.
+
+For Windows,
+  ```bash
+  git clone https://github.com/lindsey98/PhishIntention.git
+  cd PhishIntention
+  # Install latest chrome and driver
+  .\chrome_setup.bat
+  # Install pixi; restart your terminal/shell after installation
+  powershell -ExecutionPolicy ByPass -c "irm -useb https://pixi.sh/install.ps1 | iex"
+  # Install dependencies and download models
+  pixi install
+  .\setup.bat
+  ```
+
+For MacOS,
+  ```bash
+  git clone https://github.com/lindsey98/PhishIntention.git
+  cd PhishIntention
+  docker build -t phishintention .
+  export KMP_DUPLICATE_LIB_OK=TRUE
+  # Install pixi; restart your terminal/shell after installation
+  curl -fsSL https://pixi.sh/install.sh | sh
+  brew install --cask google-chrome
+  # If your shell is bash, run:
+  echo 'export CHROME_BIN="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"' >> ~/.bash_profile
+  echo 'export PATH="/Applications/Google Chrome.app/Contents/MacOS:$PATH"' >> ~/.bash_profile
+  source ~/.bash_profile
+  # Else if your shell is zsh, run:
+  echo 'export CHROME_BIN="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"' >> ~/.zshrc
+  echo 'export PATH="/Applications/Google Chrome.app/Contents/MacOS:$PATH"' >> ~/.zshrc
+  source ~/.zshrc
+  # Verify Chrome Installation
+  /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --version
+  # Install dependencies and download models
+  pixi install
+  chmod +x setup.sh && ./setup.sh
+  ```
+
+You can run from command line with
+  ```bash
+  pixi run python phishintention.py --folder <folder you want to test e.g. datasets/test_sites> --output_fn <where you want to save the results e.g. test.json>
+  ```
+
 ## Setup
 
 ### Step 1: Install dependencies:
@@ -92,7 +151,7 @@ phishintention">Website</a> •
 When you run the scripts for the 1st time, the reference list needs to be loaded, this may take some time.
 
 ```bash
-pixi run python phishintention.py --folder <folder you want to test e.g. datasets/test_sites> --output_txt <where you want to save the results e.g. test.txt>
+pixi run python phishintention.py --folder <folder you want to test e.g. datasets/test_sites> --output_fn <where you want to save the results e.g. test.json>
 ```
 
 The testing folder should be in the structure of:
