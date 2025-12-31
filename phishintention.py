@@ -389,7 +389,7 @@ def _save_visualization_if_phishing(phish_category, plotvis, request_dir, folder
 
 def _process_single_folder(folder, request_dir, phishintention_cls, output_fn, stats):
     """Process a single folder with PhishIntention"""
-    html_path = os.path.join(request_dir, folder, "html.txt")
+    # html_path = os.path.join(request_dir, folder, "html.txt")
     screenshot_path = os.path.join(request_dir, folder, "shot.png")
     
     if not os.path.exists(screenshot_path):
@@ -477,7 +477,7 @@ if __name__ == '__main__':
     stats['total'] = len(folders)
     
     logger.info("=" * 60)
-    logger.info(f"PhishIntention Processing Started")
+    logger.info("PhishIntention Processing Started")
     logger.info(f"Input directory: {request_dir}")
     logger.info(f"Output file: {output_fn}")
     logger.info(f"Total folders to process: {stats['total']}")
@@ -494,7 +494,7 @@ if __name__ == '__main__':
     logger.info(f"Total folders: {stats['total']}")
     logger.info(f"  ├─ Processed: {stats['processed']}")
     logger.info(f"  ├─ Skipped: {stats['skipped']}")
-    logger.info(f"Results:")
+    logger.info("Results:")
     logger.info(f"  ├─ Phishing sites: {stats['phish']}")
     logger.info(f"  └─ Benign sites: {stats['benign']}")
     if stats['processed'] > 0:
