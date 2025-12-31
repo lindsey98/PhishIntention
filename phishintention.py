@@ -1,5 +1,5 @@
 import time
-from datetime import datetime, timezone
+from datetime import datetime
 import argparse
 import os
 import json
@@ -14,6 +14,7 @@ from modules.crp_locator import crp_locator
 from utils.web_utils import driver_loader
 from tqdm import tqdm
 import re
+import numpy as np
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
@@ -56,6 +57,34 @@ class PhishIntentionWrapper:
     def _step2_logo_matcher(self, logo_pred_boxes, url, screenshot_path):
         """Step 2: Logo matching with Siamese network"""
         start_time = time.time()
+        
+        # 首先确保logo_pred_boxes是NumPy数组
+        if logo_pred_boxes is not None:
+            logo_pred_boxes = np.array(logo_pred_boxes)
+        
+        # 如果没有logo boxes，直接返回
+        if logo_pred_boxes is None or len(logo_pred_boxes) == 0:
+            logo_match_time = time.time() - start_time
+            logger.warning('No logo boxes provided to logo matcher')
+            return None, None, None, None, logo_match_time
+        
+        # 确保是二维数组 (n, 4) 格式
+        if logo_pred_boxes.ndim == 1:
+            if len(logo_pred_boxes) == 4:  # 单个边界框 [x1, y1, x2, y2]
+                logo_pred_boxes = logo_pred_boxes.reshape(1, 4)
+            else:
+                # 不正确的格式，尝试修复
+                logo_pred_boxes = logo_pred_boxes.reshape(-1, 4)
+        
+        # 如果仍然不是二维数组，记录错误并返回
+        if logo_pred_boxes.ndim != 2 or logo_pred_boxes.shape[1] != 4:
+            logger.error(f'Invalid logo boxes shape: {logo_pred_boxes.shape}, expected (n, 4)')
+            logo_match_time = time.time() - start_time
+            return None, None, None, None, logo_match_time
+        
+        logger.info(f'Processing {len(logo_pred_boxes)} logo boxes')
+        
+        # 调用logo匹配函数
         pred_target, matched_domain, matched_coord, siamese_conf = check_domain_brand_inconsistency(
             logo_boxes=logo_pred_boxes,
             domain_map_path=self.DOMAIN_MAP_PATH,
@@ -67,9 +96,20 @@ class PhishIntentionWrapper:
             shot_path=screenshot_path,
             ts=self.SIAMESE_THRE
         )
+        
         logo_match_time = time.time() - start_time
         
         return pred_target, matched_domain, matched_coord, siamese_conf, logo_match_time
+
+    def step2_logo_matcher_for_test(self, **kwargs):
+        """包装_step2_logo_matcher以供测试使用"""
+        # 从kwargs中提取参数
+        logo_pred_boxes = kwargs.get('logo_boxes')
+        url = kwargs.get('url', '')
+        screenshot_path = kwargs.get('screenshot_path', '')
+        
+        # 调用内部方法
+        return self._step2_logo_matcher(logo_pred_boxes, url, screenshot_path)
 
     def _step3_crp_classifier(self, screenshot_path, html_path, pred_boxes, pred_classes):
         """Step 3: CRP classifier for credential pages"""
@@ -113,10 +153,11 @@ class PhishIntentionWrapper:
             logger.warning('Phishing is found!')
             phish_category = "phish"
             # Visualize, add annotations
-            cv2.putText(plotvis, 
-                       f"Target: {pred_target} with confidence {siamese_conf:.4f}",
-                       (int(matched_coord[0] + 20), int(matched_coord[1] + 20)),
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
+            if matched_coord is not None:
+                cv2.putText(plotvis, 
+                           f"Target: {pred_target} with confidence {siamese_conf:.4f}",
+                           (int(matched_coord[0] + 20), int(matched_coord[1] + 20)),
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
         
         return phish_category, plotvis
 
@@ -221,6 +262,13 @@ class PhishIntentionWrapper:
                             pred_boxes, pred_classes):
         """Helper method to build the return result tuple"""
         runtime_breakdown = f"{awl_detect_time:.4f}|{logo_match_time:.4f}|{crp_class_time:.4f}|{crp_locator_time:.4f}"
+        
+        # 转换numpy数组为列表以便于JSON序列化和测试比较
+        if pred_boxes is not None and isinstance(pred_boxes, np.ndarray):
+            pred_boxes = pred_boxes.tolist()
+        if pred_classes is not None and isinstance(pred_classes, np.ndarray):
+            pred_classes = pred_classes.tolist()
+        
         return (phish_category, pred_target, matched_domain, plotvis, siamese_conf,
                 runtime_breakdown, pred_boxes, pred_classes)
 
@@ -257,7 +305,7 @@ def _write_result_to_file(result_json, folder, url, phish_category, pred_target,
     """Write result to JSON format with metadata."""
     awl_time, logo_time, crp_class_time, crp_locator_time = _parse_runtime_breakdown(runtime_breakdown)
     
-    processed_at = datetime.now(timezone.utc).isoformat()
+    processed_at = datetime.utcnow().isoformat()
     
     os.makedirs(os.path.dirname(result_json) or ".", exist_ok=True)
     
@@ -287,7 +335,7 @@ def _write_result_to_file(result_json, folder, url, phish_category, pred_target,
     
     # Set file_created_at only if file is new
     if file_created_at is None:
-        file_created_at = datetime.now(timezone.utc).isoformat()
+        file_created_at = datetime.utcnow().isoformat()
     
     # Convert numpy types to Python native types for JSON serialization
     def convert_to_native(obj):
@@ -298,6 +346,8 @@ def _write_result_to_file(result_json, folder, url, phish_category, pred_target,
             return [convert_to_native(item) for item in obj]
         elif isinstance(obj, dict):
             return {key: convert_to_native(value) for key, value in obj.items()}
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
         return obj
     
     # Build result entry
@@ -339,7 +389,7 @@ def _save_visualization_if_phishing(phish_category, plotvis, request_dir, folder
 
 def _process_single_folder(folder, request_dir, phishintention_cls, output_fn, stats):
     """Process a single folder with PhishIntention"""
-    #html_path = os.path.join(request_dir, folder, "html.txt")
+    html_path = os.path.join(request_dir, folder, "html.txt")
     screenshot_path = os.path.join(request_dir, folder, "shot.png")
     
     if not os.path.exists(screenshot_path):
@@ -427,7 +477,7 @@ if __name__ == '__main__':
     stats['total'] = len(folders)
     
     logger.info("=" * 60)
-    logger.info("PhishIntention Processing Started")
+    logger.info(f"PhishIntention Processing Started")
     logger.info(f"Input directory: {request_dir}")
     logger.info(f"Output file: {output_fn}")
     logger.info(f"Total folders to process: {stats['total']}")
@@ -444,7 +494,7 @@ if __name__ == '__main__':
     logger.info(f"Total folders: {stats['total']}")
     logger.info(f"  ├─ Processed: {stats['processed']}")
     logger.info(f"  ├─ Skipped: {stats['skipped']}")
-    logger.info("Results:")
+    logger.info(f"Results:")
     logger.info(f"  ├─ Phishing sites: {stats['phish']}")
     logger.info(f"  └─ Benign sites: {stats['benign']}")
     if stats['processed'] > 0:
