@@ -24,29 +24,19 @@ RUN apt-get update && apt-get install -y \
     libgconf-2-4 \
     && rm -rf /var/lib/apt/lists/*
 
-# 复制项目文件
-COPY . .
-# 安装google chrome和chromedriver
+# 安装pixi和google chrome
 RUN export KMP_DUPLICATE_LIB_OK=TRUE \
     && curl -fsSL https://pixi.sh/install.sh | sh \
     && echo 'export PATH="/root/.pixi/bin:$PATH"' >> /etc/profile.d/pixi.sh \
     && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
     && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list \
     && apt-get update \
-    && apt-get install -y google-chrome-stable \
-    && apt-get install -y dos2unix && dos2unix chrome_setup.sh && chmod +x chrome_setup.sh && ./chrome_setup.sh linux \
+    && apt-get install -y google-chrome-stable dos2unix \
     && apt-get clean
-
-# RUN chmod +x chrome_setup.sh \
-#     && ./chrome_setup.sh linux
 
 ENV PATH="/opt/google/chrome:/usr/local/bin:/root/.pixi/bin:$PATH"
 ENV CHROME_BIN="/opt/google/chrome/chrome"
 
-RUN echo "=== test Chrome installation ===" \
-    && which google-chrome-stable \
-    && google-chrome-stable --version \
-    && pixi install \
-    && dos2unix setup.sh \
-    && chmod +x setup.sh \
-    && ./setup.sh
+# 项目文件通过挂载方式加载，运行容器时使用:
+# docker run -v /path/to/PhishIntention:/app -it <image_name> bash
+# 首次运行需执行: dos2unix chrome_setup.sh setup.sh && chmod +x chrome_setup.sh setup.sh && ./chrome_setup.sh linux && pixi install && ./setup.sh
