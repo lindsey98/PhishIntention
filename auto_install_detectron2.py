@@ -158,7 +158,7 @@ def install_pytorch(info):
         return False
     
     # Re-import to get version
-    print("✓ PyTorch installed successfully!")
+    print("PyTorch installed successfully!")
     return True
 
 def get_platform_tag():
@@ -426,7 +426,7 @@ def main():
     
     if success:
         print("\n" + "=" * 60)
-        print("✓ Installation completed!")
+        print("Installation completed!")
         print("=" * 60)
         
         # Verify installation
@@ -505,7 +505,7 @@ def auto_install():
             sys.exit(1)
     
     print("\n" + "=" * 60)
-    print("✓ Installation completed!")
+    print("Installation completed!")
     print("=" * 60)
     
     # Verify installation

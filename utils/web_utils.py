@@ -6,7 +6,6 @@ import re
 import logging
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service as ChromeService
-import sys
 
 logger = logging.getLogger(__name__)
 
