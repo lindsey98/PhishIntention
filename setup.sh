@@ -6,10 +6,10 @@ IFS=$'\n\t'
 # # Install Detectron2
 # pixi run pip install --extra-index-url https://miropsota.github.io/torch_packages_builder detectron2==0.6+18f6958pt2.8.0cpu
 
-# Check if --cpu flag is provided
-if [[ "$1" == "--cpu" ]]; then
+# Check if cpu flag is provided
+if [[ "$1" == "cpu" ]]; then
   echo "Installing PyTorch and Detectron2 (CPU version)..."
-  pixi run python auto_install_detectron2.py --cpu
+  pixi run python auto_install_detectron2.py --cpu --auto
 else
   # Automatically install PyTorch and Detectron2
   # Automatically select CPU or CUDA version based on whether NVIDIA GPU is available
