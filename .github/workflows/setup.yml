@@ -6,7 +6,43 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 jobs:
-  macos_test:
+  Windows_Docker_test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t phishintention .
+
+      - name: Run test
+        run: docker run --rm phishintention pixi run python phishintention.py --folder datasets/test_sites --output_fn test_1228.json
+        #run: docker run --rm phishintention pixi run python test_driver.py
+
+  MacOS_Docker_test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t phishintention .
+
+      - name: Run test
+        run: docker run --rm phishintention pixi run python phishintention.py --folder datasets/test_sites --output_fn test_1228.json
+        #run: docker run --rm phishintention pixi run python test_driver.py
+
+  Linux_Docker_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t phishintention .
+
+      - name: Run test
+        run: docker run --rm phishintention pixi run python phishintention.py --folder datasets/test_sites --output_fn test_1228.json
+        #run: docker run --rm phishintention pixi run python test_driver.py
+
+  MacOS_direct_test:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,7 +65,7 @@ jobs:
       - name: Run setup scripts
         run: chmod +x chrome_setup.sh && ./chrome_setup.sh macos
                 
-      - name: Verify Chrome
+      - name: Verify Chrome Installation
         run: |
           echo "=== Testing Chrome installation ==="
           /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --version
@@ -38,24 +74,43 @@ jobs:
         run: pixi install
 
       - name: Run setup scripts
-        run: chmod +x setup.sh && ./setup.sh
+        run: chmod +x setup.sh && ./setup.sh --auto
 
       - name: Run test
         run: pixi run python phishintention.py --folder datasets/test_sites --output_fn test_1228.json
 
-  linux_test:
+  Linux_direct_test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Set environment variable
+        run: echo "export KMP_DUPLICATE_LIB_OK=TRUE" >> $GITHUB_ENV
+      
+      - name: Install Pixi
+        run: |
+          curl -fsSL https://pixi.sh/install.sh | sh
+          echo "$HOME/.pixi/bin" >> $GITHUB_PATH
+      
+      - name: Install Chrome
+        run: |
+          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          sudo dpkg -i google-chrome-stable_current_amd64.deb
+          sudo apt-get install -f
+          
+          echo "CHROME_BIN=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" >> $GITHUB_ENV
+          echo "/Applications/Google Chrome.app/Contents/MacOS" >> $GITHUB_PATH
+      
+      - name: Pixi install
+        run: pixi install
 
-      - name: Build Docker image
-        run: docker build -t phishintention .
+      - name: Run setup scripts
+        run: chmod +x setup.sh && ./setup.sh --auto
 
       - name: Run test
-        run: docker run --rm phishintention pixi run python phishintention.py --folder datasets/test_sites --output_fn test_1228.json
-        #run: docker run --rm phishintention pixi run python test_driver.py
-
-  windows_test_and_pytest:
+        run: pixi run python phishintention.py --folder datasets/test_sites --output_fn test_1228.json
+    
+  Windows_direct_test_and_pytest:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4

@@ -2,8 +2,14 @@
 setlocal enabledelayedexpansion
 
 :: ------------------------------------------------------------------------------
-:: Install Detectron2
-pixi run pip install --extra-index-url https://miropsota.github.io/torch_packages_builder detectron2==0.6+18f6958pt2.8.0cpu
+:: Automatically install PyTorch and Detectron2
+:: Automatically select CPU or CUDA version based on whether NVIDIA GPU is available
+echo Installing PyTorch and Detectron2 (auto-detecting GPU)...
+pixi run python auto_install_detectron2.py --auto
+if errorlevel 1 (
+    echo [ERROR] Failed to install PyTorch/Detectron2
+    exit /b 1
+)
 :: ------------------------------------------------------------------------------
 
 REM Create models directory and change into it

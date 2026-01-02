@@ -6,6 +6,8 @@ import re
 import logging
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service as ChromeService
+import sys
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -231,7 +233,12 @@ def visit_url(driver, orig_url, max_retries=2):
 def driver_loader():
 
     options = initialize_chrome_settings()
-    service = ChromeService(executable_path="./chromedriver/chromedriver")
+    if sys.platform == 'win32':
+        chromedriver_path = "./chromedriver/chromedriver.exe"
+    else:
+        chromedriver_path = "./chromedriver/chromedriver"
+    
+    service = ChromeService(executable_path=chromedriver_path)
     driver = webdriver.Chrome(service=service, options=options)
     driver.set_page_load_timeout(60)  # set timeout to avoid wasting time
     driver.set_script_timeout(60)  # set timeout to avoid wasting time

@@ -49,4 +49,4 @@ RUN echo "=== test Chrome installation ===" \
     && pixi install \
     && dos2unix setup.sh \
     && chmod +x setup.sh \
-    && ./setup.sh
+    && ./setup.sh --cpu --auto
