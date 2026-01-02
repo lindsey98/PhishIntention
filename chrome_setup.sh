@@ -28,8 +28,3 @@ unzip "chromedriver-$platform.zip"
 mkdir -p chromedriver
 
 cp "$archive_dir/chromedriver" chromedriver/
-chmod +x chromedriver/chromedriver
-
-# Clean up temporary files
-rm -f last-known-good-versions.json chrome_version.txt "chromedriver-$platform.zip"
-rm -rf "$archive_dir"

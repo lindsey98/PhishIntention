@@ -64,7 +64,7 @@ jobs:
         run: echo "export KMP_DUPLICATE_LIB_OK=TRUE" >> $GITHUB_ENV
 
       - name: Install latest chrome and driver
-        run: chmod +x chrome_setup.sh && ./chrome_setup.sh
+        run: chmod +x chrome_setup.sh && ./chrome_setup.sh linux
 
       - name: Install Pixi
         run: |
