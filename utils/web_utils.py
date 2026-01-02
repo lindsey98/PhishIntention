@@ -232,12 +232,7 @@ def visit_url(driver, orig_url, max_retries=2):
 def driver_loader():
 
     options = initialize_chrome_settings()
-    if sys.platform == 'win32':
-        chromedriver_path = "./chromedriver/chromedriver.exe"
-    else:
-        chromedriver_path = "./chromedriver/chromedriver"
-    
-    service = ChromeService(executable_path=chromedriver_path)
+    service = ChromeService(executable_path="./chromedriver/chromedriver")
     driver = webdriver.Chrome(service=service, options=options)
     driver.set_page_load_timeout(60)  # set timeout to avoid wasting time
     driver.set_script_timeout(60)  # set timeout to avoid wasting time

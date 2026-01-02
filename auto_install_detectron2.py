@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""auto_install_detectron2.py - 自动检测环境并安装合适的 PyTorch 和 detectron2
+"""auto_install_detectron2.py - Automatically detect environment and install appropriate PyTorch and detectron2
 
-使用第三方预编译包源: https://miropsota.github.io/torch_packages_builder/detectron2/
-支持 Linux, Windows, macOS 三平台
+Uses third-party prebuilt package source: https://miropsota.github.io/torch_packages_builder/detectron2/
+Supports Linux, Windows, macOS platforms
 """
 
 import platform
@@ -12,19 +12,19 @@ import re
 import urllib.request
 import urllib.error
 
-# 第三方预编译包的基础 URL
+# Base URL for third-party prebuilt packages
 PREBUILT_BASE_URL = "https://github.com/MiroPsota/torch_packages_builder/releases/download"
 PREBUILT_INDEX_URL = "https://miropsota.github.io/torch_packages_builder/detectron2/"
 
-# 已知的 commit hash 列表（按优先级排序，较新的在前）
+# List of known commit hashes (sorted by priority, newer ones first)
 KNOWN_COMMIT_HASHES = ['fd27788', '864913f', '18f6958', '2a420ed', '']
 
-# PyTorch 版本到 commit hash 的映射（基于实际可用性）
-# fd27788: 支持 PyTorch 2.3.0 - 2.9.1
-# 864913f: 支持 PyTorch 2.0.0 - 2.4.0
-# 18f6958: 支持 PyTorch 2.1.0 - 2.8.0
-# 2a420ed: 支持 PyTorch 2.0.0 - 2.7.0
-# 无前缀: 支持 PyTorch 2.0.0 - 2.3.1
+# Mapping from PyTorch version to commit hash (based on actual availability)
+# fd27788: Supports PyTorch 2.3.0 - 2.9.1
+# 864913f: Supports PyTorch 2.0.0 - 2.4.0
+# 18f6958: Supports PyTorch 2.1.0 - 2.8.0
+# 2a420ed: Supports PyTorch 2.0.0 - 2.7.0
+# No prefix: Supports PyTorch 2.0.0 - 2.3.1
 TORCH_VERSION_COMMIT_MAP = {
     # PyTorch 2.9.x
     '2.9.1': ['fd27788'],
@@ -60,23 +60,23 @@ TORCH_VERSION_COMMIT_MAP = {
 
 
 def get_system_info():
-    """检测系统和GPU信息"""
+    """Detect system and GPU information"""
     os_name = platform.system()  # 'Windows', 'Linux', 'Darwin'
     
-    # 检测 CUDA 可用性
+    # Detect CUDA availability
     has_cuda = False
     cuda_version = None
     
-    # 首先通过 nvidia-smi 检测是否有 NVIDIA GPU
+    # First detect NVIDIA GPU through nvidia-smi
     try:
         result = subprocess.run(['nvidia-smi'], capture_output=True, text=True)
         if result.returncode == 0:
             has_cuda = True
-            # 尝试从 nvidia-smi 输出中提取 CUDA 版本
+            # Try to extract CUDA version from nvidia-smi output
             output = result.stdout
             for line in output.split('\n'):
                 if 'CUDA Version' in line:
-                    # 格式类似: "| NVIDIA-SMI 535.104.05   Driver Version: 535.104.05   CUDA Version: 12.2 |"
+                    # Format similar to: "| NVIDIA-SMI 535.104.05   Driver Version: 535.104.05   CUDA Version: 12.2 |"
                     parts = line.split('CUDA Version:')
                     if len(parts) > 1:
                         cuda_version = parts[1].strip().split()[0].strip('|').strip()
@@ -84,7 +84,7 @@ def get_system_info():
     except FileNotFoundError:
         pass
     
-    # 如果已安装 PyTorch，使用 PyTorch 报告的 CUDA 版本
+    # If PyTorch is installed, use CUDA version reported by PyTorch
     try:
         import torch
         if torch.cuda.is_available():
@@ -101,40 +101,40 @@ def get_system_info():
     }
 
 def get_torch_version():
-    """获取已安装的 PyTorch 版本"""
+    """Get installed PyTorch version"""
     try:
         import torch
-        return torch.__version__.split('+')[0]  # 去掉 +cu118 等后缀
+        return torch.__version__.split('+')[0]  # Remove +cu118 and other suffixes
     except ImportError:
         return None
 
 def install_pytorch(info):
-    """根据环境信息安装 PyTorch"""
+    """Install PyTorch based on environment information"""
     os_name = info['os']
     has_cuda = info['has_cuda']
     cuda_version = info['cuda_version']
     
-    print("正在安装 PyTorch...")
+    print("Installing PyTorch...")
     
     if os_name == 'Darwin':  # macOS
-        # macOS 只支持 CPU 版本（或 MPS for Apple Silicon）
+        # macOS only supports CPU version (or MPS for Apple Silicon)
         install_cmd = [
             sys.executable, '-m', 'pip', 'install',
             'torch', 'torchvision'
         ]
     elif has_cuda and cuda_version:
-        # 根据 CUDA 版本选择合适的 PyTorch
+        # Choose appropriate PyTorch based on CUDA version
         cuda_major_minor = cuda_version.split('.')[:2]
         cuda_ver = ''.join(cuda_major_minor)  # "12.2" -> "122"
         
-        # PyTorch 支持的 CUDA 版本映射
-        # 根据 https://pytorch.org/get-started/locally/
+        # Mapping of CUDA versions supported by PyTorch
+        # Based on https://pytorch.org/get-started/locally/
         if cuda_ver.startswith('12'):
-            cuda_tag = 'cu124'  # CUDA 12.x 使用 cu124
+            cuda_tag = 'cu124'  # CUDA 12.x uses cu124
         elif cuda_ver.startswith('11'):
-            cuda_tag = 'cu118'  # CUDA 11.x 使用 cu118
+            cuda_tag = 'cu118'  # CUDA 11.x uses cu118
         else:
-            print(f"警告：CUDA {cuda_version} 可能不被支持，尝试使用 cu124")
+            print(f"Warning: CUDA {cuda_version} may not be supported, trying cu124")
             cuda_tag = 'cu124'
         
         install_cmd = [
@@ -143,26 +143,26 @@ def install_pytorch(info):
             '--index-url', f'https://download.pytorch.org/whl/{cuda_tag}'
         ]
     else:
-        # CPU 版本
+        # CPU version
         install_cmd = [
             sys.executable, '-m', 'pip', 'install',
             'torch', 'torchvision',
             '--index-url', 'https://download.pytorch.org/whl/cpu'
         ]
     
-    print(f"执行: {' '.join(install_cmd)}")
+    print(f"Executing: {' '.join(install_cmd)}")
     result = subprocess.run(install_cmd)
     
     if result.returncode != 0:
-        print("PyTorch 安装失败！")
+        print("PyTorch installation failed!")
         return False
     
-    # 重新导入以获取版本
-    print("✓ PyTorch 安装成功！")
+    # Re-import to get version
+    print("✓ PyTorch installed successfully!")
     return True
 
 def get_platform_tag():
-    """获取当前平台的 wheel 标签"""
+    """Get wheel tag for current platform"""
     os_name = platform.system()
     machine = platform.machine().lower()
     
@@ -175,60 +175,60 @@ def get_platform_tag():
         if machine in ('x86_64', 'amd64', 'x64'):
             return 'win_amd64'
     elif os_name == 'Darwin':
-        # macOS 使用 universal2 格式
-        return 'macosx_universal2'  # 实际文件名可能是 macosx_14_0_universal2 或 macosx_11_0_universal2
+        # macOS uses universal2 format
+        return 'macosx_universal2'  # Actual filename may be macosx_14_0_universal2 or macosx_11_0_universal2
     
     return None
 
 
 def get_cuda_tag(cuda_version):
-    """根据 CUDA 版本获取对应的标签"""
+    """Get corresponding tag based on CUDA version"""
     if not cuda_version:
         return 'cpu'
     
-    # 解析 CUDA 版本
+    # Parse CUDA version
     match = re.match(r'(\d+)\.(\d+)', cuda_version)
     if not match:
         return 'cpu'
     
     major, minor = int(match.group(1)), int(match.group(2))
     
-    # 映射到可用的 CUDA 标签
+    # Map to available CUDA tags
     if major == 12:
         if minor >= 4:
             return 'cu124'
         elif minor >= 1:
             return 'cu121'
         else:
-            return 'cu121'  # CUDA 12.0 也使用 cu121
+            return 'cu121'  # CUDA 12.0 also uses cu121
     elif major == 11:
-        return 'cu118'  # 所有 CUDA 11.x 使用 cu118
+        return 'cu118'  # All CUDA 11.x use cu118
     else:
-        return 'cpu'  # 不支持的 CUDA 版本，回退到 CPU
+        return 'cpu'  # Unsupported CUDA version, fallback to CPU
 
 
 def build_wheel_url(torch_version, cuda_tag, python_version, platform_tag, commit_hash='fd27788'):
-    """构建预编译 wheel 包的下载 URL
+    """Build download URL for prebuilt wheel package
     
-    命名格式: detectron2-0.6+{commit_hash}pt{torch_version}{cuda_tag}-cp{py_ver}-cp{py_ver}-{platform}.whl
-    例如: detectron2-0.6+fd27788pt2.5.0cu121-cp310-cp310-linux_x86_64.whl
+    Naming format: detectron2-0.6+{commit_hash}pt{torch_version}{cuda_tag}-cp{py_ver}-cp{py_ver}-{platform}.whl
+    Example: detectron2-0.6+fd27788pt2.5.0cu121-cp310-cp310-linux_x86_64.whl
     """
-    # 解析 Python 版本
+    # Parse Python version
     py_match = re.match(r'(\d+)\.(\d+)', python_version)
     if not py_match:
         return None
     py_major, py_minor = py_match.group(1), py_match.group(2)
     py_tag = f"cp{py_major}{py_minor}"
     
-    # 构建包名
+    # Build package name
     if commit_hash:
         pkg_version = f"0.6+{commit_hash}pt{torch_version}{cuda_tag}"
     else:
         pkg_version = f"0.6+pt{torch_version}{cuda_tag}"
     
-    # macOS 平台需要特殊处理
+    # macOS platform requires special handling
     if 'macosx' in platform_tag:
-        # 尝试不同的 macOS 版本标签
+        # Try different macOS version tags
         macos_versions = ['14_0', '11_0']
         urls = []
         for macos_ver in macos_versions:
@@ -246,14 +246,14 @@ def build_wheel_url(torch_version, cuda_tag, python_version, platform_tag, commi
         if commit_hash:
             release_tag = f"detectron2-0.6%2B{commit_hash}"
         else:
-            # 无 commit hash 的情况，release tag 格式不同
+            # No commit hash case, release tag format is different
             release_tag = f"detectron2-0.6%2Bpt{torch_version}{cuda_tag}"
         url = f"{PREBUILT_BASE_URL}/{release_tag}/{filename}"
         return url
 
 
 def check_url_exists(url):
-    """检查 URL 是否存在"""
+    """Check if URL exists"""
     try:
         req = urllib.request.Request(url, method='HEAD')
         urllib.request.urlopen(req, timeout=10)
@@ -263,24 +263,24 @@ def check_url_exists(url):
 
 
 def find_best_wheel_url(torch_version, cuda_tag, python_version, platform_tag):
-    """查找最佳的预编译 wheel 包 URL
+    """Find the best prebuilt wheel package URL
     
-    按优先级尝试不同的 commit hash
+    Try different commit hashes by priority
     """
-    # 获取该 PyTorch 版本支持的 commit hash 列表
+    # Get list of commit hashes supported by this PyTorch version
     commit_hashes = TORCH_VERSION_COMMIT_MAP.get(torch_version, KNOWN_COMMIT_HASHES)
     
     for commit_hash in commit_hashes:
         url = build_wheel_url(torch_version, cuda_tag, python_version, platform_tag, commit_hash)
         
         if isinstance(url, list):
-            # macOS 情况，尝试多个 URL
+            # macOS case, try multiple URLs
             for u in url:
-                print(f"  尝试: {u}")
+                print(f"  Trying: {u}")
                 if check_url_exists(u):
                     return u
         else:
-            print(f"  尝试: {url}")
+            print(f"  Trying: {url}")
             if check_url_exists(url):
                 return url
     
@@ -288,20 +288,20 @@ def find_best_wheel_url(torch_version, cuda_tag, python_version, platform_tag):
 
 
 def install_detectron2(info):
-    """根据环境信息安装 detectron2
+    """Install detectron2 based on environment information
     
-    使用第三方预编译包: https://miropsota.github.io/torch_packages_builder/detectron2/
-    支持 Linux, Windows, macOS 三平台
+    Uses third-party prebuilt packages: https://miropsota.github.io/torch_packages_builder/detectron2/
+    Supports Linux, Windows, macOS platforms
     """
     os_name = info['os']
     has_cuda = info['has_cuda']
     torch_version = get_torch_version()
     
     if torch_version is None:
-        print("错误：PyTorch 未安装")
+        print("Error: PyTorch is not installed")
         return False
     
-    # 重新检测 CUDA（因为 PyTorch 可能刚安装）
+    # Re-detect CUDA (PyTorch may have just been installed)
     try:
         import torch
         has_cuda = torch.cuda.is_available()
@@ -310,167 +310,167 @@ def install_detectron2(info):
     except ImportError:
         pass
     
-    print("\n正在安装 Detectron2...")
-    print(f"系统: {os_name}, CUDA: {has_cuda}, PyTorch: {torch_version}")
+    print("\nInstalling Detectron2...")
+    print(f"System: {os_name}, CUDA: {has_cuda}, PyTorch: {torch_version}")
     
-    # 获取平台标签
+    # Get platform tag
     platform_tag = get_platform_tag()
     if not platform_tag:
-        print(f"警告：不支持的平台 {os_name} {platform.machine()}")
+        print(f"Warning: Unsupported platform {os_name} {platform.machine()}")
         platform_tag = None
     
-    # 获取 CUDA 标签
+    # Get CUDA tag
     if os_name == 'Darwin':
-        # macOS 只支持 CPU
+        # macOS only supports CPU
         cuda_tag = 'cpu'
     elif has_cuda and info.get('cuda_version'):
         cuda_tag = get_cuda_tag(info['cuda_version'])
     else:
         cuda_tag = 'cpu'
     
-    # 获取 Python 版本
+    # Get Python version
     python_version = info['python_version']
     
-    print(f"平台: {platform_tag}, CUDA标签: {cuda_tag}, Python: {python_version}")
+    print(f"Platform: {platform_tag}, CUDA tag: {cuda_tag}, Python: {python_version}")
     
-    # 尝试使用第三方预编译包
+    # Try using third-party prebuilt packages
     install_cmd = None
     wheel_url = None
     
     if platform_tag and torch_version in TORCH_VERSION_COMMIT_MAP:
-        print("\n正在查找预编译包...")
+        print("\nSearching for prebuilt packages...")
         wheel_url = find_best_wheel_url(torch_version, cuda_tag, python_version, platform_tag)
         
         if wheel_url:
-            print(f"\n找到预编译包: {wheel_url}")
+            print(f"\nFound prebuilt package: {wheel_url}")
             install_cmd = [
                 sys.executable, '-m', 'pip', 'install', wheel_url
             ]
     
     if not install_cmd:
-        print("\n未找到预编译包，将从源码编译...")
+        print("\nPrebuilt package not found, compiling from source...")
         install_cmd = [
             sys.executable, '-m', 'pip', 'install',
             'git+https://github.com/facebookresearch/detectron2.git'
         ]
     
-    print(f"执行: {' '.join(install_cmd)}")
+    print(f"Executing: {' '.join(install_cmd)}")
     result = subprocess.run(install_cmd)
     
     if result.returncode != 0 and wheel_url:
-        # 如果预编译包失败，尝试从源码编译
-        print("\n预编译包安装失败，尝试从源码编译...")
+        # If prebuilt package fails, try compiling from source
+        print("\nPrebuilt package installation failed, trying to compile from source...")
         fallback_cmd = [
             sys.executable, '-m', 'pip', 'install',
             'git+https://github.com/facebookresearch/detectron2.git'
         ]
-        print(f"执行: {' '.join(fallback_cmd)}")
+        print(f"Executing: {' '.join(fallback_cmd)}")
         result = subprocess.run(fallback_cmd)
     
     return result.returncode == 0
 
 def main():
-    """主函数：自动检测环境并安装 PyTorch 和 detectron2"""
+    """Main function: automatically detect environment and install PyTorch and detectron2"""
     print("=" * 60)
-    print("自动安装脚本 - PyTorch 和 Detectron2")
+    print("Auto Installation Script - PyTorch and Detectron2")
     print("=" * 60)
     
-    # 检测环境
+    # Detect environment
     info = get_system_info()
-    print("\n检测到环境:")
-    print(f"  - 操作系统: {info['os']}")
+    print("\nDetected environment:")
+    print(f"  - Operating System: {info['os']}")
     print(f"  - Python: {info['python_version']}")
-    print(f"  - CUDA 可用: {info['has_cuda']}")
+    print(f"  - CUDA Available: {info['has_cuda']}")
     if info['cuda_version']:
-        print(f"  - CUDA 版本: {info['cuda_version']}")
+        print(f"  - CUDA Version: {info['cuda_version']}")
     
-    # 检查是否已安装 PyTorch
+    # Check if PyTorch is already installed
     torch_version = get_torch_version()
     if torch_version:
-        print(f"\n已检测到 PyTorch {torch_version}")
-        # 验证 CUDA 支持
+        print(f"\nDetected PyTorch {torch_version}")
+        # Verify CUDA support
         try:
             import torch
             if info['has_cuda'] and not torch.cuda.is_available():
-                print("警告：系统有 CUDA 但 PyTorch 是 CPU 版本")
-                response = input("是否重新安装 CUDA 版 PyTorch？(y/n): ").strip().lower()
+                print("Warning: System has CUDA but PyTorch is CPU version")
+                response = input("Reinstall CUDA version of PyTorch? (y/n): ").strip().lower()
                 if response == 'y':
                     if not install_pytorch(info):
                         sys.exit(1)
         except ImportError:
             pass
     else:
-        print("\n未检测到 PyTorch，开始安装...")
+        print("\nPyTorch not detected, starting installation...")
         if not install_pytorch(info):
             sys.exit(1)
     
-    # 更新 torch 版本信息
+    # Update torch version information
     torch_version = get_torch_version()
-    print(f"\n当前 PyTorch 版本: {torch_version}")
+    print(f"\nCurrent PyTorch version: {torch_version}")
     
-    # 检查是否已安装 detectron2
+    # Check if detectron2 is already installed
     try:
         import detectron2
-        print(f"已检测到 Detectron2 {detectron2.__version__}")
-        response = input("是否重新安装 Detectron2？(y/n): ").strip().lower()
+        print(f"Detected Detectron2 {detectron2.__version__}")
+        response = input("Reinstall Detectron2? (y/n): ").strip().lower()
         if response != 'y':
-            print("跳过 Detectron2 安装")
+            print("Skipping Detectron2 installation")
             return
     except ImportError:
         pass
     
-    # 安装 detectron2
-    # 重新获取系统信息（PyTorch 可能已更新）
+    # Install detectron2
+    # Re-get system information (PyTorch may have been updated)
     info = get_system_info()
     success = install_detectron2(info)
     
     if success:
         print("\n" + "=" * 60)
-        print("✓ 安装完成！")
+        print("✓ Installation completed!")
         print("=" * 60)
         
-        # 验证安装
+        # Verify installation
         try:
             import torch
             import detectron2
-            print("\n验证安装:")
+            print("\nVerifying installation:")
             print(f"  - PyTorch: {torch.__version__}")
-            print(f"  - CUDA 可用: {torch.cuda.is_available()}")
+            print(f"  - CUDA Available: {torch.cuda.is_available()}")
             print(f"  - Detectron2: {detectron2.__version__}")
         except ImportError as e:
-            print(f"\n警告：验证时出错: {e}")
+            print(f"\nWarning: Error during verification: {e}")
     else:
         print("\n" + "=" * 60)
-        print("✗ 安装失败，请查看错误信息")
+        print("✗ Installation failed, please check error messages")
         print("=" * 60)
         sys.exit(1)
 
 def auto_install():
-    """非交互式自动安装（用于脚本调用）"""
+    """Non-interactive automatic installation (for script calls)"""
     print("=" * 60)
-    print("自动安装脚本 - PyTorch 和 Detectron2 (非交互模式)")
+    print("Auto Installation Script - PyTorch and Detectron2 (Non-interactive Mode)")
     print("=" * 60)
     
-    # 检测环境
+    # Detect environment
     info = get_system_info()
-    print("\n检测到环境:")
-    print(f"  - 操作系统: {info['os']}")
+    print("\nDetected environment:")
+    print(f"  - Operating System: {info['os']}")
     print(f"  - Python: {info['python_version']}")
-    print(f"  - CUDA 可用: {info['has_cuda']}")
+    print(f"  - CUDA Available: {info['has_cuda']}")
     if info['cuda_version']:
-        print(f"  - CUDA 版本: {info['cuda_version']}")
+        print(f"  - CUDA Version: {info['cuda_version']}")
     
-    # 检查是否已安装 PyTorch
+    # Check if PyTorch is already installed
     torch_version = get_torch_version()
     need_reinstall_pytorch = False
     
     if torch_version:
-        print(f"\n已检测到 PyTorch {torch_version}")
-        # 验证 CUDA 支持
+        print(f"\nDetected PyTorch {torch_version}")
+        # Verify CUDA support
         try:
             import torch
             if info['has_cuda'] and not torch.cuda.is_available():
-                print("警告：系统有 CUDA 但 PyTorch 是 CPU 版本，将重新安装")
+                print("Warning: System has CUDA but PyTorch is CPU version, will reinstall")
                 need_reinstall_pytorch = True
         except ImportError:
             need_reinstall_pytorch = True
@@ -478,51 +478,51 @@ def auto_install():
         need_reinstall_pytorch = True
     
     if need_reinstall_pytorch:
-        print("\n开始安装 PyTorch...")
+        print("\nStarting PyTorch installation...")
         if not install_pytorch(info):
             sys.exit(1)
     
-    # 更新 torch 版本信息
+    # Update torch version information
     torch_version = get_torch_version()
-    print(f"\n当前 PyTorch 版本: {torch_version}")
+    print(f"\nCurrent PyTorch version: {torch_version}")
     
-    # 检查是否已安装 detectron2
+    # Check if detectron2 is already installed
     need_install_detectron2 = True
     try:
         import detectron2
-        print(f"已检测到 Detectron2 {detectron2.__version__}")
+        print(f"Detected Detectron2 {detectron2.__version__}")
         need_install_detectron2 = False
     except ImportError:
         pass
     
     if need_install_detectron2:
-        # 重新获取系统信息
+        # Re-get system information
         info = get_system_info()
         success = install_detectron2(info)
         
         if not success:
-            print("\n✗ Detectron2 安装失败")
+            print("\n✗ Detectron2 installation failed")
             sys.exit(1)
     
     print("\n" + "=" * 60)
-    print("✓ 安装完成！")
+    print("✓ Installation completed!")
     print("=" * 60)
     
-    # 验证安装
+    # Verify installation
     try:
         import torch
         import detectron2
-        print("\n验证安装:")
+        print("\nVerifying installation:")
         print(f"  - PyTorch: {torch.__version__}")
-        print(f"  - CUDA 可用: {torch.cuda.is_available()}")
+        print(f"  - CUDA Available: {torch.cuda.is_available()}")
         print(f"  - Detectron2: {detectron2.__version__}")
     except ImportError as e:
-        print(f"\n警告：验证时出错: {e}")
+        print(f"\nWarning: Error during verification: {e}")
 
 if __name__ == '__main__':
     import argparse
-    parser = argparse.ArgumentParser(description='自动安装 PyTorch 和 Detectron2')
-    parser.add_argument('--auto', action='store_true', help='非交互式自动安装')
+    parser = argparse.ArgumentParser(description='Automatically install PyTorch and Detectron2')
+    parser.add_argument('--auto', action='store_true', help='Non-interactive automatic installation')
     args = parser.parse_args()
     
     if args.auto:
