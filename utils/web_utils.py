@@ -7,7 +7,6 @@ import logging
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service as ChromeService
 import sys
-import os
 
 logger = logging.getLogger(__name__)
 
