@@ -40,11 +40,6 @@ def get_system_info():
     except ImportError:
         pass
     
-    if args.cpu:
-        print("You have set the --cpu flag, so CPU version of PyTorch and Detectron2 will be installed.")
-        has_cuda = False
-        cuda_version = None
-
     return {
         'os': os_name,
         'has_cuda': has_cuda,

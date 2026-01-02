@@ -44,8 +44,8 @@ ENV PATH="/opt/google/chrome:/usr/local/bin:/root/.pixi/bin:$PATH"
 ENV CHROME_BIN="/opt/google/chrome/chrome"
 
 RUN echo "=== test Chrome installation ===" \
-    && /usr/bin/google-chrome-stable --version || /opt/google/chrome/chrome --version \
-    && export PATH="/root/.pixi/bin:$PATH" \
+    && which google-chrome-stable \
+    && google-chrome-stable --version \
     && pixi install \
     && dos2unix setup.sh \
     && chmod +x setup.sh \
