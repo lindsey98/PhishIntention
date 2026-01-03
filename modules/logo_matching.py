@@ -1,17 +1,19 @@
+import os
+import pickle
+from collections import OrderedDict
+
+import numpy as np
+import torch
 from PIL import Image, ImageOps
+from tldextract import tldextract
+from torch.backends import cudnn
 from torchvision import transforms
-from utils.utils import brand_converter, resolution_alignment, l2_norm
+from tqdm import tqdm
+
 from modules.models2 import KNOWN_MODELS
 from ocr_lib.models.model_builder import ModelBuilder
 from ocr_lib.utils.labelmaps import get_vocabulary
-import torch
-from torch.backends import cudnn
-import os
-import numpy as np
-from collections import OrderedDict
-from tqdm import tqdm
-from tldextract import tldextract
-import pickle
+from utils.utils import brand_converter, l2_norm, resolution_alignment
 
 COUNTRY_TLDs = [
     ".af",
@@ -43,7 +45,9 @@ COUNTRY_TLDs = [
     ".bm",
     ".bt",
     ".bo",
-    ".bq",".an",".nl",
+    ".bq",
+    ".an",
+    ".nl",
     ".ba",
     ".bw",
     ".bv",
@@ -83,7 +87,8 @@ COUNTRY_TLDs = [
     ".dj",
     ".dm",
     ".do",
-    ".tl",".tp",
+    ".tl",
+    ".tp",
     ".ec",
     ".eg",
     ".sv",
@@ -184,7 +189,8 @@ COUNTRY_TLDs = [
     ".ng",
     ".nu",
     ".nf",
-    ".nc",".tr",
+    ".nc",
+    ".tr",
     ".kp",
     ".mp",
     ".no",
@@ -206,12 +212,17 @@ COUNTRY_TLDs = [
     ".ru",
     ".rw",
     ".re",
-    ".bq",".an",
-    ".bl",".gp",".fr",
+    ".bq",
+    ".an",
+    ".bl",
+    ".gp",
+    ".fr",
     ".sh",
     ".kn",
     ".lc",
-    ".mf",".gp",".fr",
+    ".mf",
+    ".gp",
+    ".fr",
     ".pm",
     ".vc",
     ".ws",
@@ -223,8 +234,11 @@ COUNTRY_TLDs = [
     ".sc",
     ".sl",
     ".sg",
-    ".bq",".an",".nl",
-    ".sx",".an",
+    ".bq",
+    ".an",
+    ".nl",
+    ".sx",
+    ".an",
     ".sk",
     ".si",
     ".sb",
@@ -273,27 +287,32 @@ COUNTRY_TLDs = [
     ".ma",
     ".ye",
     ".zm",
-    ".zw"
+    ".zw",
 ]
+
 
 class DataInfo(object):
     """
     Save the info about the dataset.
     This a code snippet from dataset.py
     """
+
     def __init__(self, voc_type):
         super(DataInfo, self).__init__()
         self.voc_type = voc_type
 
-        assert voc_type in ['LOWERCASE', 'ALLCASES', 'ALLCASES_SYMBOLS']
-        self.EOS = 'EOS'
-        self.PADDING = 'PADDING'
-        self.UNKNOWN = 'UNKNOWN'
-        self.voc = get_vocabulary(voc_type, EOS=self.EOS, PADDING=self.PADDING, UNKNOWN=self.UNKNOWN)
+        assert voc_type in ["LOWERCASE", "ALLCASES", "ALLCASES_SYMBOLS"]
+        self.EOS = "EOS"
+        self.PADDING = "PADDING"
+        self.UNKNOWN = "UNKNOWN"
+        self.voc = get_vocabulary(
+            voc_type, EOS=self.EOS, PADDING=self.PADDING, UNKNOWN=self.UNKNOWN
+        )
         self.char2id = dict(zip(self.voc, range(len(self.voc))))
         self.id2char = dict(zip(range(len(self.voc)), self.voc))
 
         self.rec_num_classes = len(self.voc)
+
 
 def ocr_model_config(weights_path, height=None, width=None):
     np.random.seed(1234)
@@ -303,45 +322,52 @@ def ocr_model_config(weights_path, height=None, width=None):
     cudnn.benchmark = True
     torch.backends.cudnn.deterministic = True
 
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    if device == 'cuda':
-        print('using cuda.')
-        torch.set_default_tensor_type('torch.cuda.FloatTensor')
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    if device == "cuda":
+        print("using cuda.")
+        torch.set_default_tensor_type("torch.cuda.FloatTensor")
     else:
-        torch.set_default_tensor_type('torch.FloatTensor')
+        torch.set_default_tensor_type("torch.FloatTensor")
 
     # Create data loaders
     if height is None or width is None:
         height, width = (32, 100)
 
-    dataset_info = DataInfo('ALLCASES_SYMBOLS')
+    dataset_info = DataInfo("ALLCASES_SYMBOLS")
 
     # Create model
-    model = ModelBuilder(arch='ResNet_ASTER', rec_num_classes=dataset_info.rec_num_classes,
-                         sDim=512, attDim=512, max_len_labels=100,
-                         eos=dataset_info.char2id[dataset_info.EOS], STN_ON=True)
+    model = ModelBuilder(
+        arch="ResNet_ASTER",
+        rec_num_classes=dataset_info.rec_num_classes,
+        sDim=512,
+        attDim=512,
+        max_len_labels=100,
+        eos=dataset_info.char2id[dataset_info.EOS],
+        STN_ON=True,
+    )
 
     # Load from checkpoint
-    weights_path = torch.load(weights_path, map_location='cpu')
-    model.load_state_dict(weights_path['state_dict'])
+    weights_path = torch.load(weights_path, map_location="cpu")
+    model.load_state_dict(weights_path["state_dict"])
 
-    if device == 'cuda':
+    if device == "cuda":
         model = model.to(device)
 
     return model
 
+
 def siamese_model_config(num_classes: int, weights_path: str):
     # Initialize model
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    device = "cuda" if torch.cuda.is_available() else "cpu"
     model = KNOWN_MODELS["BiT-M-R50x1"](head_size=num_classes, zero_head=True)
 
     # Load weights
-    weights = torch.load(weights_path, map_location='cpu')
-    weights = weights['model'] if 'model' in weights.keys() else weights
+    weights = torch.load(weights_path, map_location="cpu")
+    weights = weights["model"] if "model" in weights.keys() else weights
     new_state_dict = OrderedDict()
     for k, v in weights.items():
-        if k.startswith('module'):
-            name = k.split('module.')[1]
+        if k.startswith("module"):
+            name = k.split("module.")[1]
         else:
             name = k
         new_state_dict[name] = v
@@ -354,7 +380,11 @@ def siamese_model_config(num_classes: int, weights_path: str):
 
 
 def image_process(image_path, imgH=32, imgW=100, keep_ratio=False, min_ratio=1):
-    img = Image.open(image_path).convert('RGB') if isinstance(image_path, str) else image_path.convert('RGB')
+    img = (
+        Image.open(image_path).convert("RGB")
+        if isinstance(image_path, str)
+        else image_path.convert("RGB")
+    )
 
     if keep_ratio:
         w, h = img.size
@@ -370,7 +400,7 @@ def image_process(image_path, imgH=32, imgW=100, keep_ratio=False, min_ratio=1):
 
 
 def ocr_main(image_path, model, height=None, width=None):
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    device = "cuda" if torch.cuda.is_available() else "cpu"
     # Evaluation
     model.eval()
 
@@ -378,13 +408,13 @@ def ocr_main(image_path, model, height=None, width=None):
     with torch.no_grad():
         img = img.to(device)
     input_dict = {}
-    input_dict['images'] = img.unsqueeze(0)
+    input_dict["images"] = img.unsqueeze(0)
 
-    dataset_info = DataInfo('ALLCASES_SYMBOLS')
+    dataset_info = DataInfo("ALLCASES_SYMBOLS")
     rec_targets = torch.IntTensor(1, 100).fill_(1)
     rec_targets[:, 100 - 1] = dataset_info.char2id[dataset_info.EOS]
-    input_dict['rec_targets'] = rec_targets.to(device)
-    input_dict['rec_lengths'] = [100]
+    input_dict["rec_targets"] = rec_targets.to(device)
+    input_dict["rec_lengths"] = [100]
 
     with torch.no_grad():
         features, decoder_feat = model.features(input_dict)
@@ -394,9 +424,10 @@ def ocr_main(image_path, model, height=None, width=None):
 
     return features
 
+
 @torch.no_grad()
 def get_ocr_aided_siamese_embedding(img, model, ocr_model, grayscale=False):
-    '''
+    """
     Inference for a single image
     :param img: image path in str or image in PIL.Image
     :param model: Siamese model to make inference
@@ -405,25 +436,38 @@ def get_ocr_aided_siamese_embedding(img, model, ocr_model, grayscale=False):
     :param title: title of displayed image
     :param grayscale: convert image to grayscale or not
     :return feature embedding of shape (2048,)
-    '''
+    """
     img_size = 224
     mean = [0.5, 0.5, 0.5]
     std = [0.5, 0.5, 0.5]
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
     img_transforms = transforms.Compose(
-        [transforms.ToTensor(),
-         transforms.Normalize(mean=mean, std=std),
-     ])
+        [
+            transforms.ToTensor(),
+            transforms.Normalize(mean=mean, std=std),
+        ]
+    )
 
     img = Image.open(img) if isinstance(img, str) else img
-    img = img.convert("RGBA").convert("L").convert("RGB") if grayscale else img.convert("RGBA").convert("RGB")
+    img = (
+        img.convert("RGBA").convert("L").convert("RGB")
+        if grayscale
+        else img.convert("RGBA").convert("RGB")
+    )
 
     ## Resize the image while keeping the original aspect ratio
     pad_color = 255 if grayscale else (255, 255, 255)
-    img = ImageOps.expand(img, (
-        (max(img.size) - img.size[0]) // 2, (max(img.size) - img.size[1]) // 2,
-        (max(img.size) - img.size[0]) // 2, (max(img.size) - img.size[1]) // 2), fill=pad_color)
+    img = ImageOps.expand(
+        img,
+        (
+            (max(img.size) - img.size[0]) // 2,
+            (max(img.size) - img.size[1]) // 2,
+            (max(img.size) - img.size[0]) // 2,
+            (max(img.size) - img.size[1]) // 2,
+        ),
+        fill=pad_color,
+    )
 
     img = img.resize((img_size, img_size))
 
@@ -439,9 +483,12 @@ def get_ocr_aided_siamese_embedding(img, model, ocr_model, grayscale=False):
         img = img_transforms(img)
         img = img[None, ...].to(device)
         logo_feat = model.features(img, ocr_emb)
-        logo_feat = l2_norm(logo_feat).squeeze(0).cpu().numpy()  # L2-normalization final shape is (2560,)
+        logo_feat = (
+            l2_norm(logo_feat).squeeze(0).cpu().numpy()
+        )  # L2-normalization final shape is (2560,)
 
     return logo_feat
+
 
 def chunked_dot(logo_feat_list, img_feat, chunk_size=128):
     sim_list = []
@@ -454,8 +501,19 @@ def chunked_dot(logo_feat_list, img_feat, chunk_size=128):
 
     return sim_list
 
-def pred_brand(model, ocr_model, domain_map, logo_feat_list, file_name_list, shot_path: str, pred_bbox, t_s, grayscale=False):
-    '''
+
+def pred_brand(
+    model,
+    ocr_model,
+    domain_map,
+    logo_feat_list,
+    file_name_list,
+    shot_path: str,
+    pred_bbox,
+    t_s,
+    grayscale=False,
+):
+    """
     Return predicted brand for one cropped image
     :param model: model to use
     :param domain_map: brand-domain dictionary
@@ -466,20 +524,24 @@ def pred_brand(model, ocr_model, domain_map, logo_feat_list, file_name_list, sho
     :param t_s: similarity threshold for siamese
     :param grayscale: convert image(cropped) to grayscale or not
     :return: predicted target, predicted target's domain
-    '''
+    """
 
     try:
         img = Image.open(shot_path)
     except OSError:  # if the image cannot be identified, return nothing
-        print('Screenshot cannot be open')
+        print("Screenshot cannot be open")
         return None, None, None
 
     ## get predicted box --> crop from screenshot
     cropped = img.crop((pred_bbox[0], pred_bbox[1], pred_bbox[2], pred_bbox[3]))
-    img_feat = get_ocr_aided_siamese_embedding(cropped, model, ocr_model, grayscale=grayscale)
+    img_feat = get_ocr_aided_siamese_embedding(
+        cropped, model, ocr_model, grayscale=grayscale
+    )
 
     ## get cosine similarity with every protected logo
-    sim_list = chunked_dot(logo_feat_list, img_feat)  # take dot product for every pair of embeddings (Cosine Similarity)
+    sim_list = chunked_dot(
+        logo_feat_list, img_feat
+    )  # take dot product for every pair of embeddings (Cosine Similarity)
     pred_brand_list = file_name_list
 
     assert len(sim_list) == len(pred_brand_list)
@@ -491,7 +553,9 @@ def pred_brand(model, ocr_model, domain_map, logo_feat_list, file_name_list, sho
 
     # top1,2,3 candidate logos
     top3_logolist = [Image.open(x) for x in pred_brand_list]
-    top3_brandlist = [brand_converter(os.path.basename(os.path.dirname(x))) for x in pred_brand_list]
+    top3_brandlist = [
+        brand_converter(os.path.basename(os.path.dirname(x))) for x in pred_brand_list
+    ]
     top3_domainlist = [domain_map[x] for x in top3_brandlist]
     top3_simlist = sim_list
 
@@ -511,8 +575,12 @@ def pred_brand(model, ocr_model, domain_map, logo_feat_list, file_name_list, sho
         ## Else if not exceed, try resolution alignment, see if can improve
         else:
             cropped, candidate_logo = resolution_alignment(cropped, top3_logolist[j])
-            img_feat = get_ocr_aided_siamese_embedding(cropped, model, ocr_model, grayscale=grayscale)
-            logo_feat = get_ocr_aided_siamese_embedding(candidate_logo, model, ocr_model, grayscale=grayscale)
+            img_feat = get_ocr_aided_siamese_embedding(
+                cropped, model, ocr_model, grayscale=grayscale
+            )
+            logo_feat = get_ocr_aided_siamese_embedding(
+                candidate_logo, model, ocr_model, grayscale=grayscale
+            )
             final_sim = logo_feat.dot(img_feat)
             if final_sim >= t_s:
                 predicted_brand = top3_brandlist[j]
@@ -533,53 +601,70 @@ def pred_brand(model, ocr_model, domain_map, logo_feat_list, file_name_list, sho
 
     return None, None, top3_simlist[0]
 
+
 def cache_reference_list(model, ocr_model, targetlist_path: str, grayscale=False):
-    '''
+    """
     cache the embeddings of the reference list
-    '''
+    """
 
     #  Prediction for targetlists
     logo_feat_list = []
     file_name_list = []
 
     for target in tqdm(os.listdir(targetlist_path)):
-        if target.startswith('.'):  # skip hidden files
+        if target.startswith("."):  # skip hidden files
             continue
         for logo_path in os.listdir(os.path.join(targetlist_path, target)):
-            if logo_path.endswith('.png') or logo_path.endswith('.jpeg') or logo_path.endswith('.jpg') or logo_path.endswith('.PNG') \
-                    or logo_path.endswith('.JPG') or logo_path.endswith('.JPEG'):
-                if logo_path.startswith('loginpage') or logo_path.startswith('homepage'):  # skip homepage/loginpage
+            if (
+                logo_path.endswith(".png")
+                or logo_path.endswith(".jpeg")
+                or logo_path.endswith(".jpg")
+                or logo_path.endswith(".PNG")
+                or logo_path.endswith(".JPG")
+                or logo_path.endswith(".JPEG")
+            ):
+                if logo_path.startswith("loginpage") or logo_path.startswith(
+                    "homepage"
+                ):  # skip homepage/loginpage
                     continue
-                logo_feat_list.append(get_ocr_aided_siamese_embedding(img=os.path.join(targetlist_path, target, logo_path),
-                                                                      model=model,
-                                                                      ocr_model=ocr_model,
-                                                                      grayscale=grayscale))
-                file_name_list.append(str(os.path.join(targetlist_path, target, logo_path)))
+                logo_feat_list.append(
+                    get_ocr_aided_siamese_embedding(
+                        img=os.path.join(targetlist_path, target, logo_path),
+                        model=model,
+                        ocr_model=ocr_model,
+                        grayscale=grayscale,
+                    )
+                )
+                file_name_list.append(
+                    str(os.path.join(targetlist_path, target, logo_path))
+                )
 
     return np.asarray(logo_feat_list), np.asarray(file_name_list)
 
-def check_domain_brand_inconsistency(logo_boxes,
-                                     domain_map_path: str,
-                                     model,
-                                     ocr_model,
-                                     logo_feat_list,
-                                     file_name_list,
-                                     shot_path: str,
-                                     url: str,
-                                     ts: float):
+
+def check_domain_brand_inconsistency(
+    logo_boxes,
+    domain_map_path: str,
+    model,
+    ocr_model,
+    logo_feat_list,
+    file_name_list,
+    shot_path: str,
+    url: str,
+    ts: float,
+):
 
     # targetlist domain list
-    with open(domain_map_path, 'rb') as handle:
+    with open(domain_map_path, "rb") as handle:
         domain_map = pickle.load(handle)
 
     # look at boxes for logo class only
-    print('number of logo boxes:', len(logo_boxes))
-    suffix_part = '.'+ tldextract.extract(url).suffix
+    print("number of logo boxes:", len(logo_boxes))
+    suffix_part = "." + tldextract.extract(url).suffix
     domain_part = tldextract.extract(url).domain
     extracted_domain = domain_part + suffix_part
-                                         
-    matched_target, matched_domain, matched_coord, this_conf = None, None, None, None
 
+    matched_target, matched_domain, matched_coord, this_conf = None, None, None, None
 
     # run logo matcher
     if len(logo_boxes) > 0:
@@ -587,9 +672,17 @@ def check_domain_brand_inconsistency(logo_boxes,
         for i, coord in enumerate(logo_boxes):
             min_x, min_y, max_x, max_y = coord
             bbox = [float(min_x), float(min_y), float(max_x), float(max_y)]
-            matched_target, matched_domain, this_conf = pred_brand(model, ocr_model, domain_map,
-                                                                  logo_feat_list, file_name_list,
-                                                                  shot_path, bbox, t_s=ts, grayscale=False)
+            matched_target, matched_domain, this_conf = pred_brand(
+                model,
+                ocr_model,
+                domain_map,
+                logo_feat_list,
+                file_name_list,
+                shot_path,
+                bbox,
+                t_s=ts,
+                grayscale=False,
+            )
 
             # domain matcher to avoid FP
             # if matched_target is not None:
@@ -607,22 +700,28 @@ def check_domain_brand_inconsistency(logo_boxes,
             # break  # only look at 1st logo
             if (matched_target is not None) and (matched_domain is not None):
                 matched_coord = coord
-                matched_domain_parts = [tldextract.extract(x).domain for x in matched_domain]
-                matched_suffix_parts = [tldextract.extract(x).suffix for x in matched_domain]
-                
+                matched_domain_parts = [
+                    tldextract.extract(x).domain for x in matched_domain
+                ]
+                matched_suffix_parts = [
+                    tldextract.extract(x).suffix for x in matched_domain
+                ]
+
                 # If the webpage domain exactly aligns with the target website's domain => Benign
                 if extracted_domain in matched_domain:
-                    matched_target, matched_domain = None, None  # Clear if domains are consistent
-                elif domain_part in matched_domain_parts: # # elIf only the 2nd-level-domains align, and the tld is regional  => Benign
-                    if "." + suffix_part.split('.')[-1] in COUNTRY_TLDs:
+                    matched_target, matched_domain = (
+                        None,
+                        None,
+                    )  # Clear if domains are consistent
+                elif (
+                    domain_part in matched_domain_parts
+                ):  # # elIf only the 2nd-level-domains align, and the tld is regional  => Benign
+                    if "." + suffix_part.split(".")[-1] in COUNTRY_TLDs:
                         matched_target, matched_domain = None, None
                     else:
-                        break # Inconsistent domain found, break the loop
+                        break  # Inconsistent domain found, break the loop
                 else:
                     break  # Inconsistent domain found, break the loop
             break  # only look at 1st logo
 
     return brand_converter(matched_target), matched_domain, matched_coord, this_conf
-
-
-
