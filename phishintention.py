@@ -437,7 +437,7 @@ def _process_single_folder(folder, request_dir, phishintention_cls, output_fn, s
         logger.warning(f"⚠️  Phishing detected in {folder} | Target: {pred_target} | Confidence: {siamese_conf:.4f}")
     else:
         stats['benign'] += 1
-        logger.info(f"✓ Benign site: {folder}")
+        logger.info(f"Benign site: {folder}")
 
     # Write results
     _write_result_to_file(output_fn, folder, url, phish_category, pred_target, 

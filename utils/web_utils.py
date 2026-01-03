@@ -231,8 +231,13 @@ def visit_url(driver, orig_url, max_retries=2):
 def driver_loader():
 
     options = initialize_chrome_settings()
-    service = ChromeService(executable_path="./chromedriver/chromedriver")
-    driver = webdriver.Chrome(service=service, options=options)
+    try:
+        service = ChromeService(executable_path="./chromedriver/chromedriver")
+        driver = webdriver.Chrome(service=service, options=options)
+    except:
+        service = ChromeService(executable_path="./chromedriver/chromedriver.exe")
+        driver = webdriver.Chrome(service=service, options=options)
+    
     driver.set_page_load_timeout(60)  # set timeout to avoid wasting time
     driver.set_script_timeout(60)  # set timeout to avoid wasting time
     helium.set_driver(driver)
