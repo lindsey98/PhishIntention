@@ -15,4 +15,5 @@ unzip chromedriver-win64.zip
 
 mkdir chromedriver
 
-copy chromedriver-win64\chromedriver.exe chromedriver\chromedriver
+@REM copy chromedriver-win64\chromedriver.exe chromedriver\chromedriver.exe
+copy chromedriver-win64\chromedriver.exe chromedriver\chromedriver.exe

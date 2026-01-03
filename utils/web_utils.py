@@ -234,14 +234,16 @@ def driver_loader():
     try:
         service = ChromeService(executable_path="./chromedriver/chromedriver")
         driver = webdriver.Chrome(service=service, options=options)
-    except:
-        service = ChromeService(executable_path="./chromedriver/chromedriver.exe")
-        driver = webdriver.Chrome(service=service, options=options)
-    
+    except Exception as e:
+        logger.info(f'Failed to load driver, trying to load driver.exe: {str(e)}', exc_info=True)
+        try:
+            service = ChromeService(executable_path="./chromedriver/chromedriver.exe")
+            driver = webdriver.Chrome(service=service, options=options)
+        except Exception as e:
+            logger.error(f'Failed to load driver.exe: {str(e)}', exc_info=True)
+            raise e
+            
     driver.set_page_load_timeout(60)  # set timeout to avoid wasting time
     driver.set_script_timeout(60)  # set timeout to avoid wasting time
     helium.set_driver(driver)
-
     return driver
-
-
