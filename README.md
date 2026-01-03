@@ -56,7 +56,16 @@ phishintention">Website</a> •
 |_ phishintention.py: main script
 ```
 
-## Setup
+## Setup with Docker
+
+```bash
+git clone https://github.com/lindsey98/PhishIntention.git
+cd PhishIntention
+docker build -t phishintention .
+docker run -it phishintention
+```
+
+## Setup with pixi
 
 ### Step 1: Install dependencies:
 
