@@ -63,8 +63,53 @@ class PhishIntentionWrapper:
         self.DOMAIN_MAP_PATH = self.model_config.domain_map_path
 
     """PhishIntention"""
-
-    def test_orig_phishintention(self, url, screenshot_path):
+    def _build_strategies(self):  
+        """构建检测策略"""  
+        self.strategies = {  
+            "layout_detection": LayoutDetectionStrategy(self.AWL_MODEL),  
+            "logo_matching": LogoMatchingStrategy(  
+                self.SIAMESE_MODEL, self.OCR_MODEL,   
+                self.LOGO_FEATS, self.LOGO_FILES,  
+                self.DOMAIN_MAP_PATH, self.SIAMESE_THRE  
+            ),  
+            "crp_classification": CRPClassificationStrategy(self.CRP_CLASSIFIER),  
+            "dynamic_analysis": DynamicAnalysisStrategy(  
+                self.CRP_LOCATOR_MODEL, self.AWL_MODEL, self.CRP_CLASSIFIER  
+            )  
+        }  
+      
+    def test_orig_phishintention(self, url, screenshot_path):  
+        """重构后的主检测方法"""  
+        context = DetectionContext(url=url, screenshot_path=screenshot_path)  
+        current_stage = "layout_detection"  
+          
+        while True:  
+            strategy = self.strategies[current_stage]  
+            result = strategy.execute(context)  
+              
+            if result.should_stop:  
+                # 检查是否是最终分类阶段  
+                if current_stage == "final_classification" and context.pred_target is not None:  
+                    # 添加可视化标注  
+                    cv2.putText(  
+                        context.plotvis,   
+                        f"Target: {context.pred_target} with confidence {context.siamese_conf:.4f}",  
+                        (int(context.matched_coord[0] + 20), int(context.matched_coord[1] + 20)),  
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2  
+                    )  
+                    return DetectionResult.phishing(context)  
+                else:  
+                    return result  
+              
+            elif result.should_continue_loop:  
+                if result.next_stage == "layout_detection":  
+                    # 动态分析后重新开始循环  
+                    current_stage = "layout_detection"  
+                else:  
+                    # 继续到下一阶段  
+                    current_stage = result.next_stage
+                    
+    """def test_orig_phishintention(self, url, screenshot_path):
 
         waive_crp_classifier = False
         phish_category = 0  # 0 for benign, 1 for phish, default is benign
@@ -268,7 +313,7 @@ class PhishIntentionWrapper:
             + str(crp_locator_time),
             pred_boxes,
             pred_classes,
-        )
+        )"""
 
 
 if __name__ == "__main__":
