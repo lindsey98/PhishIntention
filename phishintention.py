@@ -24,7 +24,7 @@ class PhishIntentionWrapper:
     _caller_prefix = "PhishIntentionWrapper"
     _DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-    def __init__(self):
+    """def __init__(self):
         self._load_config()
 
     def _load_config(self):
@@ -39,7 +39,28 @@ class PhishIntentionWrapper:
             self.LOGO_FILES,
             self.DOMAIN_MAP_PATH,
         ) = load_config()
-        print(f"Length of reference list = {len(self.LOGO_FEATS)}")
+        print(f"Length of reference list = {len(self.LOGO_FEATS)}")"""
+    def __init__(self, use_new_config: bool = False):  
+        if use_new_config:  
+            self._load_config_new()  
+        else:  
+            self._load_config()  # 保持原有方式  
+      
+    def _load_config_new(self):  
+        """使用新的配置类"""  
+        config_path = os.path.join(os.path.dirname(__file__), 'configs/configs.yaml')  
+        self.model_config = ModelConfig.from_file(config_path)  
+          
+        # 保持原有属性名，确保兼容性  
+        self.AWL_MODEL = self.model_config.awl_model  
+        self.CRP_CLASSIFIER = self.model_config.crp_classifier  
+        self.CRP_LOCATOR_MODEL = self.model_config.crp_locator_model  
+        self.SIAMESE_MODEL = self.model_config.siamese_model  
+        self.OCR_MODEL = self.model_config.ocr_model  
+        self.SIAMESE_THRE = self.model_config.siamese_threshold  
+        self.LOGO_FEATS = self.model_config.logo_features  
+        self.LOGO_FILES = self.model_config.logo_files  
+        self.DOMAIN_MAP_PATH = self.model_config.domain_map_path
 
     """PhishIntention"""
 
