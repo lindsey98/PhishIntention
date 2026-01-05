@@ -1,7 +1,7 @@
 
 import string
 
-from . import to_torch, to_numpy
+from . import to_numpy
 
 def get_vocabulary(voc_type, EOS='EOS', PADDING='PADDING', UNKNOWN='UNKNOWN'):
   '''

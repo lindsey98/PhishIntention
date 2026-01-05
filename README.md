@@ -56,6 +56,112 @@ phishintention">Website</a> •
 |_ phishintention.py: main script
 ```
 
+## Automatic Setup (New)
+We now provide a fully automatic setup pipeline for Linux, Windows and MacOS, including installation of pixi, chrome, chromedriver etc.
+### Setup with Docker
+For Linux and Windows, we recommend using Docker.
+  ```bash
+  git clone https://github.com/lindsey98/PhishIntention.git
+  cd PhishIntention
+  docker build -t phishintention .
+  ```
+You can run from command line with
+  ```bash
+  docker run --rm phishintention pixi run python phishintention.py --folder <folder you want to test e.g. datasets/test_sites> --output_fn <where you want to save the results e.g. test.json>
+  ```
+
+### Non-Docker Setup
+We provide an automatic installation pipeline that **detects your system and GPU** to install the appropriate versions of PyTorch and Detectron2.
+
+- **GPU Support**: If you have an NVIDIA GPU with CUDA, the script will automatically install CUDA-enabled PyTorch and Detectron2.
+- **CPU Fallback**: If no GPU is detected, CPU versions will be installed.
+
+#### Windows
+
+```bash
+git clone https://github.com/lindsey98/PhishIntention.git
+cd PhishIntention
+
+# Install latest Chrome and ChromeDriver
+.\chrome_setup.bat
+
+# Install pixi (restart your terminal after installation)
+powershell -ExecutionPolicy ByPass -c "irm -useb https://pixi.sh/install.ps1 | iex"
+
+# Install dependencies (auto-detects GPU and installs appropriate PyTorch/Detectron2)
+pixi install
+.\setup.bat
+```
+
+#### macOS
+
+```bash
+git clone https://github.com/lindsey98/PhishIntention.git
+cd PhishIntention
+export KMP_DUPLICATE_LIB_OK=TRUE
+
+# Install pixi (restart your terminal after installation)
+curl -fsSL https://pixi.sh/install.sh | sh
+
+# Install Chrome
+brew install --cask google-chrome
+
+# Configure Chrome path (for bash)
+echo 'export CHROME_BIN="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"' >> ~/.bash_profile
+echo 'export PATH="/Applications/Google Chrome.app/Contents/MacOS:$PATH"' >> ~/.bash_profile
+source ~/.bash_profile
+
+# Or for zsh:
+echo 'export CHROME_BIN="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"' >> ~/.zshrc
+echo 'export PATH="/Applications/Google Chrome.app/Contents/MacOS:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+
+# Verify Chrome Installation
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --version
+
+# Install dependencies (auto-detects and installs appropriate PyTorch/Detectron2)
+pixi install
+chmod +x setup.sh && ./setup.sh
+```
+
+#### Linux
+
+```bash
+git clone https://github.com/lindsey98/PhishIntention.git
+cd PhishIntention
+export KMP_DUPLICATE_LIB_OK=TRUE
+
+# Install pixi (restart your terminal after installation)
+curl -fsSL https://pixi.sh/install.sh | sh
+
+# Install Chrome (Ubuntu/Debian)
+wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+sudo dpkg -i google-chrome-stable_current_amd64.deb
+sudo apt-get install -f
+
+# Install dependencies (auto-detects GPU and installs appropriate PyTorch/Detectron2)
+pixi install
+chmod +x setup.sh && ./setup.sh
+```
+
+#### Manual PyTorch/Detectron2 Installation (Optional)
+
+If you prefer to install PyTorch and Detectron2 manually, or if the automatic installation fails:
+
+```bash
+# Run the auto-install script interactively
+pixi run python auto_install_detectron2.py
+
+# Or install manually:
+# 1. Install PyTorch from https://pytorch.org/get-started/locally/
+# 2. Install Detectron2 from https://detectron2.readthedocs.io/en/latest/tutorials/install.html
+```
+
+You can run from command line with
+  ```bash
+  pixi run python phishintention.py --folder <folder you want to test e.g. datasets/test_sites> --output_fn <where you want to save the results e.g. test.json>
+  ```
+
 ## Setup
 
 ### Step 1: Install dependencies:
@@ -92,7 +198,7 @@ phishintention">Website</a> •
 When you run the scripts for the 1st time, the reference list needs to be loaded, this may take some time.
 
 ```bash
-pixi run python phishintention.py --folder <folder you want to test e.g. datasets/test_sites> --output_txt <where you want to save the results e.g. test.txt>
+pixi run python phishintention.py --folder <folder you want to test e.g. datasets/test_sites> --output_fn <where you want to save the results e.g. test.json>
 ```
 
 The testing folder should be in the structure of:

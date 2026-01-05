@@ -164,7 +164,6 @@ class ResNetV2(nn.Module):
         x = x.view(-1, 2048*self.wf)
         x = torch.cat((x, ocr_emb), dim=1)
         x = self.additionalfc(x)
-        print(x.shape)
 
         return x
 

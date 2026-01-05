@@ -2,14 +2,15 @@
 setlocal enabledelayedexpansion
 
 :: ------------------------------------------------------------------------------
-:: Install Detectron2
-:: ------------------------------------------------------------------------------
-echo [%DATE% %TIME%] Installing detectron2...
-pixi run pip install --no-build-isolation git+https://github.com/facebookresearch/detectron2.git
+:: Automatically install PyTorch and Detectron2
+:: Automatically select CPU or CUDA version based on whether NVIDIA GPU is available
+echo Installing PyTorch and Detectron2 (auto-detecting GPU)...
+pixi run python auto_install_detectron2.py --auto
 if errorlevel 1 (
-    echo [ERROR] Failed to install detectron2.
+    echo [ERROR] Failed to install PyTorch/Detectron2
     exit /b 1
 )
+:: ------------------------------------------------------------------------------
 
 REM Create models directory and change into it
 if not exist models (
