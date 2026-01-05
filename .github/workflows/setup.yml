@@ -111,7 +111,7 @@ jobs:
 
       - name: Run pytest
         run: |
-          pixi run coverage run --include="modules/*.py, configs.py, phishintention.py" --omit="ocr_lib/*" -m unittest test_all_steps.py
+          pixi run coverage run --include="modules/*.py, configs.py, phishintention.py" --omit="ocr_lib/*" -m unittest unittest_code/test_all_steps.py
           pixi run coverage xml -o coverage.xml
 
       - name: SonarQube Scan
