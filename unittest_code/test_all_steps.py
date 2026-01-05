@@ -3,15 +3,24 @@ Using unittest for testing
 python -m unittest test_step2_logo_matcher.py
 python -m unittest discover -p "test_*.py"
 '''
-import unittest
+import os
 import sys
+import unittest
 
-# Import all test classes
-from test_step1 import TestStep1LayoutDetectorSimple
-from test_step2 import TestStep2LogoMatcher
-from test_step3 import TestStep3CrpClassifier
-from test_step4 import TestStep4DynamicAnalysis
-
+if __package__:
+    from .test_step1 import TestStep1LayoutDetectorSimple
+    from .test_step2 import TestStep2LogoMatcher
+    from .test_step3 import TestStep3CrpClassifier
+    from .test_step4 import TestStep4DynamicAnalysis
+else:
+    # Allow running the module directly without -m
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    if current_dir not in sys.path:
+        sys.path.insert(0, current_dir)
+    from test_step1 import TestStep1LayoutDetectorSimple
+    from test_step2 import TestStep2LogoMatcher
+    from test_step3 import TestStep3CrpClassifier
+    from test_step4 import TestStep4DynamicAnalysis
 
 def run_all_tests():
     """Run tests for all steps"""
@@ -48,8 +57,6 @@ def run_all_tests():
 
 if __name__ == '__main__':
     # Ensure the tested modules can be imported
-    import os
-    import sys
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     
     # Run all tests
