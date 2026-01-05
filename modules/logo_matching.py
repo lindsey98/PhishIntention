@@ -304,13 +304,10 @@ def ocr_model_config(weights_path, height=None, width=None):
     torch.backends.cudnn.deterministic = True
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    import logging
-    logger = logging.getLogger(__name__)
     if device == 'cuda':
-        logger.info('Using CUDA for computation')
+        print('using cuda.')
         torch.set_default_tensor_type('torch.cuda.FloatTensor')
     else:
-        logger.info('Using CPU for computation')
         torch.set_default_tensor_type('torch.FloatTensor')
 
     # Create data loaders
@@ -474,9 +471,7 @@ def pred_brand(model, ocr_model, domain_map, logo_feat_list, file_name_list, sho
     try:
         img = Image.open(shot_path)
     except OSError:  # if the image cannot be identified, return nothing
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.warning(f'Screenshot cannot be opened: {shot_path}')
+        print('Screenshot cannot be open')
         return None, None, None
 
     ## get predicted box --> crop from screenshot
@@ -538,7 +533,7 @@ def pred_brand(model, ocr_model, domain_map, logo_feat_list, file_name_list, sho
 
     return None, None, top3_simlist[0]
 
-def cache_reference_list(model, ocr_model, targetlist_path: str, grayscale=False, reload_targetlist=False):
+def cache_reference_list(model, ocr_model, targetlist_path: str, grayscale=False):
     '''
     cache the embeddings of the reference list
     '''
@@ -547,7 +542,6 @@ def cache_reference_list(model, ocr_model, targetlist_path: str, grayscale=False
     logo_feat_list = []
     file_name_list = []
 
-    get_target_embedding = reload_targetlist or (not os.path.exists(os.path.join(os.getcwd(), 'LOGO_FEATS.npy')))
     for target in tqdm(os.listdir(targetlist_path)):
         if target.startswith('.'):  # skip hidden files
             continue
@@ -556,20 +550,11 @@ def cache_reference_list(model, ocr_model, targetlist_path: str, grayscale=False
                     or logo_path.endswith('.JPG') or logo_path.endswith('.JPEG'):
                 if logo_path.startswith('loginpage') or logo_path.startswith('homepage'):  # skip homepage/loginpage
                     continue
-                if get_target_embedding:
-                    logo_feat_list.append(get_ocr_aided_siamese_embedding(img=os.path.join(targetlist_path, target, logo_path),
-                                                                        model=model,
-                                                                        ocr_model=ocr_model,
-                                                                        grayscale=grayscale))
+                logo_feat_list.append(get_ocr_aided_siamese_embedding(img=os.path.join(targetlist_path, target, logo_path),
+                                                                      model=model,
+                                                                      ocr_model=ocr_model,
+                                                                      grayscale=grayscale))
                 file_name_list.append(str(os.path.join(targetlist_path, target, logo_path)))
-                
-    if get_target_embedding:
-        np.save(os.path.join(os.getcwd(),'LOGO_FEATS.npy'), np.asarray(logo_feat_list))
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.info('Saved logo features to LOGO_FEATS.npy')
-    else:
-        logo_feat_list = np.load(os.path.join(os.getcwd(),'LOGO_FEATS.npy'))
 
     return np.asarray(logo_feat_list), np.asarray(file_name_list)
 
@@ -588,9 +573,7 @@ def check_domain_brand_inconsistency(logo_boxes,
         domain_map = pickle.load(handle)
 
     # look at boxes for logo class only
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.debug(f'Number of logo boxes detected: {len(logo_boxes)}')
+    print('number of logo boxes:', len(logo_boxes))
     suffix_part = '.'+ tldextract.extract(url).suffix
     domain_part = tldextract.extract(url).domain
     extracted_domain = domain_part + suffix_part
@@ -625,6 +608,7 @@ def check_domain_brand_inconsistency(logo_boxes,
             if (matched_target is not None) and (matched_domain is not None):
                 matched_coord = coord
                 matched_domain_parts = [tldextract.extract(x).domain for x in matched_domain]
+                matched_suffix_parts = [tldextract.extract(x).suffix for x in matched_domain]
                 
                 # If the webpage domain exactly aligns with the target website's domain => Benign
                 if extracted_domain in matched_domain:

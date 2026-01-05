@@ -5,12 +5,3 @@
 models/*
 *.DS_Store
 *.pyc
-*.txt
-datasets/*
-temp_test/*
-version.txt
-last-known-good-versions.json
-chrome*
-datasets/test_sites/ru.russianmastercach-republick.xyz/new_html.txt
-test_driver.py
-LOGO_FEATS.npy
