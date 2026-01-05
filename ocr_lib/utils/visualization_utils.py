@@ -2,21 +2,15 @@
 from PIL import Image
 import os
 import numpy as np
-from collections import OrderedDict
 # from scipy.misc import imresize
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from matplotlib.gridspec import GridSpec
 from io import BytesIO
 from multiprocessing import Pool
-import math
-import sys
 
-import torch
-from torch.nn import functional as F
 
-from ocr_lib.utils import to_torch, to_numpy
+from ocr_lib.utils import to_numpy
 from ..evaluation_metrics.metrics import get_str_list
 
 
