@@ -33,7 +33,9 @@ Existing reference-based phishing detectors only capture **brand intention**, wh
 
 ```
 PhishIntention/
-├── configs/                  # Object-detector configs and global configs.yaml
+├── configs/                  # Configuration
+│   ├── configs.yaml          #   Global config: weight paths, thresholds, brand count
+│   └── detectron2/           #   Detectron2 architecture configs for the Faster R-CNN detectors
 ├── modules/                  # Pipeline components
 │   ├── awl_detector.py       #   Abstract layout detector (Faster R-CNN)
 │   ├── crp_classifier.py     #   Credential-requiring-page classifier + HTML heuristic
