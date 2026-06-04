@@ -10,7 +10,9 @@ datasets/*
 temp_test/*
 version.txt
 last-known-good-versions.json
-chrome*
+chrome_version.txt
+chrome-win64*
+chromedriver*
 datasets/test_sites/ru.russianmastercach-republick.xyz/new_html.txt
 test_driver.py
 LOGO_FEATS.npy

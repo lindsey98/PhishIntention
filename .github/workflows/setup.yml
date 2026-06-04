@@ -39,18 +39,18 @@ jobs:
           echo "/Applications/Google Chrome.app/Contents/MacOS" >> $GITHUB_PATH
       
       - name: Run setup scripts
-        run: chmod +x chrome_setup.sh && ./chrome_setup.sh macos
-                
+        run: chmod +x scripts/chrome_setup.sh && ./scripts/chrome_setup.sh macos
+
       - name: Verify Chrome Installation
         run: |
           echo "=== Testing Chrome installation ==="
           /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --version
-      
+
       - name: Pixi install
         run: pixi install
 
       - name: Run setup scripts
-        run: chmod +x setup.sh && ./setup.sh --auto
+        run: chmod +x scripts/setup.sh && ./scripts/setup.sh --auto
 
       - name: Run test
         run: pixi run python phishintention.py --folder datasets/test_sites --output_fn test_1228.json
@@ -64,7 +64,7 @@ jobs:
         run: echo "export KMP_DUPLICATE_LIB_OK=TRUE" >> $GITHUB_ENV
 
       - name: Install latest chrome and driver
-        run: chmod +x chrome_setup.sh && ./chrome_setup.sh linux
+        run: chmod +x scripts/chrome_setup.sh && ./scripts/chrome_setup.sh linux
 
       - name: Install Pixi
         run: |
@@ -84,18 +84,18 @@ jobs:
         run: pixi install
 
       - name: Run setup scripts
-        run: chmod +x setup.sh && ./setup.sh --auto
+        run: chmod +x scripts/setup.sh && ./scripts/setup.sh --auto
 
       - name: Run test
         run: pixi run python phishintention.py --folder datasets/test_sites --output_fn test_1228.json
-    
+
   Windows_direct_test_and_pytest:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
 
       - name: Install latest chrome and driver
-        run: .\chrome_setup.bat
+        run: .\scripts\chrome_setup.bat
 
       - name: Install pixi
         run: powershell -ExecutionPolicy ByPass -c "irm -useb https://pixi.sh/install.ps1 | iex"
@@ -107,7 +107,7 @@ jobs:
         run: pixi install
 
       - name: Install detectron2 and download models
-        run: .\setup.bat
+        run: .\scripts\setup.bat
 
       - name: Run pytest
         run: |

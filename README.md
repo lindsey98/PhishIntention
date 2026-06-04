@@ -44,6 +44,7 @@ PhishIntention/
 │   └── siamese_models.py     #   Siamese logo-matching network
 ├── ocr_lib/                  # External OCR encoder
 ├── utils/                    # Image and Selenium/WebDriver helpers
+├── scripts/                  # Install/setup scripts (PyTorch, Detectron2, Chrome, weights)
 ├── models/                   # Model weights + reference list (downloaded by setup script)
 ├── configs.py                # Loads configs and builds all models
 └── phishintention.py         # Entry point / pipeline orchestrator
@@ -85,7 +86,7 @@ sudo dpkg -i google-chrome-stable_current_amd64.deb
 sudo apt-get install -f
 
 pixi install
-chmod +x setup.sh && ./setup.sh
+chmod +x scripts/setup.sh && ./scripts/setup.sh
 ```
 </details>
 
@@ -107,7 +108,7 @@ echo 'export PATH="/Applications/Google Chrome.app/Contents/MacOS:$PATH"' >> ~/.
 source ~/.bash_profile
 
 pixi install
-chmod +x setup.sh && ./setup.sh
+chmod +x scripts/setup.sh && ./scripts/setup.sh
 ```
 </details>
 
@@ -119,17 +120,17 @@ git clone https://github.com/lindsey98/PhishIntention.git
 cd PhishIntention
 
 # Install latest Chrome and ChromeDriver
-.\chrome_setup.bat
+.\scripts\chrome_setup.bat
 
 # Install pixi (restart your terminal afterwards)
 powershell -ExecutionPolicy ByPass -c "irm -useb https://pixi.sh/install.ps1 | iex"
 
 pixi install
-.\setup.bat
+.\scripts\setup.bat
 ```
 </details>
 
-If the automatic PyTorch/Detectron2 install fails, run it interactively with `pixi run python auto_install_detectron2.py`, or install [PyTorch](https://pytorch.org/get-started/locally/) and [Detectron2](https://detectron2.readthedocs.io/en/latest/tutorials/install.html) manually.
+If the automatic PyTorch/Detectron2 install fails, run it interactively with `pixi run python scripts/auto_install_detectron2.py`, or install [PyTorch](https://pytorch.org/get-started/locally/) and [Detectron2](https://detectron2.readthedocs.io/en/latest/tutorials/install.html) manually.
 
 ### ChromeDriver
 
