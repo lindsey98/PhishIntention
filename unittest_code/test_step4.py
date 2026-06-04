@@ -152,14 +152,14 @@ class TestStep4DynamicAnalysis(unittest.TestCase):
             self.assertTrue(mock_driver.quit_called, "driver.quit() should be called")
     
     def test_time_measurement(self):
-        """测试时间测量包含在返回中"""
+        """Test that the timing measurement is included in the return value"""
         with patch('phishintention.driver_loader') as mock_loader, \
              patch('phishintention.crp_locator') as mock_locator:
-            
+
             mock_driver = MagicMock()
             mock_loader.return_value = mock_driver
-            
-            # 设置不同的处理时间
+
+            # Set up different processing times
             test_times = [0.5, 1.0, 2.0, 5.0]
             
             for process_time in test_times:
@@ -175,7 +175,7 @@ class TestStep4DynamicAnalysis(unittest.TestCase):
                         "url", "path", [], []
                     )
                     
-                    # 验证返回的时间与模拟的时间一致
+                    # Verify the returned time matches the mocked time
                     self.assertEqual(returned_time, process_time)
 
 
