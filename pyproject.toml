@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "phishintention"
+version = "1.0.0"
+description = "Vision-based phishing detection inferring brand and credential-taking intention (USENIX Security '22)."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Ruofan Liu" },
+    { name = "Yun Lin" },
+]
+# Runtime dependencies are managed by pixi (see pixi.toml); torch and detectron2
+# are installed separately by scripts/auto_install_detectron2.py.
+dependencies = []
+
+[project.urls]
+Homepage = "https://sites.google.com/view/phishintention/home"
+Paper = "https://www.usenix.org/conference/usenixsecurity22/presentation/liu-ruofan"
+Repository = "https://github.com/lindsey98/PhishIntention"
+
+[project.scripts]
+phishintention = "phishintention.pipeline:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -33,20 +33,29 @@ Existing reference-based phishing detectors only capture **brand intention**, wh
 
 ```
 PhishIntention/
-├── configs/                  # Object-detector configs and global configs.yaml
-├── modules/                  # Inference code
-│   ├── awl_detector.py       #   Abstract layout detector (Faster R-CNN)
-│   ├── crp_classifier.py     #   Credential-requiring-page classifier + HTML heuristic
-│   ├── crp_locator.py        #   Dynamic analysis to locate credential pages
-│   ├── logo_matching.py      #   OCR-aided Siamese logo matcher
-│   ├── bit_backbone.py       #   Shared BiT ResNet-v2 building blocks
-│   ├── crp_models.py         #   CRP classifier networks
-│   └── siamese_models.py     #   Siamese logo-matching network
-├── ocr_lib/                  # External OCR encoder
-├── utils/                    # Image and Selenium/WebDriver helpers
-├── models/                   # Model weights + reference list (downloaded by setup script)
-├── configs.py                # Loads configs and builds all models
-└── phishintention.py         # Entry point / pipeline orchestrator
+├── src/phishintention/           # Importable package (installed via pyproject.toml)
+│   ├── pipeline.py               #   Entry point / pipeline orchestrator (python -m phishintention)
+│   ├── config.py                 #   Loads configs and builds all models
+│   ├── modules/                  #   Pipeline components
+│   │   ├── awl_detector.py       #     Abstract layout detector (Faster R-CNN)
+│   │   ├── crp_classifier.py     #     Credential-requiring-page classifier + HTML heuristic
+│   │   ├── crp_locator.py        #     Dynamic analysis to locate credential pages
+│   │   └── logo_matching.py      #     OCR-aided Siamese logo matcher
+│   ├── networks/                 #   Neural-network architectures
+│   │   ├── bit_backbone.py       #     Shared BiT ResNet-v2 building blocks
+│   │   ├── crp_models.py         #     CRP classifier networks
+│   │   ├── siamese_models.py     #     Siamese logo-matching network
+│   │   └── ocr/                  #     Vendored OCR encoder (ASTER text recognizer)
+│   └── utils/                    #   Shared helpers (image/brand/web)
+├── configs/                      # Config: configs.yaml + detectron2/ detector configs
+├── scripts/                      # Install/setup scripts (PyTorch, Detectron2, Chrome, weights)
+├── tests/                        # Unit tests
+├── datasets/                     # Example test sites
+└── pyproject.toml                # Package metadata + build configuration
+
+# Created at setup time (downloaded by scripts/setup.sh|setup.bat, not committed):
+models/                          # Model weights (*.pth) + reference data
+                                 #   (expand_targetlist = brand logos, domain_map.pkl = brand→domain)
 ```
 
 ## Installation
@@ -61,7 +70,7 @@ cd PhishIntention
 docker build -t phishintention .
 
 docker run --rm phishintention \
-  pixi run python phishintention.py --folder datasets/test_sites --output_fn test.json
+  pixi run python -m phishintention --folder datasets/test_sites --output_fn test.json
 ```
 
 ### Option B — Native install
@@ -85,7 +94,7 @@ sudo dpkg -i google-chrome-stable_current_amd64.deb
 sudo apt-get install -f
 
 pixi install
-chmod +x setup.sh && ./setup.sh
+chmod +x scripts/setup.sh && ./scripts/setup.sh
 ```
 </details>
 
@@ -107,7 +116,7 @@ echo 'export PATH="/Applications/Google Chrome.app/Contents/MacOS:$PATH"' >> ~/.
 source ~/.bash_profile
 
 pixi install
-chmod +x setup.sh && ./setup.sh
+chmod +x scripts/setup.sh && ./scripts/setup.sh
 ```
 </details>
 
@@ -119,17 +128,17 @@ git clone https://github.com/lindsey98/PhishIntention.git
 cd PhishIntention
 
 # Install latest Chrome and ChromeDriver
-.\chrome_setup.bat
+.\scripts\chrome_setup.bat
 
 # Install pixi (restart your terminal afterwards)
 powershell -ExecutionPolicy ByPass -c "irm -useb https://pixi.sh/install.ps1 | iex"
 
 pixi install
-.\setup.bat
+.\scripts\setup.bat
 ```
 </details>
 
-If the automatic PyTorch/Detectron2 install fails, run it interactively with `pixi run python auto_install_detectron2.py`, or install [PyTorch](https://pytorch.org/get-started/locally/) and [Detectron2](https://detectron2.readthedocs.io/en/latest/tutorials/install.html) manually.
+If the automatic PyTorch/Detectron2 install fails, run it interactively with `pixi run python scripts/auto_install_detectron2.py`, or install [PyTorch](https://pytorch.org/get-started/locally/) and [Detectron2](https://detectron2.readthedocs.io/en/latest/tutorials/install.html) manually.
 
 ### ChromeDriver
 
@@ -138,7 +147,7 @@ The setup scripts install a matching ChromeDriver automatically. To pin it manua
 ## Usage
 
 ```bash
-pixi run python phishintention.py --folder datasets/test_sites --output_fn test.json
+pixi run python -m phishintention --folder datasets/test_sites --output_fn test.json
 ```
 
 On the first run, the reference list is embedded and cached to `LOGO_FEATS.npy`, which can take a few minutes.

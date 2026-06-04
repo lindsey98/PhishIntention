@@ -34,11 +34,8 @@ RUN export KMP_DUPLICATE_LIB_OK=TRUE \
     && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list \
     && apt-get update \
     && apt-get install -y google-chrome-stable \
-    && apt-get install -y dos2unix && dos2unix chrome_setup.sh && chmod +x chrome_setup.sh && ./chrome_setup.sh linux \
+    && apt-get install -y dos2unix && dos2unix scripts/chrome_setup.sh && chmod +x scripts/chrome_setup.sh && ./scripts/chrome_setup.sh linux \
     && apt-get clean
-
-# RUN chmod +x chrome_setup.sh \
-#     && ./chrome_setup.sh linux
 
 ENV PATH="/opt/google/chrome:/usr/local/bin:/root/.pixi/bin:$PATH"
 ENV CHROME_BIN="/opt/google/chrome/chrome"
@@ -47,6 +44,6 @@ RUN echo "=== test Chrome installation ===" \
     && which google-chrome-stable \
     && google-chrome-stable --version \
     && pixi install \
-    && dos2unix setup.sh \
-    && chmod +x setup.sh \
-    && ./setup.sh
+    && dos2unix scripts/setup.sh \
+    && chmod +x scripts/setup.sh \
+    && ./scripts/setup.sh

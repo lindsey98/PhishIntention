@@ -1,5 +1,5 @@
 AWL_MODEL: # element recognition model -- logo only
-  CFG_PATH: configs/faster_rcnn_web.yaml
+  CFG_PATH: configs/detectron2/faster_rcnn_web.yaml
   WEIGHTS_PATH: models/layout_detector.pth
   DETECT_THRE: 0.3
 
@@ -8,7 +8,7 @@ CRP_CLASSIFIER:
   MODEL_TYPE: 'mixed'
 
 CRP_LOCATOR: # element recognition model -- logo only
-  CFG_PATH: configs/faster_rcnn_login_lr0.001_finetune.yaml
+  CFG_PATH: configs/detectron2/faster_rcnn_login_lr0.001_finetune.yaml
   WEIGHTS_PATH: models/crp_locator.pth
   DETECT_THRE: 0.05
 
