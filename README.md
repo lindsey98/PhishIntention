@@ -46,7 +46,10 @@ PhishIntention/
 │   ├── crp_models.py         #   CRP classifier networks
 │   ├── siamese_models.py     #   Siamese logo-matching network
 │   └── ocr/                  #   Vendored OCR encoder (ASTER text recognizer)
-├── utils/                    # Image and Selenium/WebDriver helpers
+├── utils/                    # Shared helpers
+│   ├── image_utils.py        #   Coordinate/image/tensor preprocessing
+│   ├── brand_utils.py        #   Brand-name canonicalization
+│   └── web_utils.py          #   Selenium/WebDriver automation
 ├── scripts/                  # Install/setup scripts (PyTorch, Detectron2, Chrome, weights)
 ├── configs.py                # Loads configs and builds all models
 └── phishintention.py         # Entry point / pipeline orchestrator
