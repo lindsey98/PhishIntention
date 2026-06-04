@@ -9,7 +9,7 @@ import io
 import os
 import numpy as np
 from utils.utils import coord2pixel_reverse
-from modules.crp_models import KNOWN_MODELS
+from networks.crp_models import KNOWN_MODELS
 import logging
 
 logger = logging.getLogger(__name__)

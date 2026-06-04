@@ -13,7 +13,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from modules.bit_backbone import StdConv2d, PreActBottleneck, tf2th
+from networks.bit_backbone import StdConv2d, PreActBottleneck, tf2th
 
 
 class ResNetV2Screenshot(nn.Module):

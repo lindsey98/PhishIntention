@@ -1,9 +1,9 @@
 from PIL import Image, ImageOps
 from torchvision import transforms
 from utils.utils import brand_converter, resolution_alignment, l2_norm
-from modules.siamese_models import KNOWN_MODELS
-from ocr_lib.models.model_builder import ModelBuilder
-from ocr_lib.utils.labelmaps import get_vocabulary
+from networks.siamese_models import KNOWN_MODELS
+from networks.ocr.models.model_builder import ModelBuilder
+from networks.ocr.utils.labelmaps import get_vocabulary
 import torch
 from torch.backends import cudnn
 import os

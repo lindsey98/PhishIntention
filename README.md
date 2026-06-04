@@ -34,15 +34,16 @@ Existing reference-based phishing detectors only capture **brand intention**, wh
 ```
 PhishIntention/
 ├── configs/                  # Object-detector configs and global configs.yaml
-├── modules/                  # Inference code
+├── modules/                  # Pipeline components
 │   ├── awl_detector.py       #   Abstract layout detector (Faster R-CNN)
 │   ├── crp_classifier.py     #   Credential-requiring-page classifier + HTML heuristic
 │   ├── crp_locator.py        #   Dynamic analysis to locate credential pages
-│   ├── logo_matching.py      #   OCR-aided Siamese logo matcher
+│   └── logo_matching.py      #   OCR-aided Siamese logo matcher
+├── networks/                 # Neural-network architectures
 │   ├── bit_backbone.py       #   Shared BiT ResNet-v2 building blocks
 │   ├── crp_models.py         #   CRP classifier networks
-│   └── siamese_models.py     #   Siamese logo-matching network
-├── ocr_lib/                  # External OCR encoder
+│   ├── siamese_models.py     #   Siamese logo-matching network
+│   └── ocr/                  #   Vendored OCR encoder (ASTER text recognizer)
 ├── utils/                    # Image and Selenium/WebDriver helpers
 ├── scripts/                  # Install/setup scripts (PyTorch, Detectron2, Chrome, weights)
 ├── configs.py                # Loads configs and builds all models

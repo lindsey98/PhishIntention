@@ -20,7 +20,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install ruff
       - name: Run Ruff
-        run: ruff check --output-format=github --exclude "ocr_lib/" -e; ruff check --statistics --exclude "ocr_lib/"
+        run: ruff check --output-format=github --exclude "networks/ocr/" -e; ruff check --statistics --exclude "networks/ocr/"
           
   codeql-analyze:
       name: CodeQL Analyze (${{ matrix.language }})
