@@ -58,33 +58,33 @@ class PhishIntentionWrapper:
         """Step 2: Logo matching with Siamese network"""
         start_time = time.time()
         
-        # 首先确保logo_pred_boxes是NumPy数组
+        # Ensure logo_pred_boxes is a NumPy array
         if logo_pred_boxes is not None:
             logo_pred_boxes = np.array(logo_pred_boxes)
-        
-        # 如果没有logo boxes，直接返回
+
+        # No logo boxes: return early
         if logo_pred_boxes is None or len(logo_pred_boxes) == 0:
             logo_match_time = time.time() - start_time
             logger.warning('No logo boxes provided to logo matcher')
             return None, None, None, None, logo_match_time
-        
-        # 确保是二维数组 (n, 4) 格式
+
+        # Ensure a 2-D (n, 4) array
         if logo_pred_boxes.ndim == 1:
-            if len(logo_pred_boxes) == 4:  # 单个边界框 [x1, y1, x2, y2]
+            if len(logo_pred_boxes) == 4:  # single bounding box [x1, y1, x2, y2]
                 logo_pred_boxes = logo_pred_boxes.reshape(1, 4)
             else:
-                # 不正确的格式，尝试修复
+                # Malformed shape: best-effort reshape
                 logo_pred_boxes = logo_pred_boxes.reshape(-1, 4)
-        
-        # 如果仍然不是二维数组，记录错误并返回
+
+        # Still not a valid 2-D (n, 4) array: log and return
         if logo_pred_boxes.ndim != 2 or logo_pred_boxes.shape[1] != 4:
             logger.error(f'Invalid logo boxes shape: {logo_pred_boxes.shape}, expected (n, 4)')
             logo_match_time = time.time() - start_time
             return None, None, None, None, logo_match_time
-        
+
         logger.info(f'Processing {len(logo_pred_boxes)} logo boxes')
-        
-        # 调用logo匹配函数
+
+        # Run the logo matcher
         pred_target, matched_domain, matched_coord, siamese_conf = check_domain_brand_inconsistency(
             logo_boxes=logo_pred_boxes,
             domain_map_path=self.DOMAIN_MAP_PATH,
@@ -100,16 +100,6 @@ class PhishIntentionWrapper:
         logo_match_time = time.time() - start_time
         
         return pred_target, matched_domain, matched_coord, siamese_conf, logo_match_time
-
-    def step2_logo_matcher_for_test(self, **kwargs):
-        """包装_step2_logo_matcher以供测试使用"""
-        # 从kwargs中提取参数
-        logo_pred_boxes = kwargs.get('logo_boxes')
-        url = kwargs.get('url', '')
-        screenshot_path = kwargs.get('screenshot_path', '')
-        
-        # 调用内部方法
-        return self._step2_logo_matcher(logo_pred_boxes, url, screenshot_path)
 
     def _step3_crp_classifier(self, screenshot_path, html_path, pred_boxes, pred_classes):
         """Step 3: CRP classifier for credential pages"""
@@ -263,7 +253,7 @@ class PhishIntentionWrapper:
         """Helper method to build the return result tuple"""
         runtime_breakdown = f"{awl_detect_time:.4f}|{logo_match_time:.4f}|{crp_class_time:.4f}|{crp_locator_time:.4f}"
         
-        # 转换numpy数组为列表以便于JSON序列化和测试比较
+        # Convert numpy arrays to lists for JSON serialization and test comparison
         if pred_boxes is not None and isinstance(pred_boxes, np.ndarray):
             pred_boxes = pred_boxes.tolist()
         if pred_classes is not None and isinstance(pred_classes, np.ndarray):

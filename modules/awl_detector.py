@@ -5,16 +5,6 @@ import numpy as np
 import torch
 
 
-def cv_imread(filePath):
-    '''
-    When image path contains nonenglish characters, normal cv2.imread will have error
-    :param filePath:
-    :return:
-    '''
-    cv_img = cv2.imdecode(np.fromfile(filePath, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
-    return cv_img
-
-
 def config_rcnn(cfg_path, weights_path, conf_threshold):
     '''
     Configure weights and confidence threshold

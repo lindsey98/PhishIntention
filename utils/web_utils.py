@@ -39,40 +39,6 @@ def initialize_chrome_settings():
 
     return options
 
-def click_button(button_text, max_retries=2):
-    '''
-    Click a button with retry mechanism
-    :param button_text: text of the button to click
-    :param max_retries: maximum number of retry attempts
-    :return: True if successful, False otherwise
-    '''
-    helium.Config.implicit_wait_secs = 2 # this is the implicit timeout for helium
-    driver = helium.get_driver()
-    driver.implicitly_wait(2)
-    current_url = None
-    
-    for attempt in range(max_retries + 1):
-        try:
-            current_url = driver.current_url
-            helium.click(helium.Button(button_text))
-            logger.debug(f'Successfully clicked button "{button_text}" (URL: {current_url})')
-            return True
-        except (TimeoutException, NoSuchElementException) as e:
-            if attempt < max_retries:
-                logger.debug(f'Retry {attempt + 1}/{max_retries} for button "{button_text}" (URL: {current_url}). Error: {type(e).__name__}: {str(e)}')
-                time.sleep(1)
-                continue
-            else:
-                logger.warning(f'Failed to click button "{button_text}" after {max_retries + 1} attempts (URL: {current_url}). Error type: {type(e).__name__}, Message: {str(e)}')
-                return False
-        except WebDriverException as e:
-            logger.error(f'WebDriver error clicking button "{button_text}" (URL: {current_url}). Error type: {type(e).__name__}, Message: {str(e)}', exc_info=True)
-            return False
-        except Exception as e:
-            logger.error(f'Unexpected error clicking button "{button_text}" (URL: {current_url}). Error type: {type(e).__name__}, Message: {str(e)}', exc_info=True)
-            return False
-    return False
-
 def get_page_text(driver):
     '''
     get body text from html

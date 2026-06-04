@@ -1,5 +1,5 @@
 [workspace]
-name = "phishpedia"
+name = "phishintention"
 channels = ["conda-forge"]
 platforms = ["osx-arm64", "linux-64", "win-64"]
 

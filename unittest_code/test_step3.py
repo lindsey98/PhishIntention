@@ -4,48 +4,48 @@ import numpy as np
 
 
 class TestStep3CrpClassifier(unittest.TestCase):
-    """测试_step3_crp_classifier函数的单元测试"""
-    
+    """Unit tests for the _step3_crp_classifier function"""
+
     def setUp(self):
-        """测试前准备"""
-        # 导入被测试的类
+        """Set up before each test"""
+        # Import the class under test
         from phishintention import PhishIntentionWrapper
         self.wrapper_class = PhishIntentionWrapper
-        
-        # 创建模拟的wrapper实例
+
+        # Create a mock wrapper instance
         self.wrapper = Mock(spec=PhishIntentionWrapper)
         self.wrapper.CRP_CLASSIFIER = Mock()
-    
+
     def test_output_format_html_heuristic_noncrp(self):
-        """测试HTML启发式返回nonCRP时的情况"""
+        """Test the case where the HTML heuristic returns nonCRP"""
         with patch('phishintention.html_heuristic') as mock_html, \
              patch('phishintention.credential_classifier_mixed') as mock_classifier:
-            
-            # 模拟HTML启发式返回1（nonCRP）
+
+            # Mock the HTML heuristic returning 1 (nonCRP)
             mock_html.return_value = 1
-            # 模拟分类器返回0（CRP）
+            # Mock the classifier returning 0 (CRP)
             mock_classifier.return_value = 0
-            
-            # 创建真实wrapper实例
+
+            # Create a real wrapper instance
             wrapper = self.wrapper_class()
             wrapper.CRP_CLASSIFIER = self.wrapper.CRP_CLASSIFIER
-            
-            # 测试数据
+
+            # Test data
             screenshot_path = "test.png"
             html_path = "test.html"
             pred_boxes = np.array([[10, 20, 100, 150], [200, 300, 400, 500]])
             pred_classes = np.array([1, 2])
-            
-            # 执行测试
+
+            # Run the method under test
             cre_pred, crp_class_time = wrapper._step3_crp_classifier(
                 screenshot_path, html_path, pred_boxes, pred_classes
             )
-            
-            # 验证返回类型
+
+            # Verify the return types
             self.assertIsInstance(cre_pred, int)
             self.assertIsInstance(crp_class_time, float)
-            
-            # 验证函数调用
+
+            # Verify the function calls
             mock_html.assert_called_once_with(html_path)
             mock_classifier.assert_called_once_with(
                 img=screenshot_path,
@@ -53,51 +53,51 @@ class TestStep3CrpClassifier(unittest.TestCase):
                 types=pred_classes,
                 model=wrapper.CRP_CLASSIFIER
             )
-            
-            # 验证返回结果
-            self.assertEqual(cre_pred, 0)  # 分类器的结果
+
+            # Verify the result
+            self.assertEqual(cre_pred, 0)  # The classifier's result
     
     def test_output_format_html_heuristic_crp(self):
-        """测试HTML启发式返回CRP时的情况"""
+        """Test the case where the HTML heuristic returns CRP"""
         with patch('phishintention.html_heuristic') as mock_html, \
              patch('phishintention.credential_classifier_mixed') as mock_classifier:
-            
-            # 模拟HTML启发式返回0（CRP）
+
+            # Mock the HTML heuristic returning 0 (CRP)
             mock_html.return_value = 0
-            
-            # 创建wrapper实例
+
+            # Create a wrapper instance
             wrapper = self.wrapper_class()
             wrapper.CRP_CLASSIFIER = self.wrapper.CRP_CLASSIFIER
-            
-            # 测试数据
+
+            # Test data
             screenshot_path = "test.png"
             html_path = "test.html"
             pred_boxes = np.array([[10, 20, 100, 150]])
             pred_classes = np.array([1])
-            
-            # 执行测试
+
+            # Run the method under test
             cre_pred, crp_class_time = wrapper._step3_crp_classifier(
                 screenshot_path, html_path, pred_boxes, pred_classes
             )
-            
-            # 验证返回类型
+
+            # Verify the return types
             self.assertIsInstance(cre_pred, int)
             self.assertIsInstance(crp_class_time, float)
-            
-            # 验证函数调用
+
+            # Verify the function calls
             mock_html.assert_called_once_with(html_path)
-            # HTML启发式返回CRP时，不应调用分类器
+            # When the HTML heuristic returns CRP, the classifier should not be called
             mock_classifier.assert_not_called()
-            
-            # 验证返回结果
-            self.assertEqual(cre_pred, 0)  # HTML启发式的结果
+
+            # Verify the result
+            self.assertEqual(cre_pred, 0)  # The HTML heuristic's result
     
     def test_output_format_classifier_results(self):
-        """测试不同分类器结果"""
+        """Test different classifier results"""
         test_cases = [
-            (1, 1, "HTML nonCRP, 分类器 nonCRP"),
-            (1, 0, "HTML nonCRP, 分类器 CRP"),
-            (0, None, "HTML CRP, 不调用分类器"),
+            (1, 1, "HTML nonCRP, classifier nonCRP"),
+            (1, 0, "HTML nonCRP, classifier CRP"),
+            (0, None, "HTML CRP, classifier not called"),
         ]
         
         for html_result, classifier_result, description in test_cases:
@@ -122,20 +122,20 @@ class TestStep3CrpClassifier(unittest.TestCase):
                     self.assertIsInstance(crp_class_time, float)
                     
                     if html_result == 0:
-                        expected = 0  # HTML返回CRP
+                        expected = 0  # HTML returns CRP
                     else:
-                        expected = classifier_result  # 分类器结果
+                        expected = classifier_result  # The classifier's result
                     
                     self.assertEqual(cre_pred, expected)
     
     def test_time_measurement(self):
-        """测试时间测量功能"""
+        """Test the timing measurement"""
         import time
-        
+
         with patch('phishintention.html_heuristic') as mock_html, \
              patch('phishintention.credential_classifier_mixed') as mock_classifier:
-            
-            # 模拟需要时间的处理
+
+            # Simulate processing that takes time
             def delayed_html(*args, **kwargs):
                 time.sleep(0.03)
                 return 1
@@ -156,7 +156,7 @@ class TestStep3CrpClassifier(unittest.TestCase):
                 np.array([1])
             )
             
-            # 验证总时间（HTML + 分类器）
+            # Verify the total time (HTML + classifier)
             self.assertGreaterEqual(crp_class_time, 0.05)
 
 
