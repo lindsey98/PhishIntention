@@ -1,17 +1,20 @@
 # Global configuration
 import yaml
-from modules.awl_detector import config_rcnn
-from modules.crp_classifier import credential_config
-from modules.logo_matching import siamese_model_config, ocr_model_config, cache_reference_list
+from phishintention.modules.awl_detector import config_rcnn
+from phishintention.modules.crp_classifier import credential_config
+from phishintention.modules.logo_matching import siamese_model_config, ocr_model_config, cache_reference_list
 import os
 
+# Repository root: src/phishintention/config.py -> parents[2]
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
+
+
 def get_absolute_path(relative_path):
-    base_path = os.path.dirname(__file__)
-    return os.path.abspath(os.path.join(base_path, relative_path))
+    return os.path.abspath(os.path.join(PROJECT_ROOT, relative_path))
 
 def load_config(reload_targetlist=False):
 
-    with open(os.path.join(os.path.dirname(__file__), 'configs/configs.yaml')) as file:
+    with open(os.path.join(PROJECT_ROOT, 'configs', 'configs.yaml')) as file:
         configs = yaml.load(file, Loader=yaml.FullLoader)
 
     # Iterate through the configuration and update paths

@@ -1,10 +1,10 @@
 from PIL import Image, ImageOps
 from torchvision import transforms
-from utils.brand_utils import brand_converter
-from utils.image_utils import resolution_alignment, l2_norm
-from networks.siamese_models import KNOWN_MODELS
-from networks.ocr.models.model_builder import ModelBuilder
-from networks.ocr.utils.labelmaps import get_vocabulary
+from phishintention.utils.brand_utils import brand_converter
+from phishintention.utils.image_utils import resolution_alignment, l2_norm
+from phishintention.networks.siamese_models import KNOWN_MODELS
+from phishintention.networks.ocr.models.model_builder import ModelBuilder
+from phishintention.networks.ocr.utils.labelmaps import get_vocabulary
 import torch
 from torch.backends import cudnn
 import os

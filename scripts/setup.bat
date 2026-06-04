@@ -12,6 +12,14 @@ if errorlevel 1 (
 )
 :: ------------------------------------------------------------------------------
 
+REM Install the phishintention package itself (editable) so `python -m phishintention` works
+echo Installing phishintention package (editable)...
+call pixi run pip install -e .
+if errorlevel 1 (
+    echo [ERROR] Failed to install phishintention package
+    exit /b 1
+)
+
 REM Create models directory and change into it
 if not exist models (
     mkdir models

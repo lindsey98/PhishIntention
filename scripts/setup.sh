@@ -11,6 +11,10 @@ IFS=$'\n\t'
 echo "Installing PyTorch and Detectron2 (auto-detecting GPU)..."
 pixi run python scripts/auto_install_detectron2.py
 
+# Install the phishintention package itself (editable) so `python -m phishintention` works
+echo "Installing phishintention package (editable)..."
+pixi run pip install -e .
+
 # Set up model directory
 FILEDIR="$(pwd)"
 MODELS_DIR="$FILEDIR/models"

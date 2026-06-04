@@ -2,12 +2,12 @@
 from torch import nn
 from torch.nn import functional as F
 
-from networks.ocr.models.attention_recognition_head import AttentionRecognitionHead
-from networks.ocr.loss.sequenceCrossEntropyLoss import SequenceCrossEntropyLoss
-from networks.ocr.models.tps_spatial_transformer import TPSSpatialTransformer
-from networks.ocr.models.stn_head import STNHead
+from phishintention.networks.ocr.models.attention_recognition_head import AttentionRecognitionHead
+from phishintention.networks.ocr.loss.sequenceCrossEntropyLoss import SequenceCrossEntropyLoss
+from phishintention.networks.ocr.models.tps_spatial_transformer import TPSSpatialTransformer
+from phishintention.networks.ocr.models.stn_head import STNHead
 
-from networks.ocr.models.resnet_aster import ResNet_ASTER
+from phishintention.networks.ocr.models.resnet_aster import ResNet_ASTER
 
 __factory = {
   'ResNet_ASTER': ResNet_ASTER,

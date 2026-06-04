@@ -10,7 +10,7 @@ from collections import OrderedDict
 import torch
 import torch.nn as nn
 
-from networks.bit_backbone import StdConv2d, PreActBottleneck, tf2th
+from phishintention.networks.bit_backbone import StdConv2d, PreActBottleneck, tf2th
 
 
 class ResNetV2(nn.Module):

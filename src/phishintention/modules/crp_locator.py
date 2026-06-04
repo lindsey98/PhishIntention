@@ -1,7 +1,7 @@
 from selenium.common.exceptions import TimeoutException, WebDriverException
-from utils.web_utils import click_text, get_page_text, visit_url, click_point
-from modules.crp_classifier import html_heuristic, credential_classifier_mixed
-from modules.awl_detector import pred_rcnn
+from phishintention.utils.web_utils import click_text, get_page_text, visit_url, click_point
+from phishintention.modules.crp_classifier import html_heuristic, credential_classifier_mixed
+from phishintention.modules.awl_detector import pred_rcnn
 import os
 import re
 import time

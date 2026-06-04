@@ -6,13 +6,13 @@ class TestStep4DynamicAnalysis(unittest.TestCase):
     """Unit tests for _step4_dynamic_analysis (CRP locator / dynamic analysis)."""
 
     def setUp(self):
-        from phishintention import PhishIntentionWrapper
+        from phishintention.pipeline import PhishIntentionWrapper
         self.wrapper_class = PhishIntentionWrapper
 
     def test_invokes_crp_locator_and_releases_driver(self):
         """The driver is loaded, crp_locator is called with the right models, and the driver is always quit."""
-        with patch('phishintention.driver_loader') as mock_loader, \
-             patch('phishintention.crp_locator') as mock_locator:
+        with patch('phishintention.pipeline.driver_loader') as mock_loader, \
+             patch('phishintention.pipeline.crp_locator') as mock_locator:
 
             mock_driver = MagicMock()
             mock_loader.return_value = mock_driver

@@ -8,8 +8,8 @@ from lxml import html
 import io
 import os
 import numpy as np
-from utils.image_utils import coord2pixel_reverse
-from networks.crp_models import KNOWN_MODELS
+from phishintention.utils.image_utils import coord2pixel_reverse
+from phishintention.networks.crp_models import KNOWN_MODELS
 import logging
 
 logger = logging.getLogger(__name__)

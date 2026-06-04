@@ -7,7 +7,7 @@ class TestStep2LogoMatcher(unittest.TestCase):
     """Unit tests for _step2_logo_matcher (OCR-aided Siamese logo matching)."""
 
     def setUp(self):
-        from phishintention import PhishIntentionWrapper
+        from phishintention.pipeline import PhishIntentionWrapper
         self.wrapper_class = PhishIntentionWrapper
 
     def _make_wrapper(self):
@@ -22,7 +22,7 @@ class TestStep2LogoMatcher(unittest.TestCase):
 
     def test_passes_correct_arguments_to_matcher(self):
         """A detected logo box is forwarded to check_domain_brand_inconsistency with the expected arguments."""
-        with patch('phishintention.check_domain_brand_inconsistency') as mock_check:
+        with patch('phishintention.pipeline.check_domain_brand_inconsistency') as mock_check:
             mock_check.return_value = ("Microsoft", "microsoft.com", [100, 150, 300, 400], 0.85)
 
             wrapper = self._make_wrapper()
@@ -51,7 +51,7 @@ class TestStep2LogoMatcher(unittest.TestCase):
 
     def test_empty_logo_boxes_short_circuit(self):
         """With no logo boxes the matcher is never invoked and the result is None."""
-        with patch('phishintention.check_domain_brand_inconsistency') as mock_check:
+        with patch('phishintention.pipeline.check_domain_brand_inconsistency') as mock_check:
             wrapper = self._make_wrapper()
 
             pred_target, matched_domain, matched_coord, siamese_conf, logo_match_time = \
@@ -66,7 +66,7 @@ class TestStep2LogoMatcher(unittest.TestCase):
 
     def test_single_box_reshaped_to_2d(self):
         """A 1-D single box [x1, y1, x2, y2] is reshaped to (1, 4) before matching."""
-        with patch('phishintention.check_domain_brand_inconsistency') as mock_check:
+        with patch('phishintention.pipeline.check_domain_brand_inconsistency') as mock_check:
             mock_check.return_value = ("Brand", "brand.com", [0, 0, 100, 100], 0.8)
 
             wrapper = self._make_wrapper()

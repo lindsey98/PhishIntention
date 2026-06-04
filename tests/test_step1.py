@@ -8,13 +8,13 @@ class TestStep1LayoutDetectorSimple(unittest.TestCase):
     """Unit tests for _step1_layout_detector (AWL layout detection)."""
 
     def setUp(self):
-        from phishintention import PhishIntentionWrapper
+        from phishintention.pipeline import PhishIntentionWrapper
         self.wrapper_class = PhishIntentionWrapper
 
     def test_output_format_with_detections(self):
         """Detections are returned as a 4-tuple with tensors converted to numpy."""
-        with patch('phishintention.pred_rcnn') as mock_pred, \
-             patch('phishintention.vis') as mock_vis:
+        with patch('phishintention.pipeline.pred_rcnn') as mock_pred, \
+             patch('phishintention.pipeline.vis') as mock_vis:
 
             mock_pred.return_value = (
                 torch.tensor([[10, 20, 100, 150], [200, 300, 400, 500]]),
@@ -38,8 +38,8 @@ class TestStep1LayoutDetectorSimple(unittest.TestCase):
 
     def test_output_format_no_detections(self):
         """When the detector finds nothing, boxes/classes are None (benign path)."""
-        with patch('phishintention.pred_rcnn') as mock_pred, \
-             patch('phishintention.vis') as mock_vis:
+        with patch('phishintention.pipeline.pred_rcnn') as mock_pred, \
+             patch('phishintention.pipeline.vis') as mock_vis:
 
             mock_pred.return_value = (None, None, None)
             mock_vis.return_value = np.zeros((600, 800, 3), dtype=np.uint8)

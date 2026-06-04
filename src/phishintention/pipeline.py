@@ -6,12 +6,12 @@ import json
 import torch
 import cv2
 import logging
-from configs import load_config
-from modules.awl_detector import pred_rcnn, vis, find_element_type
-from modules.logo_matching import check_domain_brand_inconsistency
-from modules.crp_classifier import credential_classifier_mixed, html_heuristic
-from modules.crp_locator import crp_locator
-from utils.web_utils import driver_loader
+from phishintention.config import load_config
+from phishintention.modules.awl_detector import pred_rcnn, vis, find_element_type
+from phishintention.modules.logo_matching import check_domain_brand_inconsistency
+from phishintention.modules.crp_classifier import credential_classifier_mixed, html_heuristic
+from phishintention.modules.crp_locator import crp_locator
+from phishintention.utils.web_utils import driver_loader
 from tqdm import tqdm
 import re
 import numpy as np
@@ -439,9 +439,9 @@ def _process_single_folder(folder, request_dir, phishintention_cls, output_fn, s
     return phish_category
 
 
-if __name__ == '__main__':
+def main():
     today = datetime.now().strftime('%Y%m%d_%H%M%S')
-    
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--folder", required=True, type=str)
     parser.add_argument("--output_fn", default=f'{today}_results.json', help="Output JSON path")
@@ -493,3 +493,7 @@ if __name__ == '__main__':
     logger.info("=" * 60)
     logger.info(f"Results saved to: {output_fn}")
     logger.info("=" * 60)
+
+
+if __name__ == '__main__':
+    main()

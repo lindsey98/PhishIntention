@@ -7,13 +7,13 @@ class TestStep3CrpClassifier(unittest.TestCase):
     """Unit tests for _step3_crp_classifier (CRP detection)."""
 
     def setUp(self):
-        from phishintention import PhishIntentionWrapper
+        from phishintention.pipeline import PhishIntentionWrapper
         self.wrapper_class = PhishIntentionWrapper
 
     def test_html_noncrp_falls_back_to_classifier(self):
         """When the HTML heuristic returns nonCRP, the image classifier decides the result."""
-        with patch('phishintention.html_heuristic') as mock_html, \
-             patch('phishintention.credential_classifier_mixed') as mock_classifier:
+        with patch('phishintention.pipeline.html_heuristic') as mock_html, \
+             patch('phishintention.pipeline.credential_classifier_mixed') as mock_classifier:
 
             mock_html.return_value = 1   # nonCRP
             mock_classifier.return_value = 0   # CRP
@@ -36,8 +36,8 @@ class TestStep3CrpClassifier(unittest.TestCase):
 
     def test_html_crp_short_circuits_classifier(self):
         """When the HTML heuristic already reports CRP, the image classifier is skipped."""
-        with patch('phishintention.html_heuristic') as mock_html, \
-             patch('phishintention.credential_classifier_mixed') as mock_classifier:
+        with patch('phishintention.pipeline.html_heuristic') as mock_html, \
+             patch('phishintention.pipeline.credential_classifier_mixed') as mock_classifier:
 
             mock_html.return_value = 0   # CRP
 

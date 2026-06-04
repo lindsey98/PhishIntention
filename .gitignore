@@ -16,3 +16,9 @@ chromedriver*
 datasets/test_sites/ru.russianmastercach-republick.xyz/new_html.txt
 test_driver.py
 LOGO_FEATS.npy
+
+# Python build / packaging artifacts
+*.egg-info/
+build/
+dist/
+.eggs/

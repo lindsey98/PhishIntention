@@ -15,7 +15,7 @@ jobs:
         run: docker build -t phishintention .
 
       - name: Run test
-        run: docker run --rm phishintention pixi run python phishintention.py --folder datasets/test_sites --output_fn test_1228.json
+        run: docker run --rm phishintention pixi run python -m phishintention --folder datasets/test_sites --output_fn test_1228.json
         #run: docker run --rm phishintention pixi run python test_driver.py
 
   MacOS_direct_test:
@@ -53,7 +53,7 @@ jobs:
         run: chmod +x scripts/setup.sh && ./scripts/setup.sh --auto
 
       - name: Run test
-        run: pixi run python phishintention.py --folder datasets/test_sites --output_fn test_1228.json
+        run: pixi run python -m phishintention --folder datasets/test_sites --output_fn test_1228.json
 
   Linux_direct_test:
     runs-on: ubuntu-latest
@@ -87,7 +87,7 @@ jobs:
         run: chmod +x scripts/setup.sh && ./scripts/setup.sh --auto
 
       - name: Run test
-        run: pixi run python phishintention.py --folder datasets/test_sites --output_fn test_1228.json
+        run: pixi run python -m phishintention --folder datasets/test_sites --output_fn test_1228.json
 
   Windows_direct_test_and_pytest:
     runs-on: windows-latest
@@ -111,7 +111,7 @@ jobs:
 
       - name: Run pytest
         run: |
-          pixi run coverage run --include="modules/*.py, networks/*.py, configs.py, phishintention.py" --omit="networks/ocr/*" -m unittest unittest_code/test_all_steps.py
+          pixi run coverage run --include="src/phishintention/*.py, src/phishintention/modules/*.py, src/phishintention/networks/*.py, src/phishintention/utils/*.py" --omit="src/phishintention/networks/ocr/*" -m unittest tests/test_all_steps.py
           pixi run coverage xml -o coverage.xml
 
       - name: SonarQube Scan
@@ -120,6 +120,6 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Run test
-        run: pixi run python phishintention.py --folder datasets/test_sites --output_fn test_1228.json
+        run: pixi run python -m phishintention --folder datasets/test_sites --output_fn test_1228.json
 
       

@@ -33,30 +33,29 @@ Existing reference-based phishing detectors only capture **brand intention**, wh
 
 ```
 PhishIntention/
-├── configs/                  # Configuration
-│   ├── configs.yaml          #   Global config: weight paths, thresholds, brand count
-│   └── detectron2/           #   Detectron2 architecture configs for the Faster R-CNN detectors
-├── modules/                  # Pipeline components
-│   ├── awl_detector.py       #   Abstract layout detector (Faster R-CNN)
-│   ├── crp_classifier.py     #   Credential-requiring-page classifier + HTML heuristic
-│   ├── crp_locator.py        #   Dynamic analysis to locate credential pages
-│   └── logo_matching.py      #   OCR-aided Siamese logo matcher
-├── networks/                 # Neural-network architectures
-│   ├── bit_backbone.py       #   Shared BiT ResNet-v2 building blocks
-│   ├── crp_models.py         #   CRP classifier networks
-│   ├── siamese_models.py     #   Siamese logo-matching network
-│   └── ocr/                  #   Vendored OCR encoder (ASTER text recognizer)
-├── utils/                    # Shared helpers
-│   ├── image_utils.py        #   Coordinate/image/tensor preprocessing
-│   ├── brand_utils.py        #   Brand-name canonicalization
-│   └── web_utils.py          #   Selenium/WebDriver automation
-├── scripts/                  # Install/setup scripts (PyTorch, Detectron2, Chrome, weights)
-├── configs.py                # Loads configs and builds all models
-└── phishintention.py         # Entry point / pipeline orchestrator
+├── src/phishintention/           # Importable package (installed via pyproject.toml)
+│   ├── pipeline.py               #   Entry point / pipeline orchestrator (python -m phishintention)
+│   ├── config.py                 #   Loads configs and builds all models
+│   ├── modules/                  #   Pipeline components
+│   │   ├── awl_detector.py       #     Abstract layout detector (Faster R-CNN)
+│   │   ├── crp_classifier.py     #     Credential-requiring-page classifier + HTML heuristic
+│   │   ├── crp_locator.py        #     Dynamic analysis to locate credential pages
+│   │   └── logo_matching.py      #     OCR-aided Siamese logo matcher
+│   ├── networks/                 #   Neural-network architectures
+│   │   ├── bit_backbone.py       #     Shared BiT ResNet-v2 building blocks
+│   │   ├── crp_models.py         #     CRP classifier networks
+│   │   ├── siamese_models.py     #     Siamese logo-matching network
+│   │   └── ocr/                  #     Vendored OCR encoder (ASTER text recognizer)
+│   └── utils/                    #   Shared helpers (image/brand/web)
+├── configs/                      # Config: configs.yaml + detectron2/ detector configs
+├── scripts/                      # Install/setup scripts (PyTorch, Detectron2, Chrome, weights)
+├── tests/                        # Unit tests
+├── datasets/                     # Example test sites
+└── pyproject.toml                # Package metadata + build configuration
 
 # Created at setup time (downloaded by scripts/setup.sh|setup.bat, not committed):
-models/                       # Model weights (*.pth) + reference data
-                              #   (expand_targetlist = brand logos, domain_map.pkl = brand→domain)
+models/                          # Model weights (*.pth) + reference data
+                                 #   (expand_targetlist = brand logos, domain_map.pkl = brand→domain)
 ```
 
 ## Installation
@@ -71,7 +70,7 @@ cd PhishIntention
 docker build -t phishintention .
 
 docker run --rm phishintention \
-  pixi run python phishintention.py --folder datasets/test_sites --output_fn test.json
+  pixi run python -m phishintention --folder datasets/test_sites --output_fn test.json
 ```
 
 ### Option B — Native install
@@ -148,7 +147,7 @@ The setup scripts install a matching ChromeDriver automatically. To pin it manua
 ## Usage
 
 ```bash
-pixi run python phishintention.py --folder datasets/test_sites --output_fn test.json
+pixi run python -m phishintention --folder datasets/test_sites --output_fn test.json
 ```
 
 On the first run, the reference list is embedded and cached to `LOGO_FEATS.npy`, which can take a few minutes.
