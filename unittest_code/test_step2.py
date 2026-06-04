@@ -4,15 +4,15 @@ import numpy as np
 
 
 class TestStep2LogoMatcher(unittest.TestCase):
-    """测试_step2_logo_matcher函数的单元测试"""
-    
+    """Unit tests for the _step2_logo_matcher function"""
+
     def setUp(self):
-        """测试前准备"""
-        # 导入被测试的类
+        """Set up before each test"""
+        # Import the class under test
         from phishintention import PhishIntentionWrapper
         self.wrapper_class = PhishIntentionWrapper
-        
-        # 创建模拟的wrapper实例
+
+        # Create a mock wrapper instance
         self.wrapper = Mock(spec=PhishIntentionWrapper)
         self.wrapper.SIAMESE_MODEL = Mock()
         self.wrapper.OCR_MODEL = Mock()
@@ -22,9 +22,9 @@ class TestStep2LogoMatcher(unittest.TestCase):
         self.wrapper.SIAMESE_THRE = 0.5
     
     def test_output_format_with_match(self):
-        """测试匹配到品牌时的输出格式"""
+        """Test the output format when a brand is matched"""
         with patch('phishintention.check_domain_brand_inconsistency') as mock_check:
-            # 设置模拟返回值
+            # Configure the mock return value
             mock_check.return_value = (
                 "Microsoft",          # pred_target
                 "microsoft.com",      # matched_domain
@@ -32,7 +32,7 @@ class TestStep2LogoMatcher(unittest.TestCase):
                 0.85                   # siamese_conf
             )
             
-            # 创建真实wrapper实例并替换属性
+            # Create a real wrapper instance and replace its attributes
             wrapper = self.wrapper_class()
             wrapper.SIAMESE_MODEL = self.wrapper.SIAMESE_MODEL
             wrapper.OCR_MODEL = self.wrapper.OCR_MODEL
@@ -40,34 +40,34 @@ class TestStep2LogoMatcher(unittest.TestCase):
             wrapper.LOGO_FILES = self.wrapper.LOGO_FILES
             wrapper.DOMAIN_MAP_PATH = self.wrapper.DOMAIN_MAP_PATH
             wrapper.SIAMESE_THRE = self.wrapper.SIAMESE_THRE
-            
-            # 测试数据
+
+            # Test data
             logo_pred_boxes = np.array([[50, 60, 200, 300]])
             url = "https://test-site.com"
             screenshot_path = "test.png"
-            
-            # 执行测试
+
+            # Run the method under test
             pred_target, matched_domain, matched_coord, siamese_conf, logo_match_time = \
                 wrapper._step2_logo_matcher(logo_pred_boxes, url, screenshot_path)
-            
-            # 验证类型
+
+            # Verify the types
             self.assertIsInstance(pred_target, str)
             self.assertIsInstance(matched_domain, str)
             self.assertIsInstance(matched_coord, list)
             self.assertIsInstance(siamese_conf, float)
             self.assertIsInstance(logo_match_time, float)
-            
-            # 验证函数调用
+
+            # Verify the function call
             mock_check.assert_called_once()
-            
-            # 验证调用参数
+
+            # Verify the call arguments
             args, kwargs = mock_check.call_args
-            
-            # 修复：正确比较NumPy数组
-            # 使用np.array_equal来比较两个NumPy数组
+
+            # Fix: compare NumPy arrays correctly
+            # Use np.array_equal to compare two NumPy arrays
             self.assertTrue(np.array_equal(kwargs['logo_boxes'], logo_pred_boxes))
-            
-            # 或者逐个元素比较（更详细）
+
+            # Or compare element by element (more detailed)
             received_boxes = kwargs['logo_boxes']
             self.assertIsInstance(received_boxes, np.ndarray)
             self.assertEqual(received_boxes.shape, logo_pred_boxes.shape)
@@ -85,12 +85,12 @@ class TestStep2LogoMatcher(unittest.TestCase):
             self.assertEqual(kwargs['ts'], wrapper.SIAMESE_THRE)
     
     def test_output_format_no_match(self):
-        """测试没有匹配到品牌时的输出格式"""
+        """Test the output format when no brand is matched"""
         with patch('phishintention.check_domain_brand_inconsistency') as mock_check:
-            # 设置模拟返回值（没有匹配）
+            # Configure the mock return value (no match)
             mock_check.return_value = (None, None, None, None)
-            
-            # 创建wrapper实例
+
+            # Create a wrapper instance
             wrapper = self.wrapper_class()
             wrapper.SIAMESE_MODEL = self.wrapper.SIAMESE_MODEL
             wrapper.OCR_MODEL = self.wrapper.OCR_MODEL
@@ -98,17 +98,17 @@ class TestStep2LogoMatcher(unittest.TestCase):
             wrapper.LOGO_FILES = self.wrapper.LOGO_FILES
             wrapper.DOMAIN_MAP_PATH = self.wrapper.DOMAIN_MAP_PATH
             wrapper.SIAMESE_THRE = self.wrapper.SIAMESE_THRE
-            
-            # 测试数据
+
+            # Test data
             logo_pred_boxes = np.array([[50, 60, 200, 300]])
             url = "https://test-site.com"
             screenshot_path = "test.png"
-            
-            # 执行测试
+
+            # Run the method under test
             pred_target, matched_domain, matched_coord, siamese_conf, logo_match_time = \
                 wrapper._step2_logo_matcher(logo_pred_boxes, url, screenshot_path)
-            
-            # 验证返回None值
+
+            # Verify the returned None values
             self.assertIsNone(pred_target)
             self.assertIsNone(matched_domain)
             self.assertIsNone(matched_coord)
@@ -116,18 +116,18 @@ class TestStep2LogoMatcher(unittest.TestCase):
             self.assertIsInstance(logo_match_time, float)
     
     def test_time_measurement(self):
-        """测试时间测量功能"""
+        """Test the timing measurement"""
         import time
-        
+
         with patch('phishintention.check_domain_brand_inconsistency') as mock_check:
-            # 模拟需要时间的处理
+            # Simulate processing that takes time
             def delayed_check(*args, **kwargs):
-                time.sleep(0.05)  # 50ms延迟
+                time.sleep(0.05)  # 50ms delay
                 return ("Brand", "brand.com", [0, 0, 100, 100], 0.9)
-            
+
             mock_check.side_effect = delayed_check
-            
-            # 创建wrapper实例
+
+            # Create a wrapper instance
             wrapper = self.wrapper_class()
             wrapper.SIAMESE_MODEL = self.wrapper.SIAMESE_MODEL
             wrapper.OCR_MODEL = self.wrapper.OCR_MODEL
@@ -135,21 +135,21 @@ class TestStep2LogoMatcher(unittest.TestCase):
             wrapper.LOGO_FILES = self.wrapper.LOGO_FILES
             wrapper.DOMAIN_MAP_PATH = self.wrapper.DOMAIN_MAP_PATH
             wrapper.SIAMESE_THRE = self.wrapper.SIAMESE_THRE
-            
-            # 执行测试
+
+            # Run the method under test
             _, _, _, _, logo_match_time = wrapper._step2_logo_matcher(
-                np.array([[0, 0, 100, 100]]), 
-                "https://test.com", 
+                np.array([[0, 0, 100, 100]]),
+                "https://test.com",
                 "test.png"
             )
-            
-            # 验证时间测量
+
+            # Verify the timing measurement
             self.assertGreaterEqual(logo_match_time, 0.05)
     
     def test_empty_logo_boxes(self):
-        """测试空logo boxes的情况"""
+        """Test the case of empty logo boxes"""
         with patch('phishintention.check_domain_brand_inconsistency') as mock_check:
-            # 创建wrapper实例
+            # Create a wrapper instance
             wrapper = self.wrapper_class()
             wrapper.SIAMESE_MODEL = self.wrapper.SIAMESE_MODEL
             wrapper.OCR_MODEL = self.wrapper.OCR_MODEL
@@ -157,33 +157,33 @@ class TestStep2LogoMatcher(unittest.TestCase):
             wrapper.LOGO_FILES = self.wrapper.LOGO_FILES
             wrapper.DOMAIN_MAP_PATH = self.wrapper.DOMAIN_MAP_PATH
             wrapper.SIAMESE_THRE = self.wrapper.SIAMESE_THRE
-            
-            # 测试空数组
+
+            # Test an empty array
             logo_pred_boxes = np.array([])
             url = "https://test-site.com"
             screenshot_path = "test.png"
-            
-            # 执行测试
+
+            # Run the method under test
             pred_target, matched_domain, matched_coord, siamese_conf, logo_match_time = \
                 wrapper._step2_logo_matcher(logo_pred_boxes, url, screenshot_path)
-            
-            # 验证返回None值
+
+            # Verify the returned None values
             self.assertIsNone(pred_target)
             self.assertIsNone(matched_domain)
             self.assertIsNone(matched_coord)
             self.assertIsNone(siamese_conf)
             self.assertIsInstance(logo_match_time, float)
-            
-            # 验证mock函数没有被调用
+
+            # Verify the mock function was not called
             mock_check.assert_not_called()
     
     def test_single_logo_box_format(self):
-        """测试单个logo box的格式处理"""
+        """Test format handling for a single logo box"""
         with patch('phishintention.check_domain_brand_inconsistency') as mock_check:
-            # 设置模拟返回值
+            # Configure the mock return value
             mock_check.return_value = ("Brand", "brand.com", [0, 0, 100, 100], 0.8)
-            
-            # 创建wrapper实例
+
+            # Create a wrapper instance
             wrapper = self.wrapper_class()
             wrapper.SIAMESE_MODEL = self.wrapper.SIAMESE_MODEL
             wrapper.OCR_MODEL = self.wrapper.OCR_MODEL
@@ -192,38 +192,38 @@ class TestStep2LogoMatcher(unittest.TestCase):
             wrapper.DOMAIN_MAP_PATH = self.wrapper.DOMAIN_MAP_PATH
             wrapper.SIAMESE_THRE = self.wrapper.SIAMESE_THRE
             
-            # 测试单个边界框（一维数组）
+            # Test a single bounding box (1D array)
             logo_pred_boxes = np.array([0, 0, 100, 100])
             url = "https://test-site.com"
             screenshot_path = "test.png"
-            
-            # 执行测试
+
+            # Run the method under test
             pred_target, matched_domain, matched_coord, siamese_conf, logo_match_time = \
                 wrapper._step2_logo_matcher(logo_pred_boxes, url, screenshot_path)
-            
-            # 验证返回结果不为None
+
+            # Verify the returned values are not None
             self.assertIsNotNone(pred_target)
             self.assertIsNotNone(matched_domain)
             self.assertIsNotNone(matched_coord)
             self.assertIsNotNone(siamese_conf)
             self.assertIsInstance(logo_match_time, float)
-            
-            # 验证mock被调用，并检查参数格式
+
+            # Verify the mock was called and check the argument format
             mock_check.assert_called_once()
             args, kwargs = mock_check.call_args
-            
-            # 验证logo_boxes参数是二维数组格式
+
+            # Verify the logo_boxes argument is a 2D array
             received_boxes = kwargs['logo_boxes']
             self.assertIsInstance(received_boxes, np.ndarray)
-            self.assertEqual(received_boxes.shape, (1, 4))  # 应该是 (1, 4) 而不是 (4,)
+            self.assertEqual(received_boxes.shape, (1, 4))  # Should be (1, 4) rather than (4,)
     
     def test_multiple_logo_boxes(self):
-        """测试多个logo boxes的情况"""
+        """Test the case of multiple logo boxes"""
         with patch('phishintention.check_domain_brand_inconsistency') as mock_check:
-            # 设置模拟返回值
+            # Configure the mock return value
             mock_check.return_value = ("Brand", "brand.com", [50, 50, 150, 150], 0.9)
-            
-            # 创建wrapper实例
+
+            # Create a wrapper instance
             wrapper = self.wrapper_class()
             wrapper.SIAMESE_MODEL = self.wrapper.SIAMESE_MODEL
             wrapper.OCR_MODEL = self.wrapper.OCR_MODEL
@@ -232,7 +232,7 @@ class TestStep2LogoMatcher(unittest.TestCase):
             wrapper.DOMAIN_MAP_PATH = self.wrapper.DOMAIN_MAP_PATH
             wrapper.SIAMESE_THRE = self.wrapper.SIAMESE_THRE
             
-            # 测试多个边界框
+            # Test multiple bounding boxes
             logo_pred_boxes = np.array([
                 [0, 0, 100, 100],
                 [50, 50, 150, 150],
@@ -240,23 +240,23 @@ class TestStep2LogoMatcher(unittest.TestCase):
             ])
             url = "https://test-site.com"
             screenshot_path = "test.png"
-            
-            # 执行测试
+
+            # Run the method under test
             pred_target, matched_domain, matched_coord, siamese_conf, logo_match_time = \
                 wrapper._step2_logo_matcher(logo_pred_boxes, url, screenshot_path)
-            
-            # 验证返回结果不为None
+
+            # Verify the returned values are not None
             self.assertIsNotNone(pred_target)
             self.assertIsNotNone(matched_domain)
             self.assertIsNotNone(matched_coord)
             self.assertIsNotNone(siamese_conf)
             self.assertIsInstance(logo_match_time, float)
-            
-            # 验证mock被调用，并检查参数
+
+            # Verify the mock was called and check the arguments
             mock_check.assert_called_once()
             args, kwargs = mock_check.call_args
-            
-            # 验证logo_boxes参数
+
+            # Verify the logo_boxes argument
             received_boxes = kwargs['logo_boxes']
             self.assertIsInstance(received_boxes, np.ndarray)
             self.assertEqual(received_boxes.shape, (3, 4))

@@ -9,7 +9,7 @@ import io
 import os
 import numpy as np
 from utils.utils import coord2pixel_reverse
-from modules.models import KNOWN_MODELS
+from modules.crp_models import KNOWN_MODELS
 import logging
 
 logger = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ def credential_config(checkpoint, model_type='mixed'):
     '''
     Load credential classifier configurations
     :param checkpoint: classifier weights
-    :param model_type: layout|screenshot|mixed|topo
+    :param model_type: layout|screenshot|mixed
     :return model: classifier
     '''
     # load weights
@@ -27,13 +27,11 @@ def credential_config(checkpoint, model_type='mixed'):
     if model_type == 'screenshot':
         model = KNOWN_MODELS['BiT-M-R50x1'](head_size=2)
     elif model_type == 'layout':
-        model = KNOWN_MODELS['FCMaxV2'](head_size=2)
+        model = KNOWN_MODELS['FCMax'](head_size=2)
     elif model_type == 'mixed':
         model = KNOWN_MODELS['BiT-M-R50x1V2'](head_size=2)
-    elif model_type == 'topo':
-        model = KNOWN_MODELS['BiT-M-R50x1V3'](head_size=2)
     else:
-        raise ValueError('CRP Model type not supported, please use one of the following [screenshot|layout|mixed|topo]')
+        raise ValueError('CRP Model type not supported, please use one of the following [screenshot|layout|mixed]')
 
     checkpoint = torch.load(checkpoint, map_location="cpu")
     checkpoint = checkpoint['model'] if 'model' in checkpoint.keys() else checkpoint

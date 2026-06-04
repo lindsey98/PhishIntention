@@ -1,11 +1,11 @@
 FROM ubuntu:22.04
 
-# 避免交互式安装提示
+# Avoid interactive installation prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /app
 
-# 安装基础工具和Python
+# Install base tools and Python
 RUN apt-get update && apt-get install -y \
     python3.9 \
     python3-pip \
@@ -24,9 +24,9 @@ RUN apt-get update && apt-get install -y \
     libgconf-2-4 \
     && rm -rf /var/lib/apt/lists/*
 
-# 复制项目文件
+# Copy project files
 COPY . .
-# 安装google chrome和chromedriver
+# Install Google Chrome and chromedriver
 RUN export KMP_DUPLICATE_LIB_OK=TRUE \
     && curl -fsSL https://pixi.sh/install.sh | sh \
     && echo 'export PATH="/root/.pixi/bin:$PATH"' >> /etc/profile.d/pixi.sh \
