@@ -45,9 +45,12 @@ PhishIntention/
 ├── ocr_lib/                  # External OCR encoder
 ├── utils/                    # Image and Selenium/WebDriver helpers
 ├── scripts/                  # Install/setup scripts (PyTorch, Detectron2, Chrome, weights)
-├── models/                   # Model weights + reference list (downloaded by setup script)
 ├── configs.py                # Loads configs and builds all models
 └── phishintention.py         # Entry point / pipeline orchestrator
+
+# Created at setup time (downloaded by scripts/setup.sh|setup.bat, not committed):
+models/                       # Model weights (*.pth) + reference data
+                              #   (expand_targetlist = brand logos, domain_map.pkl = brand→domain)
 ```
 
 ## Installation
