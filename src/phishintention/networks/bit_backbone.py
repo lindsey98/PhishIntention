@@ -19,8 +19,6 @@ are shared by the CRP classifier networks (``crp_models``) and the OCR-aided
 Siamese network (``siamese_models``).
 """
 
-from collections import OrderedDict
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
