@@ -16,6 +16,13 @@ import urllib.error
 PREBUILT_BASE_URL = "https://github.com/MiroPsota/torch_packages_builder/releases/download"
 PREBUILT_INDEX_URL = "https://miropsota.github.io/torch_packages_builder/detectron2/"
 
+# Pin PyTorch to a version that has a matching prebuilt detectron2 wheel
+# (see TORCH_VERSION_COMMIT_MAP below). Without a pin, pip installs the latest
+# torch, which often has no prebuilt detectron2 yet and forces a from-source
+# compile (which needs git and a toolchain and is slow/fragile in CI).
+TORCH_VERSION = "2.9.1"
+TORCHVISION_VERSION = "0.24.1"
+
 # List of known commit hashes (sorted by priority, newer ones first)
 KNOWN_COMMIT_HASHES = ['fd27788', '864913f', '18f6958', '2a420ed', '']
 
@@ -116,11 +123,14 @@ def install_pytorch(info):
     
     print("Installing PyTorch...")
     
+    torch_pkg = f'torch=={TORCH_VERSION}'
+    torchvision_pkg = f'torchvision=={TORCHVISION_VERSION}'
+
     if os_name == 'Darwin':  # macOS
         # macOS only supports CPU version (or MPS for Apple Silicon)
         install_cmd = [
             sys.executable, '-m', 'pip', 'install',
-            'torch', 'torchvision'
+            torch_pkg, torchvision_pkg
         ]
     elif has_cuda and cuda_version:
         # Choose appropriate PyTorch based on CUDA version
@@ -139,14 +149,14 @@ def install_pytorch(info):
         
         install_cmd = [
             sys.executable, '-m', 'pip', 'install',
-            'torch', 'torchvision',
+            torch_pkg, torchvision_pkg,
             '--index-url', f'https://download.pytorch.org/whl/{cuda_tag}'
         ]
     else:
         # CPU version
         install_cmd = [
             sys.executable, '-m', 'pip', 'install',
-            'torch', 'torchvision',
+            torch_pkg, torchvision_pkg,
             '--index-url', 'https://download.pytorch.org/whl/cpu'
         ]
     
